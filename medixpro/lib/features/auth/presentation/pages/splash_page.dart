@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/network/api_client.dart';
 import 'package:medixpro/core/storage/token_storage.dart';
+import 'package:medixpro/features/auth/presentation/pages/onboarding.dart';
 import 'package:medixpro/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'login_page.dart';
 
@@ -60,7 +61,7 @@ class _SplashPageState extends State<SplashPage>
       } on DioException catch (e) {
         if (e.response?.statusCode == 401) {
           await tokenStorage.clear();
-          _goTo(const LoginPage());
+          _goTo(const OnboardingPage());
         } else {
           _goTo(const DashboardPage());
         }
@@ -68,7 +69,7 @@ class _SplashPageState extends State<SplashPage>
         _goTo(const DashboardPage());
       }
     } else {
-      _goTo(const LoginPage());
+      _goTo(const OnboardingPage());
     }
   }
 
