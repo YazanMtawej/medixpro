@@ -6,7 +6,6 @@ import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../../../../core/storage/token_storage.dart';
 
-
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remote;
   final TokenStorage tokenStorage;
@@ -38,13 +37,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<bool> isLoggedIn() async {
-    final token = await tokenStorage.getAccessToken();
-    return token != null && token.isNotEmpty;
+  Future<void> logout() async {
+    await tokenStorage.clear();
   }
 
   @override
-  Future<void> logout() async {
-    await tokenStorage.clear();
+  Future<bool> isLoggedIn() async {
+    return await tokenStorage.hasToken();
   }
 }

@@ -5,6 +5,8 @@ import '../../domain/entities/login_request.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 
+/// ================= STATES =================
+
 abstract class AuthState {}
 
 class AuthInitial extends AuthState {}
@@ -16,12 +18,14 @@ class AuthAuthenticated extends AuthState {
   AuthAuthenticated(this.user);
 }
 
+class AuthLoggedOut extends AuthState {}
+
 class AuthError extends AuthState {
   final String message;
   AuthError(this.message);
 }
 
-class AuthLoggedOut extends AuthState {}
+/// ================= CUBIT =================
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository repository;
@@ -32,13 +36,10 @@ class AuthCubit extends Cubit<AuthState> {
     this.repository, {
     required this.loginUseCase,
     required this.registerUseCase,
-  }) : super(AuthInitial()) {
-    /// 🔥🔥🔥 هذا هو السطر السحري (الحل كامل هنا)
-    _autoLogin();
-  }
+  }) : super(AuthInitial());
 
-  /// ✅ التحقق التلقائي عند تشغيل التطبيق
-  Future<void> _autoLogin() async {
+  /// 🔥 المصدر الوحيد لتحديد المسار
+  Future<void> autoLogin() async {
     try {
       final isLoggedIn = await repository.isLoggedIn();
 
@@ -49,12 +50,16 @@ class AuthCubit extends Cubit<AuthState> {
       } else {
         emit(AuthLoggedOut());
       }
-    } catch (e) {
+    } catch (_) {
       emit(AuthLoggedOut());
     }
   }
 
-  Future<void> login(String username, String email, String password) async {
+  Future<void> login(
+    String username,
+    String email,
+    String password,
+  ) async {
     emit(AuthLoading());
 
     try {
@@ -72,7 +77,11 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> register(String username, String email, String password) async {
+  Future<void> register(
+    String username,
+    String email,
+    String password,
+  ) async {
     emit(AuthLoading());
 
     try {
