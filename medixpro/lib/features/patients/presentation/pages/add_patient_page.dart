@@ -12,7 +12,6 @@ class AddPatientPage extends StatefulWidget {
 }
 
 class _AddPatientPageState extends State<AddPatientPage> {
-
   final _formKey = GlobalKey<FormState>();
 
   final nameController = TextEditingController();
@@ -25,102 +24,156 @@ class _AddPatientPageState extends State<AddPatientPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Patient")),
+      appBar: AppBar(
+        title: const Text("Add Patient"),
+        centerTitle: true,
+      ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-
-        child: Form(
-          key: _formKey,
-
-          child: ListView(
-            children: [
-
-              /// Name
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: "Name"),
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Enter name" : null,
-              ),
-
-              const SizedBox(height: 16),
-
-              /// Age
-              TextFormField(
-                controller: ageController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Age"),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return "Enter age";
-                  if (int.tryParse(v) == null) return "Invalid number";
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              /// Phone
-              TextFormField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: "Phone"),
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Enter phone" : null,
-              ),
-
-              const SizedBox(height: 16),
-
-              /// Gender
-              DropdownButtonFormField<String>(
-                value: gender,
-                decoration: const InputDecoration(labelText: "Gender"),
-                items: ["Male", "Female"]
-                    .map((g) =>
-                        DropdownMenuItem(value: g, child: Text(g)))
-                    .toList(),
-                onChanged: (val) {
-                  setState(() => gender = val!);
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              /// Birth Date
-              ListTile(
-                title: Text(
-                  birthDate == null
-                      ? "Select Birth Date"
-                      : "${birthDate!.toLocal()}".split(' ')[0],
-                ),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _pickDate,
-              ),
-
-              const SizedBox(height: 16),
-
-              /// Notes
-              TextFormField(
-                controller: notesController,
-                decoration: const InputDecoration(labelText: "Notes"),
-              ),
-
-              const SizedBox(height: 30),
-
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text("Save"),
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.surface.withOpacity(0.9),
             ],
+          ),
+        ),
+
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+
+          child: Form(
+            key: _formKey,
+
+            child: ListView(
+              children: [
+
+                Text(
+                  "Patient Information",
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                _field(nameController, "Full Name", Icons.person),
+                const SizedBox(height: 12),
+
+                _field(
+                  ageController,
+                  "Age",
+                  Icons.cake,
+                  type: TextInputType.number,
+                ),
+
+                const SizedBox(height: 12),
+
+                _field(phoneController, "Phone", Icons.phone),
+                const SizedBox(height: 12),
+
+                /// Gender modern chips
+                _genderSelector(),
+
+                const SizedBox(height: 12),
+
+                /// Birth date modern selector
+                _dateSelector(context),
+
+                const SizedBox(height: 12),
+
+                _field(notesController, "Notes (optional)", Icons.notes),
+
+                const SizedBox(height: 30),
+
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.save),
+                  label: const Text("Save Patient"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.all(14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: _submit,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _submit() {
+  Widget _field(
+    TextEditingController c,
+    String label,
+    IconData icon, {
+    TextInputType type = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: c,
+      keyboardType: type,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+      validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+    );
+  }
 
+  Widget _genderSelector() {
+    return Row(
+      children: [
+        ChoiceChip(
+          label: const Text("Male"),
+          selected: gender == "Male",
+          onSelected: (_) => setState(() => gender = "Male"),
+        ),
+        const SizedBox(width: 10),
+        ChoiceChip(
+          label: const Text("Female"),
+          selected: gender == "Female",
+          onSelected: (_) => setState(() => gender = "Female"),
+        ),
+      ],
+    );
+  }
+
+ Widget _dateSelector(BuildContext context) {
+  final theme = Theme.of(context);
+
+  return ListTile(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    ),
+
+    tileColor: theme.colorScheme.surfaceContainerHighest,
+
+    leading: Icon(
+      Icons.calendar_month,
+      color: theme.colorScheme.primary,
+    ),
+
+    title: Text(
+      birthDate == null
+          ? "Select Birth Date"
+          : birthDate!.toIso8601String().split("T").first,
+      style: TextStyle(color: theme.colorScheme.onSurface),
+    ),
+
+    onTap: _pickDate,
+  );
+}
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
     final patient = Patient(
@@ -129,14 +182,12 @@ class _AddPatientPageState extends State<AddPatientPage> {
       age: int.parse(ageController.text),
       phone: phoneController.text,
       gender: gender,
-      birthDate: birthDate != null
-          ? "${birthDate!.toLocal()}".split(' ')[0]
-          : null,
+      birthDate:
+          birthDate?.toIso8601String().split("T").first,
       notes: notesController.text,
     );
 
     context.read<PatientsCubit>().addPatient(patient);
-
     Navigator.pop(context);
   }
 
