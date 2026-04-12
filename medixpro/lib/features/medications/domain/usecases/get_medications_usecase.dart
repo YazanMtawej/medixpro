@@ -3,10 +3,8 @@ import '../repositories/medications_repository.dart';
 
 class GetMedicationsUseCase {
   final MedicationsRepository repository;
+  const GetMedicationsUseCase(this.repository);
 
-  GetMedicationsUseCase(this.repository);
-
-  Future<List<Medication>> call({int? patientId}) {
-    return repository.getMedications(patientId: patientId);
-  }
+  Future<List<Medication>> call({int? patientId, String? search}) =>
+      repository.getMedications(patientId: patientId, search: search);
 }

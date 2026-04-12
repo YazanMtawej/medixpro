@@ -5,6 +5,8 @@ import '../../domain/usecases/add_medication_usecase.dart';
 import '../../domain/usecases/update_medication_usecase.dart';
 import '../../domain/usecases/delete_medication_usecase.dart';
 
+// ─── States ───────────────────────────────────────────────────────────────────
+
 abstract class MedicationsState {}
 
 class MedicationsInitial extends MedicationsState {}
@@ -21,41 +23,55 @@ class MedicationsError extends MedicationsState {
   MedicationsError(this.message);
 }
 
+// ─── Cubit ────────────────────────────────────────────────────────────────────
+
 class MedicationsCubit extends Cubit<MedicationsState> {
-  final GetMedicationsUseCase getMedications;
-  final AddMedicationUseCase addMedication;
-  final UpdateMedicationUseCase updateMedication;
-  final DeleteMedicationUseCase deleteMedication;
+  final GetMedicationsUseCase _getMedications;
+  final AddMedicationUseCase _addMedication;
+  final UpdateMedicationUseCase _updateMedication;
+  final DeleteMedicationUseCase _deleteMedication;
 
   MedicationsCubit(
-    this.getMedications,
-    this.addMedication,
-    this.updateMedication,
-    this.deleteMedication,
+    this._getMedications,
+    this._addMedication,
+    this._updateMedication,
+    this._deleteMedication,
   ) : super(MedicationsInitial());
 
-  Future<void> fetchMedications({int? patientId}) async {
+  Future<void> fetchMedications({int? patientId, String? search}) async {
+    emit(MedicationsLoading());
     try {
-      emit(MedicationsLoading());
-      final meds = await getMedications(patientId: patientId);
+      final meds = await _getMedications(patientId: patientId, search: search);
       emit(MedicationsLoaded(meds));
-    } catch (e) {
+    } catch (_) {
       emit(MedicationsError("Failed to load medications"));
     }
   }
 
   Future<void> addNewMedication(Medication med) async {
-    await addMedication(med);
-    await fetchMedications();
+    try {
+      await _addMedication(med);
+      await fetchMedications();
+    } catch (_) {
+      emit(MedicationsError("Failed to add medication"));
+    }
   }
 
   Future<void> updateExistingMedication(Medication med) async {
-    await updateMedication(med);
-    await fetchMedications();
+    try {
+      await _updateMedication(med);
+      await fetchMedications();
+    } catch (_) {
+      emit(MedicationsError("Failed to update medication"));
+    }
   }
 
   Future<void> deleteExistingMedication(int id) async {
-    await deleteMedication(id);
-    await fetchMedications();
+    try {
+      await _deleteMedication(id);
+      await fetchMedications();
+    } catch (_) {
+      emit(MedicationsError("Failed to delete medication"));
+    }
   }
 }

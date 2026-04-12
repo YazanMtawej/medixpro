@@ -3,10 +3,6 @@ import '../repositories/medications_repository.dart';
 
 class AddMedicationUseCase {
   final MedicationsRepository repository;
-
-  AddMedicationUseCase(this.repository);
-
-  Future<void> call(Medication med) {
-    return repository.addMedication(med);
-  }
+  const AddMedicationUseCase(this.repository);
+  Future<void> call(Medication med) => repository.addMedication(med);
 }

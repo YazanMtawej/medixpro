@@ -1,13 +1,15 @@
 from rest_framework import serializers
-from .models import Medication
+from .models import Medication, CommonMedication
+
+
+class CommonMedicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommonMedication
+        fields = ["id", "name", "category"]
 
 
 class MedicationSerializer(serializers.ModelSerializer):
-
-    patient_name = serializers.CharField(
-        source="patient.name",
-        read_only=True
-    )
+    patient_name = serializers.CharField(source="patient.name", read_only=True)
 
     class Meta:
         model = Medication
@@ -16,17 +18,25 @@ class MedicationSerializer(serializers.ModelSerializer):
             "patient",
             "patient_name",
             "name",
-            "description",
             "dosage",
+            "frequency",
+            "route",
+            "duration_days",
+            "start_date",
+            "end_date",
+            "instructions",
+            "notes",
             "created_at",
+            "updated_at",
         ]
+        read_only_fields = ["id", "patient_name", "created_at", "updated_at"]
 
-    def validate(self, data):
+    def validate_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Medication name is required")
+        return value.strip()
 
-        if not data.get("name"):
-            raise serializers.ValidationError("Name is required")
-
-        if not data.get("dosage"):
+    def validate_dosage(self, value):
+        if not value.strip():
             raise serializers.ValidationError("Dosage is required")
-
-        return data
+        return value.strip()

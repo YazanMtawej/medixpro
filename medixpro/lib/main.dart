@@ -83,58 +83,58 @@ void main() {
   final apiClient = ApiClient(tokenStorage);
 
   // ================= DATA SOURCES =================
-  final authRemote = AuthRemoteDataSource(apiClient);
-  final dashboardRemote = DashboardRemoteDataSource(apiClient);
-  final settingsRemote = SettingsRemoteDataSource(apiClient);
-  final patientsRemote = PatientsRemoteDataSource(apiClient);
-  final reportsRemote = ReportsRemoteDataSource(apiClient);
+  final authRemote        = AuthRemoteDataSource(apiClient);
+  final dashboardRemote   = DashboardRemoteDataSource(apiClient);
+  final settingsRemote    = SettingsRemoteDataSource(apiClient);
+  final patientsRemote    = PatientsRemoteDataSource(apiClient);
+  final reportsRemote     = ReportsRemoteDataSource(apiClient);
   final medicationsRemote = MedicationsRemoteDataSource(apiClient);
   final appointmentsRemote = AppointmentsRemoteDataSource(apiClient);
 
   // ================= REPOSITORIES =================
-  final authRepository = AuthRepositoryImpl(authRemote, tokenStorage);
-  final dashboardRepository = DashboardRepositoryImpl(dashboardRemote);
-  final settingsRepository = SettingsRepositoryImpl(settingsRemote);
-  final patientsRepository = PatientsRepositoryImpl(patientsRemote);
-  final reportsRepository = ReportsRepositoryImpl(reportsRemote);
-  final medicationsRepository = MedicationsRepositoryImpl(medicationsRemote);
+  final authRepository         = AuthRepositoryImpl(authRemote, tokenStorage);
+  final dashboardRepository    = DashboardRepositoryImpl(dashboardRemote);
+  final settingsRepository     = SettingsRepositoryImpl(settingsRemote);
+  final patientsRepository     = PatientsRepositoryImpl(patientsRemote);
+  final reportsRepository      = ReportsRepositoryImpl(reportsRemote);
+  final medicationsRepository  = MedicationsRepositoryImpl(medicationsRemote);
   final appointmentsRepository = AppointmentsRepositoryImpl(appointmentsRemote);
 
   // ================= USE CASES =================
 
   // Auth
-  final loginUseCase = LoginUseCase(authRepository);
+  final loginUseCase    = LoginUseCase(authRepository);
   final registerUseCase = RegisterUseCase(authRepository);
 
   // Dashboard
-  final getDashboardStatsUseCase = GetDashboardStatsUseCase(dashboardRepository);
+  final getDashboardStatsUseCase    = GetDashboardStatsUseCase(dashboardRepository);
   final getTodayAppointmentsUseCase = GetTodayAppointmentsUseCase(dashboardRepository);
 
   // Settings
-  final getProfileUseCase = GetProfileUseCase(settingsRepository);
-  final updateProfileUseCase = UpdateProfileUseCase(settingsRepository);
+  final getProfileUseCase      = GetProfileUseCase(settingsRepository);
+  final updateProfileUseCase   = UpdateProfileUseCase(settingsRepository);
   final getNotificationsUseCase = GetNotificationsUseCase(settingsRepository);
-  final logoutUseCase = LogoutUseCase(settingsRepository);
+  final logoutUseCase          = LogoutUseCase(settingsRepository);
 
   // Patients
-  final getPatientsUseCase = GetPatientsUseCase(patientsRepository);
-  final addPatientUseCase = AddPatientUseCase(patientsRepository);
-  final updatePatientUseCase = UpdatePatientUseCase(patientsRepository);
-  final deletePatientUseCase = DeletePatientUseCase(patientsRepository);
+  final getPatientsUseCase    = GetPatientsUseCase(patientsRepository);
+  final addPatientUseCase     = AddPatientUseCase(patientsRepository);
+  final updatePatientUseCase  = UpdatePatientUseCase(patientsRepository);
+  final deletePatientUseCase  = DeletePatientUseCase(patientsRepository);
 
   // Reports
   final getReportsUseCase = GetReportsUseCase(reportsRepository);
-  final addReportUseCase = AddReportUseCase(reportsRepository);
+  final addReportUseCase  = AddReportUseCase(reportsRepository);
 
   // Medications
-  final getMedicationsUseCase = GetMedicationsUseCase(medicationsRepository);
-  final addMedicationUseCase = AddMedicationUseCase(medicationsRepository);
-  final updateMedicationUseCase = UpdateMedicationUseCase(medicationsRepository);
-  final deleteMedicationUseCase = DeleteMedicationUseCase(medicationsRepository);
+  final getMedicationsUseCase    = GetMedicationsUseCase(medicationsRepository);
+  final addMedicationUseCase     = AddMedicationUseCase(medicationsRepository);
+  final updateMedicationUseCase  = UpdateMedicationUseCase(medicationsRepository);
+  final deleteMedicationUseCase  = DeleteMedicationUseCase(medicationsRepository);
 
   // Appointments
-  final getAppointmentsUseCase = GetAppointmentsUseCase(appointmentsRepository);
-  final addAppointmentUseCase = AddAppointmentUseCase(appointmentsRepository);
+  final getAppointmentsUseCase   = GetAppointmentsUseCase(appointmentsRepository);
+  final addAppointmentUseCase    = AddAppointmentUseCase(appointmentsRepository);
   final updateAppointmentUseCase = UpdateAppointmentUseCase(appointmentsRepository);
 
   // ================= CUBITS =================
@@ -228,16 +228,16 @@ class MedixProApp extends StatelessWidget {
           themeMode: themeMode,
           home: const SplashPage(),
           routes: {
-            "/login": (_) => const LoginPage(),
-            "/register": (_) => const RoleSelectionPage(),
-            "/dashboard": (_) => const DashboardPage(),
-            "/settings": (_) => const SettingsPage(),
-            "/profile": (_) => const ProfilePage(),
+            "/login":         (_) => const LoginPage(),
+            "/register":      (_) => const RoleSelectionPage(),
+            "/dashboard":     (_) => const DashboardPage(),
+            "/settings":      (_) => const SettingsPage(),
+            "/profile":       (_) => const ProfilePage(),
             "/notifications": (_) => const NotificationsPage(),
-            "/reports": (_) => const ReportsPage(),
-            "/patients": (_) => const PatientsListPage(),
-            "/medications": (_) => const MedicationsPage(),
-            "/appointments": (_) => const AppointmentsPage(),
+            "/reports":       (_) => const ReportsPage(),
+            "/patients":      (_) => const PatientsListPage(),
+            "/medications":   (_) => const MedicationsPage(),
+            "/appointments":  (_) => const AppointmentsPage(),
           },
         );
       },

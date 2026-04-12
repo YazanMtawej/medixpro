@@ -9,25 +9,19 @@ class ThemeCubit extends Cubit<ThemeMode> {
     loadTheme();
   }
 
-  // ✅ نفس الاسم القديم (لا تغيّر شيء في باقي المشروع)
   Future<void> loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-
     final isDark = prefs.getBool(_themeKey) ?? false;
-
     emit(isDark ? ThemeMode.dark : ThemeMode.light);
   }
 
-  // ✅ نفس الاسم القديم (مهم جدًا للتوافق)
   Future<void> toggleTheme() async {
     final prefs = await SharedPreferences.getInstance();
-
-    final isDark = state == ThemeMode.dark;
-
-    final newTheme = isDark ? ThemeMode.light : ThemeMode.dark;
-
+    final newTheme =
+        state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
     emit(newTheme);
-
     await prefs.setBool(_themeKey, newTheme == ThemeMode.dark);
   }
+
+  bool get isDark => state == ThemeMode.dark;
 }
