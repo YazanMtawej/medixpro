@@ -1,11 +1,7 @@
-import 'package:medixpro/features/patients/data/repositories_impl/patients_repository_impl.dart';
+import '../repositories/patients_repository.dart';
 
 class DeletePatientUseCase {
-  final PatientsRepositoryImpl repo;
-
-  DeletePatientUseCase(this.repo);
-
-  Future<void> call(int id) {
-    return repo.deletePatient(id);
-  }
+  final PatientsRepository repo;
+  const DeletePatientUseCase(this.repo);
+  Future<void> call(int id) => repo.deletePatient(id);
 }

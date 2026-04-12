@@ -1,60 +1,58 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:medixpro/features/patients/domain/usecases/delete_patient_usecase.dart';
-
 import '../../domain/entities/patient.dart';
 import '../../domain/usecases/get_patients_usecase.dart';
 import '../../domain/usecases/add_patient_usecase.dart';
 import '../../domain/usecases/update_patient_usecase.dart';
-
+import '../../domain/usecases/delete_patient_usecase.dart';
 import 'patients_state.dart';
 
 class PatientsCubit extends Cubit<PatientsState> {
+  final GetPatientsUseCase _getPatients;
+  final AddPatientUseCase _addPatient;
+  final UpdatePatientUseCase _updatePatient;
+  final DeletePatientUseCase _deletePatient;
 
-  final GetPatientsUseCase getPatientsUseCase;
-  final AddPatientUseCase addPatientUseCase;
-  final UpdatePatientUseCase updatePatientUseCase;
- final DeletePatientUseCase deletePatientUseCase;
- 
   PatientsCubit(
-      this.getPatientsUseCase,
-      this.addPatientUseCase,
-      this.updatePatientUseCase, this.deletePatientUseCase,
-      ) : super(PatientsInitial());
+    this._getPatients,
+    this._addPatient,
+    this._updatePatient,
+    this._deletePatient,
+  ) : super(PatientsInitial());
 
   Future<void> loadPatients() async {
-
     emit(PatientsLoading());
-
     try {
-
-      final patients = await getPatientsUseCase();
-
+      final patients = await _getPatients();
       emit(PatientsLoaded(patients));
-
     } catch (e) {
-
       emit(PatientsError("Failed to load patients"));
     }
   }
 
   Future<void> addPatient(Patient patient) async {
-
-    await addPatientUseCase(patient);
-
-    await loadPatients();
+    try {
+      await _addPatient(patient);
+      await loadPatients();
+    } catch (e) {
+      emit(PatientsError("Failed to add patient"));
+    }
   }
 
   Future<void> updatePatient(int id, Patient patient) async {
-
-    await updatePatientUseCase(id, patient);
-
-    await loadPatients();
+    try {
+      await _updatePatient(id, patient);
+      await loadPatients();
+    } catch (e) {
+      emit(PatientsError("Failed to update patient"));
+    }
   }
 
   Future<void> deletePatient(int id) async {
-    await deletePatientUseCase(id);
-
-    await loadPatients();
+    try {
+      await _deletePatient(id);
+      await loadPatients();
+    } catch (e) {
+      emit(PatientsError("Failed to delete patient"));
+    }
   }
-  
 }

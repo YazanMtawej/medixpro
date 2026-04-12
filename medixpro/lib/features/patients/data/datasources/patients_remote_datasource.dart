@@ -1,46 +1,22 @@
-import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../domain/entities/patient.dart';
 
 class PatientsRemoteDataSource {
   final ApiClient api;
-
-  PatientsRemoteDataSource(this.api);
+  const PatientsRemoteDataSource(this.api);
 
   Future<List<Patient>> getPatients() async {
     final response = await api.dio.get("patients/");
-    final List data = response.data;
-    return data.map((e) => Patient.fromJson(e)).toList();
+    final List data = response.data["data"] as List;
+    return data.map((e) => Patient.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<void> addPatient(Patient patient) async {
-    try {
-      final data = patient.toJson();
-
-      print("🚀 SEND PATIENT: $data");
-
-      await api.dio.post(
-        "patients/",
-        data: data,
-      );
-    } on DioException catch (e) {
-      print("❌ ERROR DATA: ${e.response?.data}");
-      rethrow;
-    }
+    await api.dio.post("patients/", data: patient.toJson());
   }
 
   Future<void> updatePatient(int id, Patient patient) async {
-    try {
-      final data = patient.toJson();
-
-      await api.dio.put(
-        "patients/$id/",
-        data: data,
-      );
-    } on DioException catch (e) {
-      print("❌ UPDATE ERROR: ${e.response?.data}");
-      rethrow;
-    }
+    await api.dio.put("patients/$id/", data: patient.toJson());
   }
 
   Future<void> deletePatient(int id) async {

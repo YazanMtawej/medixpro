@@ -2,12 +2,11 @@ from django.db import models
 from patients.models import Patient
 
 class Medication(models.Model):
-
     patient = models.ForeignKey(
-        Patient,
-        on_delete=models.PROTECT,
-        related_name="medications"
-    )
+    Patient,
+    on_delete=models.CASCADE,
+    related_name="medications",
+)
 
     name = models.CharField(max_length=120)
     dosage = models.CharField(max_length=120)

@@ -16,6 +16,7 @@ import 'features/auth/domain/usecases/register_usecase.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
+import 'features/auth/presentation/pages/role_selection_page.dart';
 
 // ================= DASHBOARD =================
 import 'features/dashboard/data/datasources/dashboard_remote_datasource.dart';
@@ -77,31 +78,27 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ================= CORE =================
-  final secureStorage = const FlutterSecureStorage();
+  const secureStorage = FlutterSecureStorage();
   final tokenStorage = TokenStorage(secureStorage);
   final apiClient = ApiClient(tokenStorage);
 
+  // ================= DATA SOURCES =================
+  final authRemote = AuthRemoteDataSource(apiClient);
+  final dashboardRemote = DashboardRemoteDataSource(apiClient);
+  final settingsRemote = SettingsRemoteDataSource(apiClient);
+  final patientsRemote = PatientsRemoteDataSource(apiClient);
+  final reportsRemote = ReportsRemoteDataSource(apiClient);
+  final medicationsRemote = MedicationsRemoteDataSource(apiClient);
+  final appointmentsRemote = AppointmentsRemoteDataSource(apiClient);
+
   // ================= REPOSITORIES =================
-  final authRepository =
-      AuthRepositoryImpl(AuthRemoteDataSource(apiClient), tokenStorage);
-
-  final dashboardRepository =
-      DashboardRepositoryImpl(DashboardRemoteDataSource(apiClient));
-
-  final settingsRepository =
-      SettingsRepositoryImpl(SettingsRemoteDataSource(apiClient));
-
-  final patientsRepository =
-      PatientsRepositoryImpl(PatientsRemoteDataSource(apiClient));
-
-  final reportsRepository =
-      ReportsRepositoryImpl(ReportsRemoteDataSource(apiClient));
-
-  final medicationsRepository =
-      MedicationsRepositoryImpl(MedicationsRemoteDataSource(apiClient));
-
-  final appointmentsRepository =
-      AppointmentsRepositoryImpl(AppointmentsRemoteDataSource(apiClient));
+  final authRepository = AuthRepositoryImpl(authRemote, tokenStorage);
+  final dashboardRepository = DashboardRepositoryImpl(dashboardRemote);
+  final settingsRepository = SettingsRepositoryImpl(settingsRemote);
+  final patientsRepository = PatientsRepositoryImpl(patientsRemote);
+  final reportsRepository = ReportsRepositoryImpl(reportsRemote);
+  final medicationsRepository = MedicationsRepositoryImpl(medicationsRemote);
+  final appointmentsRepository = AppointmentsRepositoryImpl(appointmentsRemote);
 
   // ================= USE CASES =================
 
@@ -110,17 +107,13 @@ void main() {
   final registerUseCase = RegisterUseCase(authRepository);
 
   // Dashboard
-  final getDashboardStatsUseCase =
-      GetDashboardStatsUseCase(dashboardRepository);
-
-  final getTodayAppointmentsUseCase =
-      GetTodayAppointmentsUseCase(dashboardRepository);
+  final getDashboardStatsUseCase = GetDashboardStatsUseCase(dashboardRepository);
+  final getTodayAppointmentsUseCase = GetTodayAppointmentsUseCase(dashboardRepository);
 
   // Settings
   final getProfileUseCase = GetProfileUseCase(settingsRepository);
   final updateProfileUseCase = UpdateProfileUseCase(settingsRepository);
-  final getNotificationsUseCase =
-      GetNotificationsUseCase(settingsRepository);
+  final getNotificationsUseCase = GetNotificationsUseCase(settingsRepository);
   final logoutUseCase = LogoutUseCase(settingsRepository);
 
   // Patients
@@ -134,37 +127,28 @@ void main() {
   final addReportUseCase = AddReportUseCase(reportsRepository);
 
   // Medications
-  final getMedicationsUseCase =
-      GetMedicationsUseCase(medicationsRepository);
-
-  final addMedicationUseCase =
-      AddMedicationUseCase(medicationsRepository);
-
-  final updateMedicationUseCase =
-      UpdateMedicationUseCase(medicationsRepository);
-
-  final deleteMedicationUseCase =
-      DeleteMedicationUseCase(medicationsRepository);
+  final getMedicationsUseCase = GetMedicationsUseCase(medicationsRepository);
+  final addMedicationUseCase = AddMedicationUseCase(medicationsRepository);
+  final updateMedicationUseCase = UpdateMedicationUseCase(medicationsRepository);
+  final deleteMedicationUseCase = DeleteMedicationUseCase(medicationsRepository);
 
   // Appointments
-  final getAppointmentsUseCase =
-      GetAppointmentsUseCase(appointmentsRepository);
-
-  final addAppointmentUseCase =
-      AddAppointmentUseCase(appointmentsRepository);
-
-  final updateAppointmentUseCase =
-      UpdateAppointmentUseCase(appointmentsRepository);
+  final getAppointmentsUseCase = GetAppointmentsUseCase(appointmentsRepository);
+  final addAppointmentUseCase = AddAppointmentUseCase(appointmentsRepository);
+  final updateAppointmentUseCase = UpdateAppointmentUseCase(appointmentsRepository);
 
   // ================= CUBITS =================
   final authCubit = AuthCubit(
-    authRepository,
+    repository: authRepository,
     loginUseCase: loginUseCase,
     registerUseCase: registerUseCase,
+    tokenStorage: tokenStorage,
   );
 
-  final dashboardCubit =
-      DashboardCubit(getDashboardStatsUseCase, getTodayAppointmentsUseCase);
+  final dashboardCubit = DashboardCubit(
+    getDashboardStatsUseCase,
+    getTodayAppointmentsUseCase,
+  );
 
   final settingsCubit = SettingsCubit(
     getProfileUseCase,
@@ -181,7 +165,10 @@ void main() {
     deletePatientUseCase,
   );
 
-  final reportsCubit = ReportsCubit(getReportsUseCase,addReportUseCase, );
+  final reportsCubit = ReportsCubit(
+    getReportsUseCase,
+    addReportUseCase,
+  );
 
   final medicationsCubit = MedicationsCubit(
     getMedicationsUseCase,
@@ -197,7 +184,6 @@ void main() {
   );
 
   // ================= RUN APP =================
-
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -237,15 +223,13 @@ class MedixProApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: "MedixPro",
-
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
           themeMode: themeMode,
-
           home: const SplashPage(),
-
           routes: {
             "/login": (_) => const LoginPage(),
+            "/register": (_) => const RoleSelectionPage(),
             "/dashboard": (_) => const DashboardPage(),
             "/settings": (_) => const SettingsPage(),
             "/profile": (_) => const ProfilePage(),

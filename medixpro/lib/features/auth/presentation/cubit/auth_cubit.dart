@@ -1,11 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:medixpro/features/auth/domain/repositories/auth_repository.dart';
-import '../../domain/entities/user.dart';
 import '../../domain/entities/login_request.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
+import '../../../../core/storage/token_storage.dart';
 
-/// ================= STATES =================
+// ─── States ───────────────────────────────────────────────────────────────────
 
 abstract class AuthState {}
 
@@ -25,28 +26,31 @@ class AuthError extends AuthState {
   AuthError(this.message);
 }
 
-/// ================= CUBIT =================
+// ─── Cubit ────────────────────────────────────────────────────────────────────
 
 class AuthCubit extends Cubit<AuthState> {
-  final AuthRepository repository;
-  final LoginUseCase loginUseCase;
-  final RegisterUseCase registerUseCase;
+  final AuthRepository _repository;
+  final LoginUseCase _loginUseCase;
+  final RegisterUseCase _registerUseCase;
+  final TokenStorage _tokenStorage;
 
-  AuthCubit(
-    this.repository, {
-    required this.loginUseCase,
-    required this.registerUseCase,
-  }) : super(AuthInitial());
+  AuthCubit({
+    required AuthRepository repository,
+    required LoginUseCase loginUseCase,
+    required RegisterUseCase registerUseCase,
+    required TokenStorage tokenStorage,
+  })  : _repository = repository,
+        _loginUseCase = loginUseCase,
+        _registerUseCase = registerUseCase,
+        _tokenStorage = tokenStorage,
+        super(AuthInitial());
 
-  /// 🔥 المصدر الوحيد لتحديد المسار
+  /// يقرأ بيانات المستخدم المخزنة محلياً — لا قيم وهمية
   Future<void> autoLogin() async {
     try {
-      final isLoggedIn = await repository.isLoggedIn();
-
-      if (isLoggedIn) {
-        emit(AuthAuthenticated(
-          User(username: "cached", email: "cached"),
-        ));
+      final user = await _repository.getLoggedInUser();
+      if (user != null) {
+        emit(AuthAuthenticated(user));
       } else {
         emit(AuthLoggedOut());
       }
@@ -55,52 +59,60 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> login(
-    String username,
-    String email,
-    String password,
-  ) async {
+  Future<void> login({
+    required String password,
+    String? username,
+    String? email,
+  }) async {
     emit(AuthLoading());
-
     try {
-      final user = await loginUseCase(
-        LoginRequest(
-          username: username,
-          email: email,
-          password: password,
-        ),
+      final user = await _loginUseCase(
+        LoginRequest(username: username, email: email, password: password),
       );
-
+      await _tokenStorage.saveUserInfo(user.username, user.email);
       emit(AuthAuthenticated(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(_parseError(e)));
     }
   }
 
-  Future<void> register(
-    String username,
-    String email,
-    String password,
-  ) async {
+  Future<void> register({
+    required String username,
+    required String email,
+    required String password,
+    required String role,
+  }) async {
     emit(AuthLoading());
-
     try {
-      final user = await registerUseCase(
+      final user = await _registerUseCase(
         LoginRequest(
           username: username,
           email: email,
           password: password,
+          role: role,
         ),
       );
-
+      await _tokenStorage.saveUserInfo(user.username, user.email);
       emit(AuthAuthenticated(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(_parseError(e)));
     }
   }
 
   Future<void> logout() async {
-    await repository.logout();
+    try {
+      final refresh = await _tokenStorage.getRefreshToken();
+      await _repository.logout(refresh ?? "");
+    } catch (_) {
+      // حتى لو فشل الـ logout من الـ server، نمسح التوكن محلياً
+      await _tokenStorage.clear();
+    }
     emit(AuthLoggedOut());
+  }
+
+  String _parseError(Object e) {
+    final msg = e.toString();
+    if (msg.contains("Exception:")) return msg.replaceFirst("Exception: ", "");
+    return "Something went wrong. Please try again.";
   }
 }

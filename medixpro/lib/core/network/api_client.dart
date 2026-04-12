@@ -12,7 +12,7 @@ class ApiClient {
   ApiClient(this.tokenStorage)
       : dio = Dio(
           BaseOptions(
-            baseUrl: "http://127.0.0.1:8000/api/v1/",
+            baseUrl: "http://127.0.0.1:8000//api/v1/",
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 15),
             headers: {
@@ -23,7 +23,9 @@ class ApiClient {
         ),
         _refreshDio = Dio(
           BaseOptions(
-            baseUrl: "http://127.0.0.1:8000/api/v1/",
+            baseUrl: "http://127.0.0.1:8000//api/v1/",
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 15),
             headers: {
               "Accept": "application/json",
               "Content-Type": "application/json",
@@ -34,14 +36,19 @@ class ApiClient {
   }
 
   void _setupInterceptors() {
-    /// 🔐 Attach Token
+    // ─── 1. Attach Access Token ───────────────────────────────────────────────
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await tokenStorage.getAccessToken();
+          // مسارات لا تحتاج توكن
+          final publicPaths = ["auth/login/", "auth/register/", "auth/refresh/"];
+          final isPublic = publicPaths.any((p) => options.path.contains(p));
 
-          if (token != null && token.isNotEmpty) {
-            options.headers["Authorization"] = "Bearer $token";
+          if (!isPublic) {
+            final token = await tokenStorage.getAccessToken();
+            if (token != null && token.isNotEmpty) {
+              options.headers["Authorization"] = "Bearer $token";
+            }
           }
 
           handler.next(options);
@@ -49,7 +56,7 @@ class ApiClient {
       ),
     );
 
-    /// 📡 Logging (Debug فقط)
+    // ─── 2. Logging (debug only) ──────────────────────────────────────────────
     dio.interceptors.add(
       LogInterceptor(
         request: true,
@@ -59,24 +66,20 @@ class ApiClient {
       ),
     );
 
-    /// 🔄 Refresh Logic 
+    // ─── 3. Auto Refresh on 401 ───────────────────────────────────────────────
     dio.interceptors.add(
       InterceptorsWrapper(
         onError: (error, handler) async {
-          if (error.response?.statusCode != 401) {
+          final statusCode = error.response?.statusCode;
+          final path = error.requestOptions.path;
+
+          // لا تعالج غير 401، ولا تعيد محاولة refresh endpoint نفسه
+          if (statusCode != 401 || path.contains("auth/refresh/")) {
             return handler.next(error);
           }
 
-          final requestOptions = error.requestOptions;
-
-          ///  لا تعيد محاولة refresh endpoint نفسه
-          if (requestOptions.path.contains("auth/refresh")) {
-            return handler.next(error);
-          }
-
-          /// إذا في refresh شغال → دخّل بالqueue
           if (_isRefreshing) {
-            return _enqueueRequest(requestOptions, handler);
+            return _enqueueRequest(error.requestOptions, handler);
           }
 
           _isRefreshing = true;
@@ -84,7 +87,7 @@ class ApiClient {
           try {
             final refreshToken = await tokenStorage.getRefreshToken();
 
-            if (refreshToken == null) {
+            if (refreshToken == null || refreshToken.isEmpty) {
               _isRefreshing = false;
               return handler.next(error);
             }
@@ -94,28 +97,28 @@ class ApiClient {
               data: {"refresh": refreshToken},
             );
 
-            final newAccess = response.data["access"];
+            // ✅ البيانات داخل response.data["data"]["access"]
+            final responseBody = response.data as Map<String, dynamic>;
+            final newAccess = responseBody["data"]["access"] as String;
 
             await tokenStorage.saveAccessToken(newAccess);
 
-            /// نفّذ كل الطلبات المعلقة
-            for (var retry in _retryQueue) {
+            // تنفيذ الطلبات المعلقة
+            for (final retry in _retryQueue) {
               retry(newAccess);
             }
             _retryQueue.clear();
-
-            /// إعادة الطلب الحالي
-            requestOptions.headers["Authorization"] = "Bearer $newAccess";
-            final retryResponse = await dio.fetch(requestOptions);
-
             _isRefreshing = false;
 
+            // إعادة الطلب الأصلي
+            final retryOptions = error.requestOptions;
+            retryOptions.headers["Authorization"] = "Bearer $newAccess";
+            final retryResponse = await dio.fetch(retryOptions);
             return handler.resolve(retryResponse);
           } catch (e) {
             _isRefreshing = false;
             _retryQueue.clear();
-
-            ///  لا تمسح التوكن هنا
+            await tokenStorage.clear();
             return handler.next(error);
           }
         },
@@ -123,7 +126,6 @@ class ApiClient {
     );
   }
 
-  /// 🧠 Queue للطلبات أثناء refresh
   Future<void> _enqueueRequest(
     RequestOptions requestOptions,
     ErrorInterceptorHandler handler,

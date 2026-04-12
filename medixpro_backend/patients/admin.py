@@ -4,17 +4,9 @@ from .models import Patient
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-
     list_display = (
-        "id",
-        "name",
-        "age",
-        "phone",
-        "gender",
-        "birth_date",
-        "created_at",
+        "id", "name", "age", "gender",
+        "phone", "blood_type", "created_at",
     )
-
-    search_fields = ("name", "phone")
-
-    list_filter = ("gender", "birth_date")
+    search_fields = ("name", "phone", "national_id", "email")
+    list_filter = ("gender", "blood_type")
