@@ -71,6 +71,7 @@ import 'features/appointments/data/repositories_impl/appointments_repository_imp
 import 'features/appointments/domain/usecases/get_appointments_usecase.dart';
 import 'features/appointments/domain/usecases/add_appointment_usecase.dart';
 import 'features/appointments/domain/usecases/update_appointment_usecase.dart';
+import 'features/appointments/domain/usecases/delete_appointment_usecase.dart';
 import 'features/appointments/presentation/cubit/appointments_cubit.dart';
 import 'features/appointments/presentation/pages/appointments_page.dart';
 
@@ -79,16 +80,16 @@ void main() {
 
   // ================= CORE =================
   const secureStorage = FlutterSecureStorage();
-  final tokenStorage = TokenStorage(secureStorage);
-  final apiClient = ApiClient(tokenStorage);
+  final tokenStorage  = TokenStorage(secureStorage);
+  final apiClient     = ApiClient(tokenStorage);
 
   // ================= DATA SOURCES =================
-  final authRemote        = AuthRemoteDataSource(apiClient);
-  final dashboardRemote   = DashboardRemoteDataSource(apiClient);
-  final settingsRemote    = SettingsRemoteDataSource(apiClient);
-  final patientsRemote    = PatientsRemoteDataSource(apiClient);
-  final reportsRemote     = ReportsRemoteDataSource(apiClient);
-  final medicationsRemote = MedicationsRemoteDataSource(apiClient);
+  final authRemote         = AuthRemoteDataSource(apiClient);
+  final dashboardRemote    = DashboardRemoteDataSource(apiClient);
+  final settingsRemote     = SettingsRemoteDataSource(apiClient);
+  final patientsRemote     = PatientsRemoteDataSource(apiClient);
+  final reportsRemote      = ReportsRemoteDataSource(apiClient);
+  final medicationsRemote  = MedicationsRemoteDataSource(apiClient);
   final appointmentsRemote = AppointmentsRemoteDataSource(apiClient);
 
   // ================= REPOSITORIES =================
@@ -111,38 +112,39 @@ void main() {
   final getTodayAppointmentsUseCase = GetTodayAppointmentsUseCase(dashboardRepository);
 
   // Settings
-  final getProfileUseCase      = GetProfileUseCase(settingsRepository);
-  final updateProfileUseCase   = UpdateProfileUseCase(settingsRepository);
+  final getProfileUseCase       = GetProfileUseCase(settingsRepository);
+  final updateProfileUseCase    = UpdateProfileUseCase(settingsRepository);
   final getNotificationsUseCase = GetNotificationsUseCase(settingsRepository);
-  final logoutUseCase          = LogoutUseCase(settingsRepository);
+  final logoutUseCase           = LogoutUseCase(settingsRepository);
 
   // Patients
-  final getPatientsUseCase    = GetPatientsUseCase(patientsRepository);
-  final addPatientUseCase     = AddPatientUseCase(patientsRepository);
-  final updatePatientUseCase  = UpdatePatientUseCase(patientsRepository);
-  final deletePatientUseCase  = DeletePatientUseCase(patientsRepository);
+  final getPatientsUseCase   = GetPatientsUseCase(patientsRepository);
+  final addPatientUseCase    = AddPatientUseCase(patientsRepository);
+  final updatePatientUseCase = UpdatePatientUseCase(patientsRepository);
+  final deletePatientUseCase = DeletePatientUseCase(patientsRepository);
 
   // Reports
   final getReportsUseCase = GetReportsUseCase(reportsRepository);
   final addReportUseCase  = AddReportUseCase(reportsRepository);
 
   // Medications
-  final getMedicationsUseCase    = GetMedicationsUseCase(medicationsRepository);
-  final addMedicationUseCase     = AddMedicationUseCase(medicationsRepository);
-  final updateMedicationUseCase  = UpdateMedicationUseCase(medicationsRepository);
-  final deleteMedicationUseCase  = DeleteMedicationUseCase(medicationsRepository);
+  final getMedicationsUseCase   = GetMedicationsUseCase(medicationsRepository);
+  final addMedicationUseCase    = AddMedicationUseCase(medicationsRepository);
+  final updateMedicationUseCase = UpdateMedicationUseCase(medicationsRepository);
+  final deleteMedicationUseCase = DeleteMedicationUseCase(medicationsRepository);
 
   // Appointments
   final getAppointmentsUseCase   = GetAppointmentsUseCase(appointmentsRepository);
   final addAppointmentUseCase    = AddAppointmentUseCase(appointmentsRepository);
   final updateAppointmentUseCase = UpdateAppointmentUseCase(appointmentsRepository);
+  final deleteAppointmentUseCase = DeleteAppointmentUseCase(appointmentsRepository);
 
   // ================= CUBITS =================
   final authCubit = AuthCubit(
-    repository: authRepository,
-    loginUseCase: loginUseCase,
+    repository:      authRepository,
+    loginUseCase:    loginUseCase,
     registerUseCase: registerUseCase,
-    tokenStorage: tokenStorage,
+    tokenStorage:    tokenStorage,
   );
 
   final dashboardCubit = DashboardCubit(
@@ -177,10 +179,12 @@ void main() {
     deleteMedicationUseCase,
   );
 
+  // ✅ الآن يقبل 4 arguments مع delete
   final appointmentsCubit = AppointmentsCubit(
     getAppointmentsUseCase,
     addAppointmentUseCase,
     updateAppointmentUseCase,
+    deleteAppointmentUseCase,
   );
 
   // ================= RUN APP =================

@@ -1,9 +1,8 @@
-
-import 'package:medixpro/features/appointments/data/repositories_impl/appointments_repository_impl.dart';
-import 'package:medixpro/features/appointments/domain/entities/appointment.dart';
+import '../entities/appointment.dart';
+import '../repositories/appointments_repository.dart';
 
 class AddAppointmentUseCase {
-  final AppointmentsRepositoryImpl repository;
-  AddAppointmentUseCase(this.repository);
-  Future<void> call(Appointment appointment) => repository.addAppointment(appointment);
+  final AppointmentsRepository repository;
+  const AddAppointmentUseCase(this.repository);
+  Future<void> call(Appointment a) => repository.addAppointment(a);
 }

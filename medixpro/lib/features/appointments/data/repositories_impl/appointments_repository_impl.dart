@@ -1,15 +1,27 @@
 import '../../domain/entities/appointment.dart';
+import '../../domain/repositories/appointments_repository.dart';
 import '../datasources/appointments_remote_datasource.dart';
 
-class AppointmentsRepositoryImpl {
+class AppointmentsRepositoryImpl implements AppointmentsRepository {
   final AppointmentsRemoteDataSource remote;
-  AppointmentsRepositoryImpl(this.remote);
+  const AppointmentsRepositoryImpl(this.remote);
 
-  Future<List<Appointment>> getAppointments() => remote.getAppointments();
+  @override
+  Future<List<Appointment>> getAppointments({
+    int? patientId,
+    String? status,
+    String? search,
+  }) =>
+      remote.getAppointments(
+          patientId: patientId, status: status, search: search);
 
-  Future<void> addAppointment(Appointment appointment) =>
-      remote.addAppointment(appointment.toJson());
+  @override
+  Future<void> addAppointment(Appointment a) => remote.addAppointment(a);
 
-  Future<void> updateAppointment(Appointment appointment) =>
-      remote.updateAppointment(appointment.id, appointment.toJson());
+  @override
+  Future<void> updateAppointment(Appointment a) =>
+      remote.updateAppointment(a);
+
+  @override
+  Future<void> deleteAppointment(int id) => remote.deleteAppointment(id);
 }

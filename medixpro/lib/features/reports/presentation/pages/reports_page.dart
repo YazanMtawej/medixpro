@@ -102,17 +102,17 @@ class ReportsPage extends StatelessWidget {
                   onChanged: (val) => selectedPatientId = val,
                 ),
                 // Dropdowns للـ Appointment
-                DropdownButton<int>(
-                  hint: const Text("Select Appointment"),
-                  value: selectedAppointmentId,
-                  items: appointmentsCubit.state is AppointmentsLoaded
-                      ? (appointmentsCubit.state as AppointmentsLoaded)
-                          .appointments
-                          .map((a) => DropdownMenuItem(value: a.id, child: Text(a.title)))
-                          .toList()
-                      : [],
-                  onChanged: (val) => selectedAppointmentId = val,
-                ),
+                // DropdownButton<int>(
+                //   hint: const Text("Select Appointment"),
+                //   value: selectedAppointmentId,
+                //   items: appointmentsCubit.state is AppointmentsLoaded
+                //       ? (appointmentsCubit.state as AppointmentsLoaded)
+                //           .appointments
+                //           .map((a) => DropdownMenuItem(value: a.id, child: Text(a.title)))
+                //           .toList()
+                //       : [],
+                //   onChanged: (val) => selectedAppointmentId = val,
+                // ),
                 // List of Medications (multi-select)
                 if (medicationsCubit.state is MedicationsLoaded)
                   Wrap(

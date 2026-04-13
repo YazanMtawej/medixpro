@@ -1,21 +1,38 @@
-import 'package:medixpro/core/network/api_client.dart';
+import '../../../../core/network/api_client.dart';
 import '../../domain/entities/appointment.dart';
 
 class AppointmentsRemoteDataSource {
   final ApiClient api;
-  AppointmentsRemoteDataSource(this.api);
+  const AppointmentsRemoteDataSource(this.api);
 
-  Future<List<Appointment>> getAppointments() async {
-    final response = await api.dio.get("appointments/");
-    final data = response.data as List;
-    return data.map((e) => Appointment.fromJson(e)).toList();
+  Future<List<Appointment>> getAppointments({
+    int? patientId,
+    String? status,
+    String? search,
+  }) async {
+    final response = await api.dio.get(
+      "appointments/",
+      queryParameters: {
+        if (patientId != null) "patient": patientId,
+        if (status != null && status.isNotEmpty) "status": status,
+        if (search != null && search.isNotEmpty) "search": search,
+      },
+    );
+    final List data = response.data["data"] as List;
+    return data
+        .map((e) => Appointment.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<void> addAppointment(Map<String, dynamic> data) async {
-    await api.dio.post("appointments/", data: data);
+  Future<void> addAppointment(Appointment a) async {
+    await api.dio.post("appointments/", data: a.toJson());
   }
 
-  Future<void> updateAppointment(int id, Map<String, dynamic> data) async {
-    await api.dio.put("appointments/$id/", data: data);
+  Future<void> updateAppointment(Appointment a) async {
+    await api.dio.put("appointments/${a.id}/", data: a.toJson());
+  }
+
+  Future<void> deleteAppointment(int id) async {
+    await api.dio.delete("appointments/$id/");
   }
 }
