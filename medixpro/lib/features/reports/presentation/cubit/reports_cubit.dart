@@ -1,39 +1,63 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:medixpro/features/reports/presentation/cubit/reports_state.dart';
+import '../../domain/entities/report.dart';
 import '../../domain/usecases/get_reports_usecase.dart';
+import '../../domain/usecases/add_report_usecase.dart';
+import '../../domain/usecases/update_report_usecase.dart';
+import '../../domain/usecases/delete_report_usecase.dart';
+import 'reports_state.dart';
 
 class ReportsCubit extends Cubit<ReportsState> {
-  final GetReportsUseCase getReportsUseCase;
-  final AddReportUseCase addReportUseCase;
+  final GetReportsUseCase    _getReports;
+  final AddReportUseCase     _addReport;
+  final UpdateReportUseCase  _updateReport;
+  final DeleteReportUseCase  _deleteReport;
 
-  ReportsCubit(this.getReportsUseCase, this.addReportUseCase) : super(ReportsInitial());
+  ReportsCubit(
+    this._getReports,
+    this._addReport,
+    this._updateReport,
+    this._deleteReport,
+  ) : super(ReportsInitial());
 
-  /// ====== Fetch all reports ======
-  Future<void> fetchReports() async {
+  Future<void> fetchReports({
+    int? patientId,
+    String? status,
+    String? search,
+  }) async {
     emit(ReportsLoading());
     try {
-      final reports = await getReportsUseCase();
+      final reports = await _getReports(
+          patientId: patientId, status: status, search: search);
       emit(ReportsLoaded(reports));
-    } catch (e) {
-      emit(ReportsError("Failed to load reports: ${e.toString()}"));
+    } catch (_) {
+      emit(ReportsError("Failed to load reports"));
     }
   }
 
-  /// ====== Add a new report ======
-  Future<void> createReport(Map<String, dynamic> data) async {
-    emit(ReportsLoading());
+  Future<void> createReport(Report report) async {
     try {
-      await addReportUseCase(data);
-      // بعد إضافة التقرير، نعيد جلب القائمة لتحديث الواجهة
-      final reports = await getReportsUseCase();
-      emit(ReportsLoaded(reports));
-    } catch (e) {
-      emit(ReportsError("Failed to add report: ${e.toString()}"));
+      await _addReport(report);
+      await fetchReports();
+    } catch (_) {
+      emit(ReportsError("Failed to create report"));
     }
   }
 
-  /// ====== Optional: Refresh reports ======
-  Future<void> refreshReports() async {
-    await fetchReports();
+  Future<void> editReport(Report report) async {
+    try {
+      await _updateReport(report);
+      await fetchReports();
+    } catch (_) {
+      emit(ReportsError("Failed to update report"));
+    }
+  }
+
+  Future<void> removeReport(int id) async {
+    try {
+      await _deleteReport(id);
+      await fetchReports();
+    } catch (_) {
+      emit(ReportsError("Failed to delete report"));
+    }
   }
 }

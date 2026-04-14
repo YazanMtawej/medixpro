@@ -52,6 +52,9 @@ import 'features/patients/presentation/pages/patients_list_page.dart';
 import 'features/reports/data/datasources/reports_remote_datasource.dart';
 import 'features/reports/data/repositories_impl/reports_repository_impl.dart';
 import 'features/reports/domain/usecases/get_reports_usecase.dart';
+import 'features/reports/domain/usecases/add_report_usecase.dart';
+import 'features/reports/domain/usecases/update_report_usecase.dart';
+import 'features/reports/domain/usecases/delete_report_usecase.dart';
 import 'features/reports/presentation/cubit/reports_cubit.dart';
 import 'features/reports/presentation/pages/reports_page.dart';
 
@@ -124,8 +127,10 @@ void main() {
   final deletePatientUseCase = DeletePatientUseCase(patientsRepository);
 
   // Reports
-  final getReportsUseCase = GetReportsUseCase(reportsRepository);
-  final addReportUseCase  = AddReportUseCase(reportsRepository);
+  final getReportsUseCase    = GetReportsUseCase(reportsRepository);
+  final addReportUseCase     = AddReportUseCase(reportsRepository);
+  final updateReportUseCase  = UpdateReportUseCase(reportsRepository);
+  final deleteReportUseCase  = DeleteReportUseCase(reportsRepository);
 
   // Medications
   final getMedicationsUseCase   = GetMedicationsUseCase(medicationsRepository);
@@ -170,6 +175,8 @@ void main() {
   final reportsCubit = ReportsCubit(
     getReportsUseCase,
     addReportUseCase,
+    updateReportUseCase,
+    deleteReportUseCase,
   );
 
   final medicationsCubit = MedicationsCubit(
@@ -179,7 +186,6 @@ void main() {
     deleteMedicationUseCase,
   );
 
-  // ✅ الآن يقبل 4 arguments مع delete
   final appointmentsCubit = AppointmentsCubit(
     getAppointmentsUseCase,
     addAppointmentUseCase,

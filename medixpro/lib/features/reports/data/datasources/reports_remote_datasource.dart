@@ -1,48 +1,38 @@
-import 'package:medixpro/core/network/api_client.dart';
+import '../../../../core/network/api_client.dart';
 import '../../domain/entities/report.dart';
 
 class ReportsRemoteDataSource {
   final ApiClient api;
-  ReportsRemoteDataSource(this.api);
+  const ReportsRemoteDataSource(this.api);
 
-  Future<List<Report>> getReports() async {
-    final response = await api.dio.get("/api/v1/reports/");
-    final rawData = response.data;
-
-    Map<String, dynamic> toStringKeyMap(Map<dynamic, dynamic> map) {
-      return map.map((key, value) => MapEntry(key.toString(), value));
-    }
-
-    if (rawData is List) {
-      return rawData
-          .map((e) => Report.fromJson(e is Map ? toStringKeyMap(e) : {}))
-          .toList();
-    } else if (rawData is Map) {
-      return [Report.fromJson(toStringKeyMap(rawData))];
-    } else {
-      return [];
-    }
+  Future<List<Report>> getReports({
+    int? patientId,
+    String? status,
+    String? search,
+  }) async {
+    final response = await api.dio.get(
+      "reports/",
+      queryParameters: {
+        if (patientId != null) "patient": patientId,
+        if (status != null && status.isNotEmpty) "status": status,
+        if (search != null && search.isNotEmpty) "search": search,
+      },
+    );
+    final List data = response.data["data"] as List;
+    return data
+        .map((e) => Report.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<Report> getReportDetail(int id) async {
-    final response = await api.dio.get("/api/v1/reports/$id/");
-    final rawData = response.data;
-
-    Map<String, dynamic> toStringKeyMap(Map<dynamic, dynamic> map) {
-      return map.map((key, value) => MapEntry(key.toString(), value));
-    }
-
-    return Report.fromJson(rawData is Map ? toStringKeyMap(rawData) : {});
+  Future<void> addReport(Report report) async {
+    await api.dio.post("reports/", data: report.toJson());
   }
 
-  Future<Report> addReport(Map<String, dynamic> data) async {
-    final response = await api.dio.post("/api/v1/reports/", data: data);
-    final rawData = response.data;
+  Future<void> updateReport(Report report) async {
+    await api.dio.put("reports/${report.id}/", data: report.toJson());
+  }
 
-    Map<String, dynamic> toStringKeyMap(Map<dynamic, dynamic> map) {
-      return map.map((key, value) => MapEntry(key.toString(), value));
-    }
-
-    return Report.fromJson(rawData is Map ? toStringKeyMap(rawData) : {});
+  Future<void> deleteReport(int id) async {
+    await api.dio.delete("reports/$id/");
   }
 }

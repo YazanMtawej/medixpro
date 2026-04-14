@@ -1,164 +1,714 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:medixpro/features/appointments/presentation/cubit/appointments_cubit.dart';
-import 'package:medixpro/features/medications/presentation/cubit/medications_cubit.dart';
-import 'package:medixpro/features/patients/presentation/cubit/patients_cubit.dart';
-import 'package:medixpro/features/patients/presentation/cubit/patients_state.dart';
-import 'package:medixpro/features/reports/presentation/cubit/reports_state.dart';
+import 'package:medixpro/features/reports/presentation/pages/add_report_page.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../cubit/reports_cubit.dart';
+import '../cubit/reports_state.dart';
+import '../../domain/entities/report.dart';
+import 'edit_report_page.dart';
 import 'report_detail_page.dart';
 
-class ReportsPage extends StatelessWidget {
+class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final reportsCubit = context.read<ReportsCubit>();
-    reportsCubit.fetchReports();
+  State<ReportsPage> createState() => _ReportsPageState();
+}
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Reports"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showAddReportDialog(context),
-          ),
-        ],
-      ),
-      body: BlocBuilder<ReportsCubit, ReportsState>(
-        builder: (context, state) {
-          if (state is ReportsLoading) return const Center(child: CircularProgressIndicator());
-          if (state is ReportsError) return Center(child: Text(state.message));
-          if (state is ReportsLoaded) {
-            if (state.reports.isEmpty) return const Center(child: Text("No reports found"));
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.reports.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, index) {
-                final report = state.reports[index];
-                return Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text(report.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    subtitle: Text("Status: ${report.status} | Patient: ${report.patientId}"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ReportDetailPage(report: report)),
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
+class _ReportsPageState extends State<ReportsPage> {
+  final _searchController = TextEditingController();
+  String _selectedStatus = "all";
+
+  static const _statuses = {"all": "All", "draft": "Draft", "final": "Final"};
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => context.read<ReportsCubit>().fetchReports());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearch(String v) {
+    context.read<ReportsCubit>().fetchReports(
+      status: _selectedStatus == "all" ? null : _selectedStatus,
+      search: v.trim().isEmpty ? null : v.trim(),
     );
   }
 
-  void _showAddReportDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final notesController = TextEditingController();
-    final diagnosisController = TextEditingController();
+  void _onFilterStatus(String s) {
+    setState(() => _selectedStatus = s);
+    context.read<ReportsCubit>().fetchReports(
+      status: s == "all" ? null : s,
+      search: _searchController.text.trim().isEmpty
+          ? null
+          : _searchController.text.trim(),
+    );
+  }
 
-    final patientsCubit = context.read<PatientsCubit>();
-    final medicationsCubit = context.read<MedicationsCubit>();
-    final appointmentsCubit = context.read<AppointmentsCubit>();
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
 
-    int? selectedPatientId;
-    int? selectedAppointmentId;
-    List<int> selectedMedicationIds = [];
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // ─── AppBar ───────────────────────────────────────────────
+          SliverAppBar(
+            expandedHeight: 150,
+            pinned: true,
+            floating: false,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? AppColors.gradientDark
+                        : AppColors.gradientLight,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+              ),
+              title: const Text(
+                "Medical Reports",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              centerTitle: true,
+            ),
+            backgroundColor: cs.primary,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddReportPage()),
+                  );
+                  if (mounted) context.read<ReportsCubit>().fetchReports();
+                },
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(52),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearch,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: "Search by report title or patient...",
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.65),
+                      fontSize: 13,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.white.withOpacity(0.8),
+                      size: 20,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.15),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  ),
+                ),
+              ),
+            ),
+          ),
 
+          // ─── Filter ───────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 48,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                scrollDirection: Axis.horizontal,
+                children: _statuses.entries.map((e) {
+                  final selected = _selectedStatus == e.key;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => _onFilterStatus(e.key),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? cs.primary
+                              : (isDark
+                                    ? AppColors.darkCard
+                                    : AppColors.lightCard),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: selected
+                                ? cs.primary
+                                : (isDark
+                                      ? AppColors.borderDark
+                                      : AppColors.borderLight),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          e.value,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: selected
+                                ? Colors.white
+                                : (isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+
+          // ─── List ─────────────────────────────────────────────────
+          BlocBuilder<ReportsCubit, ReportsState>(
+            builder: (context, state) {
+              if (state is ReportsLoading) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (state is ReportsError) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 52,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(state.message),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              context.read<ReportsCubit>().fetchReports(),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text("Retry"),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              if (state is ReportsLoaded) {
+                if (state.reports.isEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.primary.withOpacity(0.1)
+                                  : AppColors.chipBlue,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.description_outlined,
+                              size: 52,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            "No reports found",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 100),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (_, i) => _ReportCard(
+                        report: state.reports[i],
+                        isDark: isDark,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ReportDetailPage(report: state.reports[i]),
+                          ),
+                        ),
+                        onEdit: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  EditReportPage(report: state.reports[i]),
+                            ),
+                          );
+                          if (mounted) {
+                            context.read<ReportsCubit>().fetchReports();
+                          }
+                        },
+                        onDelete: () =>
+                            _confirmDelete(context, state.reports[i].id),
+                      ),
+                      childCount: state.reports.length,
+                    ),
+                  ),
+                );
+              }
+
+              return const SliverFillRemaining(child: SizedBox());
+            },
+          ),
+        ],
+      ),
+
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: cs.primary,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        icon: const Icon(Icons.note_add_outlined),
+        label: const Text(
+          "New Report",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddReportPage()),
+          );
+          if (mounted) context.read<ReportsCubit>().fetchReports();
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  void _confirmDelete(BuildContext context, int id) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Add Report"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
+          "Delete Report",
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        content: const Text("This medical report will be permanently deleted."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<ReportsCubit>().removeReport(id);
+            },
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Report Card ──────────────────────────────────────────────────────────────
+class _ReportCard extends StatelessWidget {
+  final Report report;
+  final bool isDark;
+  final VoidCallback onTap;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ReportCard({
+    required this.report,
+    required this.isDark,
+    required this.onTap,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  bool get _isFinal => (report.status ?? "").toLowerCase() == "final";
+
+  Color get _statusColor => _isFinal ? AppColors.success : AppColors.warning;
+
+  String? get _safeDate {
+    final raw = report.createdAt;
+    if (raw == null || raw.isEmpty) return null;
+
+    final dt = DateTime.tryParse(raw)?.toLocal();
+    if (dt == null) return null;
+
+    return "${dt.year.toString().padLeft(4, '0')}-"
+        "${dt.month.toString().padLeft(2, '0')}-"
+        "${dt.day.toString().padLeft(2, '0')}";
+  }
+
+  String get _safeTitle =>
+      report.title.isNotEmpty ? report.title : "Untitled Report";
+  String get _safePatient =>
+      report.patientName.isNotEmpty ? report.patientName : "Unknown Patient";
+  String get _safeDiagnosis => report.diagnosis.trim();
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _statusColor;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.darkCard.withOpacity(0.92)
+            : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.15 : 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(controller: titleController, decoration: const InputDecoration(labelText: "Title")),
-                const SizedBox(height: 8),
-                TextField(controller: notesController, decoration: const InputDecoration(labelText: "Notes")),
-                const SizedBox(height: 8),
-                TextField(controller: diagnosisController, decoration: const InputDecoration(labelText: "Diagnosis")),
-                const SizedBox(height: 12),
-                // Dropdowns للـ Patient
-                DropdownButton<int>(
-                  hint: const Text("Select Patient"),
-                  value: selectedPatientId,
-                  items: patientsCubit.state is PatientsLoaded
-                      ? (patientsCubit.state as PatientsLoaded)
-                          .patients
-                          .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
-                          .toList()
-                      : [],
-                  onChanged: (val) => selectedPatientId = val,
-                ),
-                // Dropdowns للـ Appointment
-                // DropdownButton<int>(
-                //   hint: const Text("Select Appointment"),
-                //   value: selectedAppointmentId,
-                //   items: appointmentsCubit.state is AppointmentsLoaded
-                //       ? (appointmentsCubit.state as AppointmentsLoaded)
-                //           .appointments
-                //           .map((a) => DropdownMenuItem(value: a.id, child: Text(a.title)))
-                //           .toList()
-                //       : [],
-                //   onChanged: (val) => selectedAppointmentId = val,
-                // ),
-                // List of Medications (multi-select)
-                if (medicationsCubit.state is MedicationsLoaded)
-                  Wrap(
-                    spacing: 8,
-                    children: (medicationsCubit.state as MedicationsLoaded)
-                        .medications
-                        .map(
-                          (m) => FilterChip(
-                            label: Text(m.name),
-                            selected: selectedMedicationIds.contains(m.id),
-                            onSelected: (sel) {
-                              if (sel) {
-                                selectedMedicationIds.add(m.id);
-                              } else {
-                                selectedMedicationIds.remove(m.id);
-                              }
-                            },
+                // ───────── HEADER ─────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _IconBadge(color: color),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _safeTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary,
+                            ),
                           ),
-                        )
-                        .toList(),
+                          const SizedBox(height: 4),
+
+                          Row(
+                            children: [
+                              const Icon(Icons.person_outline, size: 13),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  _safePatient,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    _ActionColumn(onEdit: onEdit, onDelete: onDelete),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                Divider(
+                  height: 1,
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                ),
+
+                const SizedBox(height: 12),
+
+                // ───────── INFO ROW ─────────
+                Row(
+                  children: [
+                    _StatusBadge(label: report.status, color: color),
+
+                    const SizedBox(width: 8),
+
+                    if ((report.patientBloodType ?? "").isNotEmpty &&
+                        report.patientBloodType != "unknown")
+                      _BloodBadge(type: report.patientBloodType!),
+
+                    const Spacer(),
+
+                    if (_safeDate != null)
+                      _DateView(date: _safeDate!, isDark: isDark),
+                  ],
+                ),
+
+                // ───────── DIAGNOSIS ─────────
+                if (_safeDiagnosis.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    _safeDiagnosis,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
                   ),
+                ],
+
+                // ───────── MEDICATIONS ─────────
+                if (report.medicationsDetail.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.medication_outlined,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "${report.medicationsDetail.length} medication"
+                        "${report.medicationsDetail.length > 1 ? "s" : ""}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              if (selectedPatientId != null && selectedAppointmentId != null) {
-                final data = {
-                  "title": titleController.text,
-                  "notes": notesController.text,
-                  "diagnosis": diagnosisController.text,
-                  "status": "draft",
-                  "patient_id": selectedPatientId,
-                  "medication_ids": selectedMedicationIds,
-                  "appointment_id": selectedAppointmentId,
-                };
-                context.read<ReportsCubit>().createReport(data);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text("Add"),
+      ),
+    );
+  }
+}
+
+class _IconBadge extends StatelessWidget {
+  final Color color;
+
+  const _IconBadge({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(Icons.description_outlined, color: color, size: 18),
+    );
+  }
+}
+
+class _ActionColumn extends StatelessWidget {
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ActionColumn({required this.onEdit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _ActionBtn(
+          icon: Icons.edit_outlined,
+          color: AppColors.primary,
+          onTap: onEdit,
+        ),
+        const SizedBox(height: 6),
+        _ActionBtn(
+          icon: Icons.delete_outline,
+          color: AppColors.error,
+          onTap: onDelete,
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String? label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final text = (label ?? "unknown").toUpperCase();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _BloodBadge extends StatelessWidget {
+  final String type;
+
+  const _BloodBadge({required this.type});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        type,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: Colors.red,
+        ),
+      ),
+    );
+  }
+}
+
+class _DateView extends StatelessWidget {
+  final String date;
+  final bool isDark;
+
+  const _DateView({required this.date, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          Icons.calendar_today_outlined,
+          size: 12,
+          color: isDark
+              ? AppColors.darkTextSecondary
+              : AppColors.lightTextSecondary,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          date,
+          style: TextStyle(
+            fontSize: 11,
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : AppColors.lightTextSecondary,
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionBtn extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionBtn({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(9),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(9),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(7),
+          child: Icon(icon, size: 17, color: color),
+        ),
       ),
     );
   }
