@@ -870,104 +870,115 @@ class _TodaySchedule extends StatelessWidget {
             ...appointments.map((a) {
               final statusColor = _statusColor(a.status);
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkBackground
-                      : AppColors.lightBackground,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border(
-                    left: BorderSide(color: statusColor, width: 3),
-                    top: BorderSide(
-                        color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
-                        width: 0.8),
-                    right: BorderSide(
-                        color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
-                        width: 0.8),
-                    bottom: BorderSide(
-                        color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
-                        width: 0.8),
+  margin: const EdgeInsets.only(bottom: 10),
+  child: Stack(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark
+                ? AppColors.borderDark
+                : AppColors.borderLight,
+            width: 0.8,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(_typeIcon(a.type),
+                  size: 16, color: AppColors.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    a.patientName,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    a.title,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  a.time,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(_typeIcon(a.type),
-                          size: 16, color: AppColors.primary),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    a.status,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            a.patientName,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isDark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.lightTextPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            a.title,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          a.time,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            a.status,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: statusColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              );
+              ],
+            ),
+          ],
+        ),
+      ),
+
+      // 🔥 Accent bar (بديل الـ left border)
+      Positioned(
+        left: 0,
+        top: 0,
+        bottom: 0,
+        child: Container(
+          width: 3,
+          decoration: BoxDecoration(
+            color: statusColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(14),
+              bottomLeft: Radius.circular(14),
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+);
             }),
         ],
       ),

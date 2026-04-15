@@ -3,7 +3,7 @@ from django.utils.timezone import localtime
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
+from django.utils.timezone import localdate
 from patients.models import Patient
 from appointments.models import Appointment
 from reports.models import Report
@@ -15,7 +15,7 @@ class DashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        today = date.today()
+        today = localdate()
 
         total_patients       = Patient.objects.count()
         appointments_today   = Appointment.objects.filter(date_time__date=today).count()
@@ -66,7 +66,7 @@ class TodayAppointmentsView(APIView):
                 "title":        a.title,
                 "patient_name": a.patient.name,
                 "patient_age":  a.patient.age,
-                "time":         localtime(a.date_time).strftime("%H:%M"),
+                "time":         localtime(a.date_time).strftime("%d/%m/%Y %H:%M"),
                 "type":         a.type,
                 "status":       a.status,
                 "duration":     a.duration_minutes,

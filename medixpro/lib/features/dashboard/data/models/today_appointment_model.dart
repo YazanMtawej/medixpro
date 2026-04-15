@@ -24,7 +24,7 @@ class TodayAppointmentModel {
       id:          json["id"]           ?? 0,
       title:       json["title"]        ?? "",
       patientName: json["patient_name"] ?? "",
-      patientAge:  json["patient_age"]  ?? 0,
+      patientAge: (json["patient_age"] as num?)?.toInt() ?? 0,
       time:        json["time"]         ?? "",
       type:        json["type"]         ?? "general",
       status:      json["status"]       ?? "scheduled",
