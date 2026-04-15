@@ -4,18 +4,13 @@ import '../models/dashboard_stats_model.dart';
 import '../models/today_appointment_model.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
-
   final DashboardRemoteDataSource remote;
-
-  DashboardRepositoryImpl(this.remote);
-
-  @override
-  Future<DashboardStatsModel> getStats() {
-    return remote.getStats();
-  }
+  const DashboardRepositoryImpl(this.remote);
 
   @override
-  Future<List<TodayAppointmentModel>> getTodayAppointments() {
-    return remote.getTodayAppointments();
-  }
+  Future<DashboardStatsModel> getStats() => remote.getStats();
+
+  @override
+  Future<List<TodayAppointmentModel>> getTodayAppointments() =>
+      remote.getTodayAppointments();
 }

@@ -8,16 +8,12 @@ class DashboardInitial extends DashboardState {}
 class DashboardLoading extends DashboardState {}
 
 class DashboardLoaded extends DashboardState {
-
-  final DashboardStatsModel stats;
-  final List<TodayAppointmentModel> appointments;
-
+  final DashboardStatsModel            stats;
+  final List<TodayAppointmentModel>    appointments;
   DashboardLoaded(this.stats, this.appointments);
 }
 
 class DashboardError extends DashboardState {
-
   final String message;
-
   DashboardError(this.message);
 }

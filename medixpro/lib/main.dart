@@ -127,10 +127,10 @@ void main() {
   final deletePatientUseCase = DeletePatientUseCase(patientsRepository);
 
   // Reports
-  final getReportsUseCase    = GetReportsUseCase(reportsRepository);
-  final addReportUseCase     = AddReportUseCase(reportsRepository);
-  final updateReportUseCase  = UpdateReportUseCase(reportsRepository);
-  final deleteReportUseCase  = DeleteReportUseCase(reportsRepository);
+  final getReportsUseCase   = GetReportsUseCase(reportsRepository);
+  final addReportUseCase    = AddReportUseCase(reportsRepository);
+  final updateReportUseCase = UpdateReportUseCase(reportsRepository);
+  final deleteReportUseCase = DeleteReportUseCase(reportsRepository);
 
   // Medications
   final getMedicationsUseCase   = GetMedicationsUseCase(medicationsRepository);

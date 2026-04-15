@@ -4,26 +4,19 @@ import '../../domain/usecases/get_today_appointments_usecase.dart';
 import 'dashboard_state.dart';
 
 class DashboardCubit extends Cubit<DashboardState> {
+  final GetDashboardStatsUseCase    _getStats;
+  final GetTodayAppointmentsUseCase _getAppointments;
 
-  final GetDashboardStatsUseCase getStats;
-  final GetTodayAppointmentsUseCase getAppointments;
-
-  DashboardCubit(this.getStats, this.getAppointments)
+  DashboardCubit(this._getStats, this._getAppointments)
       : super(DashboardInitial());
 
   Future<void> loadDashboard() async {
-
     emit(DashboardLoading());
-
     try {
-
-      final stats = await getStats();
-      final appointments = await getAppointments();
-
+      final stats        = await _getStats();
+      final appointments = await _getAppointments();
       emit(DashboardLoaded(stats, appointments));
-
-    } catch (e) {
-
+    } catch (_) {
       emit(DashboardError("Failed to load dashboard"));
     }
   }
