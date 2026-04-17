@@ -1,24 +1,37 @@
 class UserProfile {
-
-  final int id;
-  final String name;
+  final int    id;
+  final String username;
   final String email;
-  final String phone;
+  final String role;
+  final String fullName;
+  final String clinicName;
+  final String address;
+  final String? avatar;
 
-  UserProfile({
+  const UserProfile({
     required this.id,
-    required this.name,
+    required this.username,
     required this.email,
-    required this.phone,
+    required this.role,
+    required this.fullName,
+    required this.clinicName,
+    required this.address,
+    this.avatar,
   });
 
-  factory UserProfile.fromJson(Map<String,dynamic> json){
+  bool get isDoctor => role == "doctor";
 
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    final data = json["data"] ?? json;
     return UserProfile(
-      id: json["id"],
-      name: json["name"],
-      email: json["email"],
-      phone: json["phone"] ?? "",
+      id:         data["id"]          ?? 0,
+      username:   data["username"]    ?? "",
+      email:      data["email"]       ?? "",
+      role:       data["role"]        ?? "patient",
+      fullName:   data["full_name"]   ?? "",
+      clinicName: data["clinic_name"] ?? "",
+      address:    data["address"]     ?? "",
+      avatar:     data["avatar"],
     );
   }
 }

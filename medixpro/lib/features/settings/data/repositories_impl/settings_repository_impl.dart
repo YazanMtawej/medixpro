@@ -1,30 +1,37 @@
 import '../../domain/entities/user_profile.dart';
-import '../../domain/entities/notification_item.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../datasources/settings_remote_datasource.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   final SettingsRemoteDataSource remote;
-
-  SettingsRepositoryImpl(this.remote);
-
-  @override
-  Future<void> logout(String refreshToken) {
-    return remote.logout(refreshToken); // ✅ استدعاء صحيح مع التوكن
-  }
+  const SettingsRepositoryImpl(this.remote);
 
   @override
-  Future<UserProfile> getProfile() {
-    return remote.getProfile();
-  }
+  Future<UserProfile> getProfile() => remote.getProfile();
 
   @override
-  Future<void> updateProfile(Map<String, dynamic> data) {
-    return remote.updateProfile(data);
-  }
+  Future<void> updateProfile(Map<String, dynamic> data) =>
+      remote.updateProfile(data);
 
   @override
-  Future<List<NotificationItem>> getNotifications() {
-    return remote.getNotifications();
-  }
+  Future<Map<String, dynamic>> getNotifications() =>
+      remote.getNotifications();
+
+  @override
+  Future<void> markAsRead(int id) => remote.markAsRead(id);
+
+  @override
+  Future<void> markAllAsRead() => remote.markAllAsRead();
+
+  @override
+  Future<void> deleteNotification(int id) =>
+      remote.deleteNotification(id);
+
+  @override
+  Future<void> clearAllNotifications() =>
+      remote.clearAllNotifications();
+
+  @override
+  Future<void> logout(String refreshToken) =>
+      remote.logout(refreshToken);
 }

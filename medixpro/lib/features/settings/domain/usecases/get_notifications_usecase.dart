@@ -1,13 +1,7 @@
-import '../entities/notification_item.dart';
 import '../repositories/settings_repository.dart';
 
 class GetNotificationsUseCase {
-
   final SettingsRepository repository;
-
-  GetNotificationsUseCase(this.repository);
-
-  Future<List<NotificationItem>> call(){
-    return repository.getNotifications();
-  }
+  const GetNotificationsUseCase(this.repository);
+  Future<Map<String, dynamic>> call() => repository.getNotifications();
 }

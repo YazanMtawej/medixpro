@@ -3,28 +3,22 @@ import '../../domain/entities/notification_item.dart';
 
 abstract class SettingsState {}
 
-class SettingsInitial extends SettingsState {}
-
-class SettingsLoading extends SettingsState {}
+class SettingsInitial    extends SettingsState {}
+class SettingsLoading    extends SettingsState {}
+class SettingsLoggedOut  extends SettingsState {}
 
 class ProfileLoaded extends SettingsState {
-
   final UserProfile profile;
-
   ProfileLoaded(this.profile);
 }
 
 class NotificationsLoaded extends SettingsState {
-
   final List<NotificationItem> notifications;
-
-  NotificationsLoaded(this.notifications);
+  final int unreadCount;
+  NotificationsLoaded(this.notifications, this.unreadCount);
 }
 
 class SettingsError extends SettingsState {
-
   final String message;
-
   SettingsError(this.message);
 }
-class SettingsLoggedOut extends SettingsState {}

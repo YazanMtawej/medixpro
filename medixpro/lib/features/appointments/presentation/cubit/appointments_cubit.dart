@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/notifications/notification_service.dart';
 import 'package:medixpro/features/appointments/presentation/cubit/appointments_state.dart';
 import '../../domain/entities/appointment.dart';
 import '../../domain/usecases/get_appointments_usecase.dart';
@@ -39,6 +40,7 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _addAppointment(a);
       await fetchAppointments();
+      await NotificationService.instance.notifyAppointmentCreated(a.title, a.patientName);
     } catch (_) {
       emit(AppointmentsError("Failed to add appointment"));
     }

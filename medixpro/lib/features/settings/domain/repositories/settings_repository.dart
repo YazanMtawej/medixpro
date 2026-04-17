@@ -1,9 +1,12 @@
-import 'package:medixpro/features/settings/domain/entities/notification_item.dart';
-import 'package:medixpro/features/settings/domain/entities/user_profile.dart';
+import '../entities/user_profile.dart';
 
 abstract class SettingsRepository {
-  Future<void> logout(String refreshToken); // ✅ يحتاج refreshToken
-  Future<UserProfile> getProfile();
-  Future<void> updateProfile(Map<String, dynamic> data);
-  Future<List<NotificationItem>> getNotifications();
+  Future<UserProfile>              getProfile();
+  Future<void>                     updateProfile(Map<String, dynamic> data);
+  Future<Map<String, dynamic>>     getNotifications();
+  Future<void>                     markAsRead(int id);
+  Future<void>                     markAllAsRead();
+  Future<void>                     deleteNotification(int id);
+  Future<void>                     clearAllNotifications();
+  Future<void>                     logout(String refreshToken);
 }

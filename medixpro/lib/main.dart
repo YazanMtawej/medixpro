@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // ================= CORE =================
 import 'core/network/api_client.dart';
+import 'core/notifications/notification_service.dart';
 import 'core/storage/token_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
@@ -78,8 +79,11 @@ import 'features/appointments/domain/usecases/delete_appointment_usecase.dart';
 import 'features/appointments/presentation/cubit/appointments_cubit.dart';
 import 'features/appointments/presentation/pages/appointments_page.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ تهيئة الإشعارات المحلية
+  await NotificationService.instance.init();
 
   // ================= CORE =================
   const secureStorage = FlutterSecureStorage();
@@ -106,39 +110,32 @@ void main() {
 
   // ================= USE CASES =================
 
-  // Auth
   final loginUseCase    = LoginUseCase(authRepository);
   final registerUseCase = RegisterUseCase(authRepository);
 
-  // Dashboard
   final getDashboardStatsUseCase    = GetDashboardStatsUseCase(dashboardRepository);
   final getTodayAppointmentsUseCase = GetTodayAppointmentsUseCase(dashboardRepository);
 
-  // Settings
   final getProfileUseCase       = GetProfileUseCase(settingsRepository);
   final updateProfileUseCase    = UpdateProfileUseCase(settingsRepository);
   final getNotificationsUseCase = GetNotificationsUseCase(settingsRepository);
   final logoutUseCase           = LogoutUseCase(settingsRepository);
 
-  // Patients
   final getPatientsUseCase   = GetPatientsUseCase(patientsRepository);
   final addPatientUseCase    = AddPatientUseCase(patientsRepository);
   final updatePatientUseCase = UpdatePatientUseCase(patientsRepository);
   final deletePatientUseCase = DeletePatientUseCase(patientsRepository);
 
-  // Reports
   final getReportsUseCase   = GetReportsUseCase(reportsRepository);
   final addReportUseCase    = AddReportUseCase(reportsRepository);
   final updateReportUseCase = UpdateReportUseCase(reportsRepository);
   final deleteReportUseCase = DeleteReportUseCase(reportsRepository);
 
-  // Medications
   final getMedicationsUseCase   = GetMedicationsUseCase(medicationsRepository);
   final addMedicationUseCase    = AddMedicationUseCase(medicationsRepository);
   final updateMedicationUseCase = UpdateMedicationUseCase(medicationsRepository);
   final deleteMedicationUseCase = DeleteMedicationUseCase(medicationsRepository);
 
-  // Appointments
   final getAppointmentsUseCase   = GetAppointmentsUseCase(appointmentsRepository);
   final addAppointmentUseCase    = AddAppointmentUseCase(appointmentsRepository);
   final updateAppointmentUseCase = UpdateAppointmentUseCase(appointmentsRepository);
@@ -157,12 +154,14 @@ void main() {
     getTodayAppointmentsUseCase,
   );
 
+  // ✅ SettingsCubit يقبل الآن repository إضافياً
   final settingsCubit = SettingsCubit(
     getProfileUseCase,
     updateProfileUseCase,
     getNotificationsUseCase,
     logoutUseCase,
     tokenStorage,
+    settingsRepository,
   );
 
   final patientsCubit = PatientsCubit(

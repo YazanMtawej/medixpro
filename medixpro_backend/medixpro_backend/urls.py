@@ -48,6 +48,8 @@ urlpatterns = [
 
     # 📅 APPOINTMENTS
     path('api/v1/', include('appointments.urls')),
+
+    path('api/v1/notifications/', include('notifications.urls')),
 ]
 
 if settings.DEBUG:

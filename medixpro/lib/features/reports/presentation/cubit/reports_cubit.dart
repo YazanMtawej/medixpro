@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/report.dart';
 import '../../domain/usecases/get_reports_usecase.dart';
 import '../../domain/usecases/add_report_usecase.dart';
@@ -38,6 +39,7 @@ class ReportsCubit extends Cubit<ReportsState> {
     try {
       await _addReport(report);
       await fetchReports();
+      await NotificationService.instance.notifyReportCreated(report.title, report.patientName);
     } catch (_) {
       emit(ReportsError("Failed to create report"));
     }

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/medication.dart';
 import '../../domain/usecases/get_medications_usecase.dart';
 import '../../domain/usecases/add_medication_usecase.dart';
@@ -52,6 +53,7 @@ class MedicationsCubit extends Cubit<MedicationsState> {
     try {
       await _addMedication(med);
       await fetchMedications();
+      await NotificationService.instance.notifyMedicationAdded(med.name, med.patientName);
     } catch (_) {
       emit(MedicationsError("Failed to add medication"));
     }

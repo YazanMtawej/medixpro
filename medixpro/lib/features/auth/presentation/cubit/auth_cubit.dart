@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/login_request.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -70,6 +71,7 @@ class AuthCubit extends Cubit<AuthState> {
         LoginRequest(username: username, email: email, password: password),
       );
       await _tokenStorage.saveUserInfo(user.username, user.email);
+      await NotificationService.instance.notifyLogin(user.username);
       emit(AuthAuthenticated(user));
     } catch (e) {
       emit(AuthError(_parseError(e)));

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/patient.dart';
 import '../../domain/usecases/get_patients_usecase.dart';
 import '../../domain/usecases/add_patient_usecase.dart';
@@ -33,6 +34,7 @@ class PatientsCubit extends Cubit<PatientsState> {
     try {
       await _addPatient(patient);
       await loadPatients();
+      await NotificationService.instance.notifyPatientAdded(patient.name);
     } catch (e) {
       emit(PatientsError("Failed to add patient"));
     }
@@ -51,6 +53,11 @@ class PatientsCubit extends Cubit<PatientsState> {
     try {
       await _deletePatient(id);
       await loadPatients();
+      await NotificationService.instance.show(
+  title: "Patient Removed",
+  body: "Patient record has been deleted.",
+  category: "warning",
+);
     } catch (e) {
       emit(PatientsError("Failed to delete patient"));
     }
