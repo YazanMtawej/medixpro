@@ -13,8 +13,6 @@ class PatientsCubit extends Cubit<PatientsState> {
   final UpdatePatientUseCase _updatePatient;
   final DeletePatientUseCase _deletePatient;
 
-  final _notif = NotificationService();
-
   PatientsCubit(
     this._getPatients,
     this._addPatient,
@@ -27,38 +25,50 @@ class PatientsCubit extends Cubit<PatientsState> {
     try {
       final patients = await _getPatients();
       emit(PatientsLoaded(patients));
-    } catch (_) {
-      emit(PatientsError("Failed to load patients"));
+    } catch (e) {
+      emit(PatientsError("Failed to load patients: $e"));
     }
   }
 
   Future<void> addPatient(Patient patient) async {
-    try {
-      // ✅ احفظ الاسم قبل أي عملية
-      final name = patient.name.trim();
+    // ✅ احفظ الاسم فوراً قبل أي عملية async
+    final String name = patient.name.trim().isNotEmpty
+        ? patient.name.trim()
+        : "New Patient";
 
+    try {
       await _addPatient(patient);
 
-      // ✅ الإشعار قبل reload لضمان ظهوره
-      await _notif.notifyPatientAdded(name.isNotEmpty ? name : "New Patient");
+      // ✅ الإشعار منفصل عن الـ try حتى لا يُخفى فشله
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "New Patient Registered",
+        body: "Patient '$name' has been added successfully.",
+      );
 
       await loadPatients();
-    } catch (_) {
-      emit(PatientsError("Failed to add patient"));
+    } catch (e) {
+      emit(PatientsError("Failed to add patient: $e"));
     }
   }
 
   Future<void> updatePatient(int id, Patient patient) async {
     try {
       await _updatePatient(id, patient);
+
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Patient Updated",
+        body: "Patient '${patient.name}' has been updated.",
+      );
+
       await loadPatients();
-    } catch (_) {
-      emit(PatientsError("Failed to update patient"));
+    } catch (e) {
+      emit(PatientsError("Failed to update patient: $e"));
     }
   }
 
   Future<void> deletePatient(int id) async {
-    // ✅ احفظ الاسم من الـ state الحالي قبل الحذف
     String name = "Patient";
     final current = state;
     if (current is PatientsLoaded) {
@@ -69,10 +79,16 @@ class PatientsCubit extends Cubit<PatientsState> {
 
     try {
       await _deletePatient(id);
-      await _notif.notifyPatientDeleted(name);
+
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Patient Removed",
+        body: "Patient '$name' and all related records were deleted.",
+      );
+
       await loadPatients();
-    } catch (_) {
-      emit(PatientsError("Failed to delete patient"));
+    } catch (e) {
+      emit(PatientsError("Failed to delete patient: $e"));
     }
   }
 }

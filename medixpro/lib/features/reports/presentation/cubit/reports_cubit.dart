@@ -13,8 +13,6 @@ class ReportsCubit extends Cubit<ReportsState> {
   final UpdateReportUseCase _updateReport;
   final DeleteReportUseCase _deleteReport;
 
-  final _notif = NotificationService();
-
   ReportsCubit(
     this._getReports,
     this._addReport,
@@ -35,45 +33,52 @@ class ReportsCubit extends Cubit<ReportsState> {
         search: search,
       );
       emit(ReportsLoaded(reports));
-    } catch (_) {
-      emit(ReportsError("Failed to load reports"));
+    } catch (e) {
+      emit(ReportsError("Failed to load reports: $e"));
     }
   }
 
   Future<void> createReport(Report report) async {
-    try {
-      final title       = report.title.trim();
-      final patientName = report.patientName.trim();
+    final String title       = report.title.trim().isNotEmpty       ? report.title.trim()       : "Report";
+    final String patientName = report.patientName.trim().isNotEmpty ? report.patientName.trim() : "Patient";
 
+    try {
       await _addReport(report);
 
-      await _notif.notifyReportCreated(
-        title.isNotEmpty       ? title       : "Report",
-        patientName.isNotEmpty ? patientName : "Patient",
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Report Created",
+        body: "Medical report '$title' for $patientName is ready.",
       );
 
       await fetchReports();
-    } catch (_) {
-      emit(ReportsError("Failed to create report"));
+    } catch (e) {
+      emit(ReportsError("Failed to create report: $e"));
     }
   }
 
   Future<void> editReport(Report report) async {
-    try {
-      final title = report.title.trim();
+    final String title = report.title.trim().isNotEmpty ? report.title.trim() : "Report";
 
+    try {
       await _updateReport(report);
 
-      // إشعار خاص عند تحويل التقرير لـ final
-      if (report.status == "final") {
-        await _notif.notifyReportFinalized(
-          title.isNotEmpty ? title : "Report",
-        );
-      }
+      final String notifTitle = report.status == "final"
+          ? "Report Finalized ✅"
+          : "Report Updated";
+      final String notifBody = report.status == "final"
+          ? "Report '$title' has been marked as final."
+          : "Report '$title' has been updated.";
+
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: notifTitle,
+        body: notifBody,
+      );
 
       await fetchReports();
-    } catch (_) {
-      emit(ReportsError("Failed to update report"));
+    } catch (e) {
+      emit(ReportsError("Failed to update report: $e"));
     }
   }
 
@@ -88,10 +93,16 @@ class ReportsCubit extends Cubit<ReportsState> {
 
     try {
       await _deleteReport(id);
-      await _notif.notifyReportDeleted(title);
+
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Report Deleted",
+        body: "Report '$title' has been permanently deleted.",
+      );
+
       await fetchReports();
-    } catch (_) {
-      emit(ReportsError("Failed to delete report"));
+    } catch (e) {
+      emit(ReportsError("Failed to delete report: $e"));
     }
   }
 }

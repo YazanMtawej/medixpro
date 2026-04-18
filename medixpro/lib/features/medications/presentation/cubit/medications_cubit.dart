@@ -6,7 +6,6 @@ import '../../domain/usecases/add_medication_usecase.dart';
 import '../../domain/usecases/update_medication_usecase.dart';
 import '../../domain/usecases/delete_medication_usecase.dart';
 
-// ─── States ───────────────────────────────────────────────────────────────────
 abstract class MedicationsState {}
 class MedicationsInitial extends MedicationsState {}
 class MedicationsLoading  extends MedicationsState {}
@@ -19,14 +18,11 @@ class MedicationsError extends MedicationsState {
   MedicationsError(this.message);
 }
 
-// ─── Cubit ────────────────────────────────────────────────────────────────────
 class MedicationsCubit extends Cubit<MedicationsState> {
   final GetMedicationsUseCase   _getMedications;
   final AddMedicationUseCase    _addMedication;
   final UpdateMedicationUseCase _updateMedication;
   final DeleteMedicationUseCase _deleteMedication;
-
-  final _notif = NotificationService();
 
   MedicationsCubit(
     this._getMedications,
@@ -40,35 +36,43 @@ class MedicationsCubit extends Cubit<MedicationsState> {
     try {
       final meds = await _getMedications(patientId: patientId, search: search);
       emit(MedicationsLoaded(meds));
-    } catch (_) {
-      emit(MedicationsError("Failed to load medications"));
+    } catch (e) {
+      emit(MedicationsError("Failed to load medications: $e"));
     }
   }
 
   Future<void> addNewMedication(Medication med) async {
-    try {
-      final name        = med.name.trim();
-      final patientName = med.patientName.trim();
+    final String name        = med.name.trim().isNotEmpty        ? med.name.trim()        : "Medication";
+    final String patientName = med.patientName.trim().isNotEmpty ? med.patientName.trim() : "Patient";
 
+    try {
       await _addMedication(med);
 
-      await _notif.notifyMedicationAdded(
-        name.isNotEmpty        ? name        : "Medication",
-        patientName.isNotEmpty ? patientName : "Patient",
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Prescription Added",
+        body: "$name prescribed to $patientName.",
       );
 
       await fetchMedications();
-    } catch (_) {
-      emit(MedicationsError("Failed to add medication"));
+    } catch (e) {
+      emit(MedicationsError("Failed to add medication: $e"));
     }
   }
 
   Future<void> updateExistingMedication(Medication med) async {
     try {
       await _updateMedication(med);
+
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Prescription Updated",
+        body: "Medication '${med.name}' has been updated.",
+      );
+
       await fetchMedications();
-    } catch (_) {
-      emit(MedicationsError("Failed to update medication"));
+    } catch (e) {
+      emit(MedicationsError("Failed to update medication: $e"));
     }
   }
 
@@ -83,10 +87,16 @@ class MedicationsCubit extends Cubit<MedicationsState> {
 
     try {
       await _deleteMedication(id);
-      await _notif.notifyMedicationDeleted(name);
+
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Prescription Removed",
+        body: "Medication '$name' has been deleted.",
+      );
+
       await fetchMedications();
-    } catch (_) {
-      emit(MedicationsError("Failed to delete medication"));
+    } catch (e) {
+      emit(MedicationsError("Failed to delete medication: $e"));
     }
   }
 }
