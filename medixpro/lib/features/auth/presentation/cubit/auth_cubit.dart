@@ -59,24 +59,26 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthLoggedOut());
     }
   }
+Future<void> login({
+  required String password,
+  String? username,
+  String? email,
+}) async {
+  emit(AuthLoading());
+  try {
+    final user = await _loginUseCase(
+      LoginRequest(username: username, email: email, password: password),
+    );
+    await _tokenStorage.saveUserInfo(user.username, user.email);
 
-  Future<void> login({
-    required String password,
-    String? username,
-    String? email,
-  }) async {
-    emit(AuthLoading());
-    try {
-      final user = await _loginUseCase(
-        LoginRequest(username: username, email: email, password: password),
-      );
-      await _tokenStorage.saveUserInfo(user.username, user.email);
-      await NotificationService.instance.notifyLogin(user.username);
-      emit(AuthAuthenticated(user));
-    } catch (e) {
-      emit(AuthError(_parseError(e)));
-    }
+    // ✅ إشعار تسجيل الدخول
+    await NotificationService().notifyLogin(user.username);
+
+    emit(AuthAuthenticated(user));
+  } catch (e) {
+    emit(AuthError(_parseError(e)));
   }
+}
 
   Future<void> register({
     required String username,
@@ -101,16 +103,17 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> logout() async {
-    try {
-      final refresh = await _tokenStorage.getRefreshToken();
-      await _repository.logout(refresh ?? "");
-    } catch (_) {
-      // حتى لو فشل الـ logout من الـ server، نمسح التوكن محلياً
-      await _tokenStorage.clear();
-    }
-    emit(AuthLoggedOut());
+Future<void> logout() async {
+  try {
+    final refresh = await _tokenStorage.getRefreshToken();
+    await _repository.logout(refresh ?? "");
+  } catch (_) {
+    await _tokenStorage.clear();
   }
+  // ✅ إشعار تسجيل الخروج
+  await NotificationService().notifyLogout();
+  emit(AuthLoggedOut());
+}
 
   String _parseError(Object e) {
     final msg = e.toString();

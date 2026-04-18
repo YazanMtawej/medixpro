@@ -83,7 +83,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ تهيئة الإشعارات المحلية
-  await NotificationService.instance.init();
+  await NotificationService().init();
 
   // ================= CORE =================
   const secureStorage = FlutterSecureStorage();

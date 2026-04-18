@@ -83,7 +83,6 @@ class SettingsCubit extends Cubit<SettingsState> {
       final refresh = await tokenStorage.getRefreshToken();
       if (refresh != null) await logoutUseCase(refresh);
       await tokenStorage.clear();
-      await NotificationService.instance.notifyLogout();
       emit(SettingsLoggedOut());
     } catch (_) {
       await tokenStorage.clear();

@@ -7,30 +7,26 @@ import '../../domain/usecases/update_medication_usecase.dart';
 import '../../domain/usecases/delete_medication_usecase.dart';
 
 // ─── States ───────────────────────────────────────────────────────────────────
-
 abstract class MedicationsState {}
-
 class MedicationsInitial extends MedicationsState {}
-
-class MedicationsLoading extends MedicationsState {}
-
-class MedicationsLoaded extends MedicationsState {
+class MedicationsLoading  extends MedicationsState {}
+class MedicationsLoaded   extends MedicationsState {
   final List<Medication> medications;
   MedicationsLoaded(this.medications);
 }
-
 class MedicationsError extends MedicationsState {
   final String message;
   MedicationsError(this.message);
 }
 
 // ─── Cubit ────────────────────────────────────────────────────────────────────
-
 class MedicationsCubit extends Cubit<MedicationsState> {
-  final GetMedicationsUseCase _getMedications;
-  final AddMedicationUseCase _addMedication;
+  final GetMedicationsUseCase   _getMedications;
+  final AddMedicationUseCase    _addMedication;
   final UpdateMedicationUseCase _updateMedication;
   final DeleteMedicationUseCase _deleteMedication;
+
+  final _notif = NotificationService();
 
   MedicationsCubit(
     this._getMedications,
@@ -51,9 +47,17 @@ class MedicationsCubit extends Cubit<MedicationsState> {
 
   Future<void> addNewMedication(Medication med) async {
     try {
+      final name        = med.name.trim();
+      final patientName = med.patientName.trim();
+
       await _addMedication(med);
+
+      await _notif.notifyMedicationAdded(
+        name.isNotEmpty        ? name        : "Medication",
+        patientName.isNotEmpty ? patientName : "Patient",
+      );
+
       await fetchMedications();
-      await NotificationService.instance.notifyMedicationAdded(med.name, med.patientName);
     } catch (_) {
       emit(MedicationsError("Failed to add medication"));
     }
@@ -69,8 +73,17 @@ class MedicationsCubit extends Cubit<MedicationsState> {
   }
 
   Future<void> deleteExistingMedication(int id) async {
+    String name = "Medication";
+    final current = state;
+    if (current is MedicationsLoaded) {
+      try {
+        name = current.medications.firstWhere((m) => m.id == id).name;
+      } catch (_) {}
+    }
+
     try {
       await _deleteMedication(id);
+      await _notif.notifyMedicationDeleted(name);
       await fetchMedications();
     } catch (_) {
       emit(MedicationsError("Failed to delete medication"));

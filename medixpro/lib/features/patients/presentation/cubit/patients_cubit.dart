@@ -8,10 +8,12 @@ import '../../domain/usecases/delete_patient_usecase.dart';
 import 'patients_state.dart';
 
 class PatientsCubit extends Cubit<PatientsState> {
-  final GetPatientsUseCase _getPatients;
-  final AddPatientUseCase _addPatient;
+  final GetPatientsUseCase   _getPatients;
+  final AddPatientUseCase    _addPatient;
   final UpdatePatientUseCase _updatePatient;
   final DeletePatientUseCase _deletePatient;
+
+  final _notif = NotificationService();
 
   PatientsCubit(
     this._getPatients,
@@ -25,17 +27,23 @@ class PatientsCubit extends Cubit<PatientsState> {
     try {
       final patients = await _getPatients();
       emit(PatientsLoaded(patients));
-    } catch (e) {
+    } catch (_) {
       emit(PatientsError("Failed to load patients"));
     }
   }
 
   Future<void> addPatient(Patient patient) async {
     try {
+      // ✅ احفظ الاسم قبل أي عملية
+      final name = patient.name.trim();
+
       await _addPatient(patient);
+
+      // ✅ الإشعار قبل reload لضمان ظهوره
+      await _notif.notifyPatientAdded(name.isNotEmpty ? name : "New Patient");
+
       await loadPatients();
-      await NotificationService.instance.notifyPatientAdded(patient.name);
-    } catch (e) {
+    } catch (_) {
       emit(PatientsError("Failed to add patient"));
     }
   }
@@ -44,21 +52,26 @@ class PatientsCubit extends Cubit<PatientsState> {
     try {
       await _updatePatient(id, patient);
       await loadPatients();
-    } catch (e) {
+    } catch (_) {
       emit(PatientsError("Failed to update patient"));
     }
   }
 
   Future<void> deletePatient(int id) async {
+    // ✅ احفظ الاسم من الـ state الحالي قبل الحذف
+    String name = "Patient";
+    final current = state;
+    if (current is PatientsLoaded) {
+      try {
+        name = current.patients.firstWhere((p) => p.id == id).name;
+      } catch (_) {}
+    }
+
     try {
       await _deletePatient(id);
+      await _notif.notifyPatientDeleted(name);
       await loadPatients();
-      await NotificationService.instance.show(
-  title: "Patient Removed",
-  body: "Patient record has been deleted.",
-  category: "warning",
-);
-    } catch (e) {
+    } catch (_) {
       emit(PatientsError("Failed to delete patient"));
     }
   }

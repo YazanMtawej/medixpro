@@ -8,10 +8,12 @@ import '../../domain/usecases/delete_report_usecase.dart';
 import 'reports_state.dart';
 
 class ReportsCubit extends Cubit<ReportsState> {
-  final GetReportsUseCase    _getReports;
-  final AddReportUseCase     _addReport;
-  final UpdateReportUseCase  _updateReport;
-  final DeleteReportUseCase  _deleteReport;
+  final GetReportsUseCase   _getReports;
+  final AddReportUseCase    _addReport;
+  final UpdateReportUseCase _updateReport;
+  final DeleteReportUseCase _deleteReport;
+
+  final _notif = NotificationService();
 
   ReportsCubit(
     this._getReports,
@@ -28,7 +30,10 @@ class ReportsCubit extends Cubit<ReportsState> {
     emit(ReportsLoading());
     try {
       final reports = await _getReports(
-          patientId: patientId, status: status, search: search);
+        patientId: patientId,
+        status: status,
+        search: search,
+      );
       emit(ReportsLoaded(reports));
     } catch (_) {
       emit(ReportsError("Failed to load reports"));
@@ -37,9 +42,17 @@ class ReportsCubit extends Cubit<ReportsState> {
 
   Future<void> createReport(Report report) async {
     try {
+      final title       = report.title.trim();
+      final patientName = report.patientName.trim();
+
       await _addReport(report);
+
+      await _notif.notifyReportCreated(
+        title.isNotEmpty       ? title       : "Report",
+        patientName.isNotEmpty ? patientName : "Patient",
+      );
+
       await fetchReports();
-      await NotificationService.instance.notifyReportCreated(report.title, report.patientName);
     } catch (_) {
       emit(ReportsError("Failed to create report"));
     }
@@ -47,7 +60,17 @@ class ReportsCubit extends Cubit<ReportsState> {
 
   Future<void> editReport(Report report) async {
     try {
+      final title = report.title.trim();
+
       await _updateReport(report);
+
+      // إشعار خاص عند تحويل التقرير لـ final
+      if (report.status == "final") {
+        await _notif.notifyReportFinalized(
+          title.isNotEmpty ? title : "Report",
+        );
+      }
+
       await fetchReports();
     } catch (_) {
       emit(ReportsError("Failed to update report"));
@@ -55,8 +78,17 @@ class ReportsCubit extends Cubit<ReportsState> {
   }
 
   Future<void> removeReport(int id) async {
+    String title = "Report";
+    final current = state;
+    if (current is ReportsLoaded) {
+      try {
+        title = current.reports.firstWhere((r) => r.id == id).title;
+      } catch (_) {}
+    }
+
     try {
       await _deleteReport(id);
+      await _notif.notifyReportDeleted(title);
       await fetchReports();
     } catch (_) {
       emit(ReportsError("Failed to delete report"));
