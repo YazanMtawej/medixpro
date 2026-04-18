@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/theme/theme_cubit.dart';
+import 'package:medixpro/features/appointments/presentation/pages/patient_dashboard_home.dart';
+import 'package:medixpro/features/appointments/presentation/pages/patient_requests_page.dart';
+import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../patients/presentation/pages/patients_list_page.dart';
 import '../../../reports/presentation/pages/reports_page.dart';
@@ -11,9 +15,6 @@ import '../cubit/dashboard_state.dart';
 import '../../data/models/dashboard_stats_model.dart';
 import '../../data/models/today_appointment_model.dart';
 
-// ignore_for_file: implementation_imports
-import 'package:medixpro/core/theme/theme_cubit.dart';
-
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -24,13 +25,38 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _selectedIndex = 0;
 
-  static const _pages = <Widget>[
+  // ─── Doctor Pages ─────────────────────────────────────────────────────────
+  static const _doctorPages = <Widget>[
     _DashboardHome(),
     PatientsListPage(),
     ReportsPage(),
     MedicationsPage(),
     AppointmentsPage(),
     SettingsPage(),
+  ];
+
+  static const _doctorNavItems = <(IconData, IconData, String)>[
+    (Icons.dashboard_rounded,      Icons.dashboard_outlined,      "Home"),
+    (Icons.people_rounded,         Icons.people_outline,          "Patients"),
+    (Icons.description_rounded,    Icons.description_outlined,    "Reports"),
+    (Icons.medication_rounded,     Icons.medication_outlined,     "Meds"),
+    (Icons.calendar_month_rounded, Icons.calendar_month_outlined, "Schedule"),
+    (Icons.settings_rounded,       Icons.settings_outlined,       "Settings"),
+  ];
+
+  // ─── Patient Pages ────────────────────────────────────────────────────────
+  static const _patientPages = <Widget>[
+    PatientDashboardHome(),
+    AppointmentsPage(),
+    PatientRequestsPage(),
+    SettingsPage(),
+  ];
+
+  static const _patientNavItems = <(IconData, IconData, String)>[
+    (Icons.home_rounded,           Icons.home_outlined,           "Home"),
+    (Icons.calendar_month_rounded, Icons.calendar_month_outlined, "My Appts"),
+    (Icons.send_rounded,           Icons.send_outlined,           "Requests"),
+    (Icons.settings_rounded,       Icons.settings_outlined,       "Settings"),
   ];
 
   @override
@@ -41,7 +67,16 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark    = Theme.of(context).brightness == Brightness.dark;
+    final authState = context.watch<AuthCubit>().state;
+    final user      = authState is AuthAuthenticated ? authState.user : null;
+    final isDoctor  = user?.isDoctor ?? true; // افتراضي طبيب لو لم يُحدد
+
+    final pages    = isDoctor ? _doctorPages    : _patientPages;
+    final navItems = isDoctor ? _doctorNavItems : _patientNavItems;
+
+    // تأكد أن الـ index لا يتجاوز عدد الصفحات
+    final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
 
     return Scaffold(
       extendBody: true,
@@ -50,14 +85,20 @@ class _DashboardPageState extends State<DashboardPage> {
         switchInCurve: Curves.easeIn,
         switchOutCurve: Curves.easeOut,
         child: KeyedSubtree(
-          key: ValueKey(_selectedIndex),
-          child: _pages[_selectedIndex],
+          key: ValueKey(safeIndex),
+          child: pages[safeIndex],
         ),
       ),
       bottomNavigationBar: _BottomNav(
-        selectedIndex: _selectedIndex,
+        selectedIndex: safeIndex,
         isDark: isDark,
-        onTap: (i) => setState(() => _selectedIndex = i),
+        items: navItems,
+        onTap: (i) {
+          // reset index عند تغيير الدور
+          if (i != _selectedIndex) {
+            setState(() => _selectedIndex = i);
+          }
+        },
       ),
     );
   }
@@ -67,22 +108,15 @@ class _DashboardPageState extends State<DashboardPage> {
 class _BottomNav extends StatelessWidget {
   final int selectedIndex;
   final bool isDark;
+  final List<(IconData, IconData, String)> items;
   final void Function(int) onTap;
 
   const _BottomNav({
     required this.selectedIndex,
     required this.isDark,
+    required this.items,
     required this.onTap,
   });
-
-  static const _items = [
-    (Icons.dashboard_rounded,          Icons.dashboard_outlined,          "Home"),
-    (Icons.people_rounded,             Icons.people_outline,              "Patients"),
-    (Icons.description_rounded,        Icons.description_outlined,        "Reports"),
-    (Icons.medication_rounded,         Icons.medication_outlined,         "Meds"),
-    (Icons.calendar_month_rounded,     Icons.calendar_month_outlined,     "Schedule"),
-    (Icons.settings_rounded,           Icons.settings_outlined,           "Settings"),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +143,9 @@ class _BottomNav extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(_items.length, (i) {
+          children: List.generate(items.length, (i) {
             final selected = selectedIndex == i;
-            final item     = _items[i];
+            final item     = items[i];
             return GestureDetector(
               onTap: () => onTap(i),
               behavior: HitTestBehavior.opaque,
@@ -163,7 +197,7 @@ class _BottomNav extends StatelessWidget {
   }
 }
 
-// ─── Dashboard Home ───────────────────────────────────────────────────────────
+// ─── Dashboard Home (Doctor only) ─────────────────────────────────────────────
 class _DashboardHome extends StatelessWidget {
   const _DashboardHome();
 
@@ -186,7 +220,6 @@ class _DashboardHome extends StatelessWidget {
               backgroundColor: AppColors.primary,
               elevation: 0,
               actions: [
-                // Theme toggle
                 BlocBuilder<ThemeCubit, ThemeMode>(
                   builder: (context, mode) => Container(
                     margin: const EdgeInsets.only(right: 8),
@@ -239,47 +272,31 @@ class _DashboardHome extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _StatsGrid(
-                    stats: state.stats,
-                    isDark: isDark,
-                  ),
+                  child: _StatsGrid(stats: state.stats, isDark: isDark),
                 ),
               ),
-
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _PatientBreakdown(
-                    stats: state.stats,
-                    isDark: isDark,
-                  ),
+                  child: _PatientBreakdown(stats: state.stats, isDark: isDark),
                 ),
               ),
-
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _ReportBreakdown(
-                    stats: state.stats,
-                    isDark: isDark,
-                  ),
+                  child: _ReportBreakdown(stats: state.stats, isDark: isDark),
                 ),
               ),
-
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 sliver: SliverToBoxAdapter(
                   child: _TodaySchedule(
-                    appointments: state.appointments,
-                    isDark: isDark,
-                  ),
+                      appointments: state.appointments, isDark: isDark),
                 ),
               ),
-
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: MediaQuery.of(context).padding.bottom + 100,
-                ),
+                    height: MediaQuery.of(context).padding.bottom + 100),
               ),
             ],
           ],
@@ -316,9 +333,7 @@ class _HeaderBackground extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark
-              ? AppColors.gradientDark
-              : AppColors.gradientLight,
+          colors: isDark ? AppColors.gradientDark : AppColors.gradientLight,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -333,8 +348,7 @@ class _HeaderBackground extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 44, height: 44,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
@@ -346,22 +360,18 @@ class _HeaderBackground extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "MedixPro",
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        _greeting(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+                      Text("MedixPro",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          )),
+                      Text(_greeting(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          )),
                     ],
                   ),
                   const Spacer(),
@@ -372,14 +382,12 @@ class _HeaderBackground extends StatelessWidget {
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(
-                      _todayDate(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: Text(_todayDate(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        )),
                   ),
                 ],
               ),
@@ -395,7 +403,6 @@ class _HeaderBackground extends StatelessWidget {
 class _StatsGrid extends StatelessWidget {
   final DashboardStatsModel stats;
   final bool isDark;
-
   const _StatsGrid({required this.stats, required this.isDark});
 
   @override
@@ -419,11 +426,8 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.people_rounded,
               color: AppColors.primary,
               isDark: isDark,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const PatientsListPage()),
-              ),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const PatientsListPage())),
             ),
             _StatCard(
               label: "Today's Appointments",
@@ -431,11 +435,8 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.calendar_month_rounded,
               color: AppColors.success,
               isDark: isDark,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const AppointmentsPage()),
-              ),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AppointmentsPage())),
             ),
             _StatCard(
               label: "Medical Reports",
@@ -443,10 +444,8 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.description_rounded,
               color: AppColors.warning,
               isDark: isDark,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ReportsPage()),
-              ),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ReportsPage())),
             ),
             _StatCard(
               label: "Prescriptions",
@@ -454,11 +453,8 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.medication_rounded,
               color: Colors.purple,
               isDark: isDark,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const MedicationsPage()),
-              ),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const MedicationsPage())),
             ),
           ],
         ),
@@ -534,26 +530,22 @@ class _StatCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary,
-                  ),
-                ),
+                Text(value,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                    )),
                 const SizedBox(height: 2),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary,
-                  ),
-                ),
+                Text(label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    )),
               ],
             ),
           ],
@@ -567,15 +559,10 @@ class _StatCard extends StatelessWidget {
 class _PatientBreakdown extends StatelessWidget {
   final DashboardStatsModel stats;
   final bool isDark;
-
   const _PatientBreakdown({required this.stats, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final total  = stats.totalPatients;
-    final male   = stats.malePatients;
-    final female = stats.femalePatients;
-
     return _Card(
       isDark: isDark,
       child: Column(
@@ -587,16 +574,16 @@ class _PatientBreakdown extends StatelessWidget {
             children: [
               _DemoBar(
                 label: "Male",
-                count: male,
-                total: total,
+                count: stats.malePatients,
+                total: stats.totalPatients,
                 color: AppColors.primary,
                 isDark: isDark,
               ),
               const SizedBox(width: 12),
               _DemoBar(
                 label: "Female",
-                count: female,
-                total: total,
+                count: stats.femalePatients,
+                total: stats.totalPatients,
                 color: Colors.pink,
                 isDark: isDark,
               ),
@@ -634,24 +621,20 @@ class _DemoBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary,
-                ),
-              ),
-              Text(
-                "$count",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
+              Text(label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary,
+                  )),
+              Text("$count",
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  )),
             ],
           ),
           const SizedBox(height: 8),
@@ -665,15 +648,13 @@ class _DemoBar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            "${(pct * 100).toStringAsFixed(0)}%",
-            style: TextStyle(
-              fontSize: 11,
-              color: isDark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary,
-            ),
-          ),
+          Text("${(pct * 100).toStringAsFixed(0)}%",
+              style: TextStyle(
+                fontSize: 11,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              )),
         ],
       ),
     );
@@ -684,7 +665,6 @@ class _DemoBar extends StatelessWidget {
 class _ReportBreakdown extends StatelessWidget {
   final DashboardStatsModel stats;
   final bool isDark;
-
   const _ReportBreakdown({required this.stats, required this.isDark});
 
   @override
@@ -765,25 +745,21 @@ class _MiniStat extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
+          Text(value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: color,
+              )),
           const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10,
-              color: isDark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary,
-            ),
-          ),
+          Text(label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              )),
         ],
       ),
     );
@@ -795,8 +771,7 @@ class _TodaySchedule extends StatelessWidget {
   final List<TodayAppointmentModel> appointments;
   final bool isDark;
 
-  const _TodaySchedule(
-      {required this.appointments, required this.isDark});
+  const _TodaySchedule({required this.appointments, required this.isDark});
 
   Color _statusColor(String status) {
     switch (status) {
@@ -832,12 +807,10 @@ class _TodaySchedule extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (_) => const AppointmentsPage()),
+                  MaterialPageRoute(builder: (_) => const AppointmentsPage()),
                 ),
                 child: const Text("View all",
-                    style: TextStyle(
-                        fontSize: 12, color: AppColors.primary)),
+                    style: TextStyle(fontSize: 12, color: AppColors.primary)),
               ),
             ],
           ),
@@ -870,115 +843,104 @@ class _TodaySchedule extends StatelessWidget {
             ...appointments.map((a) {
               final statusColor = _statusColor(a.status);
               return Container(
-  margin: const EdgeInsets.only(bottom: 10),
-  child: Stack(
-    children: [
-      Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isDark
-              ? AppColors.darkBackground
-              : AppColors.lightBackground,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isDark
-                ? AppColors.borderDark
-                : AppColors.borderLight,
-            width: 0.8,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(_typeIcon(a.type),
-                  size: 16, color: AppColors.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    a.patientName,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary,
+                margin: const EdgeInsets.only(bottom: 10),
+                child: Stack(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.darkBackground
+                            : AppColors.lightBackground,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight,
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(_typeIcon(a.type),
+                                size: 16, color: AppColors.primary),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(a.patientName,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: isDark
+                                          ? AppColors.darkTextPrimary
+                                          : AppColors.lightTextPrimary,
+                                    )),
+                                const SizedBox(height: 2),
+                                Text(a.title,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary,
+                                    )),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(a.time,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  )),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(a.status,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: statusColor,
+                                    )),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    a.title,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary,
+                    // Accent bar
+                    Positioned(
+                      left: 0, top: 0, bottom: 0,
+                      child: Container(
+                        width: 3,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(14),
+                            bottomLeft: Radius.circular(14),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  a.time,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    a.status,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: statusColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-
-      // 🔥 Accent bar (بديل الـ left border)
-      Positioned(
-        left: 0,
-        top: 0,
-        bottom: 0,
-        child: Container(
-          width: 3,
-          decoration: BoxDecoration(
-            color: statusColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(14),
-              bottomLeft: Radius.circular(14),
-            ),
-          ),
-        ),
-      ),
-    ],
-  ),
-);
+              );
             }),
         ],
       ),
@@ -990,7 +952,6 @@ class _TodaySchedule extends StatelessWidget {
 class _Card extends StatelessWidget {
   final bool isDark;
   final Widget child;
-
   const _Card({required this.isDark, required this.child});
 
   @override
@@ -1022,7 +983,6 @@ class _Card extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final String text;
   final bool   isDark;
-
   const _SectionTitle(this.text, this.isDark);
 
   @override
@@ -1032,9 +992,7 @@ class _SectionTitle extends StatelessWidget {
       style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w800,
-        color: isDark
-            ? AppColors.darkTextPrimary
-            : AppColors.lightTextPrimary,
+        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
       ),
     );
   }

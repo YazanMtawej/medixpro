@@ -79,29 +79,30 @@ Future<void> login({
     emit(AuthError(_parseError(e)));
   }
 }
-
-  Future<void> register({
-    required String username,
-    required String email,
-    required String password,
-    required String role,
-  }) async {
-    emit(AuthLoading());
-    try {
-      final user = await _registerUseCase(
-        LoginRequest(
-          username: username,
-          email: email,
-          password: password,
-          role: role,
-        ),
-      );
-      await _tokenStorage.saveUserInfo(user.username, user.email);
-      emit(AuthAuthenticated(user));
-    } catch (e) {
-      emit(AuthError(_parseError(e)));
-    }
+Future<void> register({
+  required String username,
+  required String email,
+  required String password,
+  required String role,
+  String? doctorSecretKey, // ✅
+}) async {
+  emit(AuthLoading());
+  try {
+    final user = await _registerUseCase(
+      LoginRequest(
+        username:        username,
+        email:           email,
+        password:        password,
+        role:            role,
+        doctorSecretKey: doctorSecretKey, // ✅
+      ),
+    );
+    await _tokenStorage.saveUserInfo(user.username, user.email);
+    emit(AuthAuthenticated(user));
+  } catch (e) {
+    emit(AuthError(_parseError(e)));
   }
+}
 
 Future<void> logout() async {
   try {

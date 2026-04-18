@@ -1,14 +1,16 @@
 class LoginRequest {
   final String? username;
   final String? email;
-  final String password;
-  final String? role; // مطلوب عند التسجيل فقط
+  final String  password;
+  final String? role;
+  final String? doctorSecretKey; // ✅
 
   const LoginRequest({
     this.username,
     this.email,
     required this.password,
     this.role,
+    this.doctorSecretKey,
   });
 
   void validate({bool isRegister = false}) {
@@ -16,9 +18,7 @@ class LoginRequest {
         (email == null || email!.isEmpty)) {
       throw Exception("Username or email is required");
     }
-    if (password.isEmpty) {
-      throw Exception("Password is required");
-    }
+    if (password.isEmpty) throw Exception("Password is required");
     if (isRegister && (role == null || role!.isEmpty)) {
       throw Exception("Role is required");
     }
@@ -27,9 +27,10 @@ class LoginRequest {
   Map<String, dynamic> toJson() {
     return {
       if (username != null && username!.isNotEmpty) "username": username,
-      if (email != null && email!.isNotEmpty) "email": email,
+      if (email != null && email!.isNotEmpty)       "email":    email,
       "password": password,
-      if (role != null) "role": role,
+      if (role != null)            "role":             role,
+      if (doctorSecretKey != null) "doctor_secret_key": doctorSecretKey,
     };
   }
 }

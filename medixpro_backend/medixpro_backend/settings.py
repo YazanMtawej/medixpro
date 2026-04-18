@@ -4,7 +4,8 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "medixpro-super-secret"
-
+# ✅ الكود السري للتحقق من صفة الطبيب
+DOCTOR_SECRET_KEY = "MEDIX-DOCTOR-2026"
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]

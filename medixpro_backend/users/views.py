@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.conf import settings as django_settings
 from .models import Profile
 from .serializers import ProfileSerializer
 from core.utils import api_response
@@ -17,10 +17,11 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get("username", "").strip()
-        email = request.data.get("email", "").strip()
-        password = request.data.get("password", "")
-        role = request.data.get("role", User.Role.PATIENT)
+        username    = request.data.get("username", "").strip()
+        email       = request.data.get("email", "").strip()
+        password    = request.data.get("password", "")
+        role        = request.data.get("role", User.Role.PATIENT)
+        secret_key  = request.data.get("doctor_secret_key", "")
 
         if not username or not email or not password:
             return Response(
@@ -28,9 +29,17 @@ class RegisterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # ✅ التحقق من الكود السري إذا اختار صفة طبيب
+        if role == User.Role.DOCTOR:
+            if secret_key != django_settings.DOCTOR_SECRET_KEY:
+                return Response(
+                    api_response(False, "Invalid doctor verification code"),
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         if role not in [User.Role.DOCTOR, User.Role.PATIENT]:
             return Response(
-                api_response(False, "Invalid role. Must be 'doctor' or 'patient'"),
+                api_response(False, "Invalid role"),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -46,25 +55,19 @@ class RegisterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            role=role,
-        )
+        user    = User.objects.create_user(username=username, email=email, password=password, role=role)
         profile = Profile.objects.create(user=user)
         refresh = RefreshToken.for_user(user)
         update_last_login(None, user)
 
         return Response(
             api_response(True, "Account created successfully", {
-                "access": str(refresh.access_token),
+                "access":  str(refresh.access_token),
                 "refresh": str(refresh),
-                "user": ProfileSerializer(profile).data,
+                "user":    ProfileSerializer(profile).data,
             }),
             status=status.HTTP_201_CREATED,
         )
-
 
 class LoginView(APIView):
     permission_classes = [AllowAny]

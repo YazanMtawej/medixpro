@@ -7,7 +7,13 @@ import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final String role;
-  const RegisterPage({super.key, required this.role});
+  final String? doctorSecretKey;
+ 
+  const RegisterPage({
+    super.key,
+    required this.role,
+    this.doctorSecretKey,
+  });
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -25,15 +31,15 @@ class _RegisterPageState extends State<RegisterPage> {
     _passwordController.dispose();
     super.dispose();
   }
-
-  void _onRegister() {
-    context.read<AuthCubit>().register(
-          username: _usernameController.text.trim(),
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          role: widget.role,
-        );
-  }
+void _onRegister() {
+  context.read<AuthCubit>().register(
+    username:        _usernameController.text.trim(),
+    email:           _emailController.text.trim(),
+    password:        _passwordController.text,
+    role:            widget.role,
+    doctorSecretKey: widget.doctorSecretKey, // ✅
+  );
+}
 
   @override
   Widget build(BuildContext context) {
