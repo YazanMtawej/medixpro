@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/theme/theme_cubit.dart';
+import 'package:medixpro/features/appointments/presentation/pages/doctor_requests_page.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_dashboard_home.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_requests_page.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
@@ -32,6 +33,7 @@ class _DashboardPageState extends State<DashboardPage> {
     ReportsPage(),
     MedicationsPage(),
     AppointmentsPage(),
+    DoctorRequestsPage(),
     SettingsPage(),
   ];
 
@@ -41,6 +43,7 @@ class _DashboardPageState extends State<DashboardPage> {
     (Icons.description_rounded,    Icons.description_outlined,    "Reports"),
     (Icons.medication_rounded,     Icons.medication_outlined,     "Meds"),
     (Icons.calendar_month_rounded, Icons.calendar_month_outlined, "Schedule"),
+    (Icons.inbox_rounded,          Icons.inbox_outlined,          "Requests"),
     (Icons.settings_rounded,       Icons.settings_outlined,       "Settings"),
   ];
 

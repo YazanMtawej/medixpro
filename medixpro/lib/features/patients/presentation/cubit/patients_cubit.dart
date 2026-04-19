@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/errors/app_error_handler.dart';
 import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/patient.dart';
 import '../../domain/usecases/get_patients_usecase.dart';
@@ -26,69 +27,55 @@ class PatientsCubit extends Cubit<PatientsState> {
       final patients = await _getPatients();
       emit(PatientsLoaded(patients));
     } catch (e) {
-      emit(PatientsError("Failed to load patients: $e"));
+      emit(PatientsError(AppErrorHandler.handle(e, context: "loadPatients")));
     }
   }
 
   Future<void> addPatient(Patient patient) async {
-    // ✅ احفظ الاسم فوراً قبل أي عملية async
-    final String name = patient.name.trim().isNotEmpty
-        ? patient.name.trim()
-        : "New Patient";
-
+    final name = patient.name.trim().isNotEmpty ? patient.name.trim() : "New Patient";
     try {
       await _addPatient(patient);
-
-      // ✅ الإشعار منفصل عن الـ try حتى لا يُخفى فشله
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "New Patient Registered",
         body: "Patient '$name' has been added successfully.",
       );
-
       await loadPatients();
     } catch (e) {
-      emit(PatientsError("Failed to add patient: $e"));
+      emit(PatientsError(AppErrorHandler.handle(e, context: "addPatient")));
     }
   }
 
   Future<void> updatePatient(int id, Patient patient) async {
     try {
       await _updatePatient(id, patient);
-
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Patient Updated",
         body: "Patient '${patient.name}' has been updated.",
       );
-
       await loadPatients();
     } catch (e) {
-      emit(PatientsError("Failed to update patient: $e"));
+      emit(PatientsError(AppErrorHandler.handle(e, context: "updatePatient")));
     }
   }
 
   Future<void> deletePatient(int id) async {
     String name = "Patient";
-    final current = state;
-    if (current is PatientsLoaded) {
-      try {
-        name = current.patients.firstWhere((p) => p.id == id).name;
-      } catch (_) {}
+    final cur   = state;
+    if (cur is PatientsLoaded) {
+      try { name = cur.patients.firstWhere((p) => p.id == id).name; } catch (_) {}
     }
-
     try {
       await _deletePatient(id);
-
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Patient Removed",
-        body: "Patient '$name' and all related records were deleted.",
+        body: "Patient '$name' and all related records have been deleted.",
       );
-
       await loadPatients();
     } catch (e) {
-      emit(PatientsError("Failed to delete patient: $e"));
+      emit(PatientsError(AppErrorHandler.handle(e, context: "deletePatient")));
     }
   }
 }

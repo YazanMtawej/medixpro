@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/errors/app_error_handler.dart';
 import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/medication.dart';
 import '../../domain/usecases/get_medications_usecase.dart';
@@ -37,66 +38,56 @@ class MedicationsCubit extends Cubit<MedicationsState> {
       final meds = await _getMedications(patientId: patientId, search: search);
       emit(MedicationsLoaded(meds));
     } catch (e) {
-      emit(MedicationsError("Failed to load medications: $e"));
+      emit(MedicationsError(AppErrorHandler.handle(e, context: "fetchMedications")));
     }
   }
 
   Future<void> addNewMedication(Medication med) async {
-    final String name        = med.name.trim().isNotEmpty        ? med.name.trim()        : "Medication";
-    final String patientName = med.patientName.trim().isNotEmpty ? med.patientName.trim() : "Patient";
-
+    final name        = med.name.trim().isNotEmpty        ? med.name.trim()        : "Medication";
+    final patientName = med.patientName.trim().isNotEmpty ? med.patientName.trim() : "Patient";
     try {
       await _addMedication(med);
-
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Prescription Added",
         body: "$name prescribed to $patientName.",
       );
-
       await fetchMedications();
     } catch (e) {
-      emit(MedicationsError("Failed to add medication: $e"));
+      emit(MedicationsError(AppErrorHandler.handle(e, context: "addMedication")));
     }
   }
 
   Future<void> updateExistingMedication(Medication med) async {
     try {
       await _updateMedication(med);
-
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Prescription Updated",
         body: "Medication '${med.name}' has been updated.",
       );
-
       await fetchMedications();
     } catch (e) {
-      emit(MedicationsError("Failed to update medication: $e"));
+      emit(MedicationsError(AppErrorHandler.handle(e, context: "updateMedication")));
     }
   }
 
   Future<void> deleteExistingMedication(int id) async {
     String name = "Medication";
-    final current = state;
-    if (current is MedicationsLoaded) {
-      try {
-        name = current.medications.firstWhere((m) => m.id == id).name;
-      } catch (_) {}
+    final cur   = state;
+    if (cur is MedicationsLoaded) {
+      try { name = cur.medications.firstWhere((m) => m.id == id).name; } catch (_) {}
     }
-
     try {
       await _deleteMedication(id);
-
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Prescription Removed",
         body: "Medication '$name' has been deleted.",
       );
-
       await fetchMedications();
     } catch (e) {
-      emit(MedicationsError("Failed to delete medication: $e"));
+      emit(MedicationsError(AppErrorHandler.handle(e, context: "deleteMedication")));
     }
   }
 }

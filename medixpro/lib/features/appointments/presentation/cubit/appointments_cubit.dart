@@ -1,24 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/errors/app_error_handler.dart';
 import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/appointment.dart';
-import '../../domain/usecases/get_appointments_usecase.dart';
-import '../../domain/usecases/add_appointment_usecase.dart';
-import '../../domain/usecases/update_appointment_usecase.dart';
-import '../../domain/usecases/delete_appointment_usecase.dart';
+import '../../domain/entities/appointment_request.dart';
+import '../../domain/repositories/appointments_repository.dart';
 import 'appointments_state.dart';
 
 class AppointmentsCubit extends Cubit<AppointmentsState> {
-  final GetAppointmentsUseCase   _getAppointments;
-  final AddAppointmentUseCase    _addAppointment;
-  final UpdateAppointmentUseCase _updateAppointment;
-  final DeleteAppointmentUseCase _deleteAppointment;
+  final AppointmentsRepository _repo;
 
-  AppointmentsCubit(
-    this._getAppointments,
-    this._addAppointment,
-    this._updateAppointment,
-    this._deleteAppointment,
-  ) : super(AppointmentsInitial());
+  AppointmentsCubit(this._repo) : super(AppointmentsInitial());
+
+  // ─── Appointments ─────────────────────────────────────────────────────────
 
   Future<void> fetchAppointments({
     int? patientId,
@@ -27,88 +20,160 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
   }) async {
     emit(AppointmentsLoading());
     try {
-      final data = await _getAppointments(
-        patientId: patientId,
-        status: status,
-        search: search,
-      );
+      final data = await _repo.getAppointments(
+          patientId: patientId, status: status, search: search);
       emit(AppointmentsLoaded(data));
     } catch (e) {
-      emit(AppointmentsError("Failed to load appointments: $e"));
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "fetchAppointments")));
     }
   }
 
   Future<void> addNewAppointment(Appointment a) async {
-    final String title       = a.title.trim().isNotEmpty       ? a.title.trim()       : "Appointment";
-    final String patientName = a.patientName.trim().isNotEmpty ? a.patientName.trim() : "Patient";
-
+    final title       = a.title.trim().isNotEmpty       ? a.title.trim()       : "Appointment";
+    final patientName = a.patientName.trim().isNotEmpty ? a.patientName.trim() : "Patient";
     try {
-      await _addAppointment(a);
-
+      await _repo.addAppointment(a);
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Appointment Scheduled",
         body: "'$title' for $patientName has been created.",
       );
-
-      // تذكير قبل 30 دقيقة إن كان الموعد في المستقبل
-      if (a.dateTime.isAfter(DateTime.now().add(const Duration(minutes: 31)))) {
-        NotificationService().scheduleNotification(
-          id: a.id == 0
-              ? DateTime.now().millisecondsSinceEpoch % 100000 + 1
-              : a.id,
-          title: "⏰ Upcoming Appointment",
-          body: "'$title' for $patientName starts in 30 minutes.",
-          scheduledTime: a.dateTime.subtract(const Duration(minutes: 30)),
-        );
-      }
-
       await fetchAppointments();
     } catch (e) {
-      emit(AppointmentsError("Failed to add appointment: $e"));
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "addAppointment")));
     }
   }
 
   Future<void> editAppointment(Appointment a) async {
-    final String title  = a.title.trim().isNotEmpty ? a.title.trim() : "Appointment";
-    final String status = a.status;
-
     try {
-      await _updateAppointment(a);
-
+      await _repo.updateAppointment(a);
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Appointment Updated",
-        body: "'$title' is now: $status.",
+        body: "'${a.title}' is now: ${a.status}.",
       );
-
       await fetchAppointments();
     } catch (e) {
-      emit(AppointmentsError("Failed to update appointment: $e"));
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "editAppointment")));
     }
   }
 
   Future<void> deleteAppointment(int id) async {
     String title = "Appointment";
-    final current = state;
-    if (current is AppointmentsLoaded) {
+    final cur    = state;
+    if (cur is AppointmentsLoaded) {
       try {
-        title = current.appointments.firstWhere((a) => a.id == id).title;
+        title = cur.appointments.firstWhere((a) => a.id == id).title;
       } catch (_) {}
     }
-
     try {
-      await _deleteAppointment(id);
-
+      await _repo.deleteAppointment(id);
       NotificationService().showNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Appointment Removed",
-        body: "Appointment '$title' has been deleted.",
+        body: "'$title' has been deleted.",
       );
-
       await fetchAppointments();
     } catch (e) {
-      emit(AppointmentsError("Failed to delete appointment: $e"));
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "deleteAppointment")));
+    }
+  }
+
+  // ─── Requests ─────────────────────────────────────────────────────────────
+
+  Future<void> fetchRequests() async {
+    emit(AppointmentsLoading());
+    try {
+      final requests = await _repo.getRequests();
+      emit(RequestsLoaded(requests));
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "fetchRequests")));
+    }
+  }
+
+  Future<void> sendRequest(AppointmentRequest req) async {
+    try {
+      await _repo.sendRequest(req);
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Request Sent ✅",
+        body: "Your appointment request '${req.title}' has been sent to the doctor.",
+      );
+      await fetchRequests();
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "sendRequest")));
+    }
+  }
+
+  Future<void> acceptRequest(int id, {String notes = ""}) async {
+    try {
+      await _repo.acceptRequest(id, notes: notes);
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Request Accepted ✅",
+        body: "Appointment has been created and scheduled.",
+      );
+      emit(RequestActionSuccess("Request accepted. Appointment has been created."));
+      await fetchRequests();
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "acceptRequest")));
+    }
+  }
+
+  Future<void> rejectRequest(int id, {String doctorNote = ""}) async {
+    try {
+      await _repo.rejectRequest(id, doctorNote: doctorNote);
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Request Rejected",
+        body: "The appointment request has been rejected.",
+      );
+      emit(RequestActionSuccess("Request has been rejected."));
+      await fetchRequests();
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "rejectRequest")));
+    }
+  }
+
+  Future<void> suggestAlternative(
+      int id, String suggestedDate, String note) async {
+    try {
+      await _repo.suggestAlternative(id, suggestedDate, note);
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Alternative Time Suggested",
+        body: "The patient has been notified of the suggested time.",
+      );
+      emit(RequestActionSuccess("Alternative time suggested to patient."));
+      await fetchRequests();
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "suggestAlternative")));
+    }
+  }
+
+  Future<void> confirmSuggestion(int id) async {
+    try {
+      await _repo.confirmSuggestion(id);
+      NotificationService().showNotification(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Appointment Confirmed ✅",
+        body: "You confirmed the suggested appointment time.",
+      );
+      emit(RequestActionSuccess(
+          "Appointment confirmed! Check your appointments for details."));
+      await fetchRequests();
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "confirmSuggestion")));
     }
   }
 }

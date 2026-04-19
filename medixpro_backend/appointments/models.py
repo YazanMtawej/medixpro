@@ -4,7 +4,7 @@ from patients.models import Patient
 
 
 class Appointment(models.Model):
-    # ... نفس الكود السابق بدون تغيير ...
+
     class Status(models.TextChoices):
         SCHEDULED   = "scheduled",   "Scheduled"
         COMPLETED   = "completed",   "Completed"
@@ -43,58 +43,27 @@ class Appointment(models.Model):
 
 
 class AppointmentRequest(models.Model):
-    """طلب موعد من المريض للطبيب"""
 
-    class RequestStatus(models.TextChoices):
+    class Status(models.TextChoices):
         PENDING   = "pending",   "Pending"
         ACCEPTED  = "accepted",  "Accepted"
         REJECTED  = "rejected",  "Rejected"
-        SUGGESTED = "suggested", "Doctor Suggested Alternative"
+        SUGGESTED = "suggested", "Alternative Suggested"
 
-    patient         = models.ForeignKey(
-                        Patient,
-                        on_delete=models.CASCADE,
-                        related_name="appointment_requests",
-                      )
-    requested_by    = models.ForeignKey(
-                        settings.AUTH_USER_MODEL,
-                        on_delete=models.CASCADE,
-                        related_name="sent_requests",
-                      )
-    doctor          = models.ForeignKey(
-                        settings.AUTH_USER_MODEL,
-                        on_delete=models.SET_NULL,
-                        null=True,
-                        blank=True,
-                        related_name="received_requests",
-                      )
-    title           = models.CharField(max_length=255)
-    type            = models.CharField(
-                        max_length=20,
-                        choices=Appointment.Type.choices,
-                        default=Appointment.Type.GENERAL,
-                      )
-    preferred_date  = models.DateTimeField()
-    reason          = models.TextField(blank=True)
-    symptoms        = models.TextField(blank=True)
-    status          = models.CharField(
-                        max_length=20,
-                        choices=RequestStatus.choices,
-                        default=RequestStatus.PENDING,
-                      )
-    # عند اقتراح الطبيب موعداً بديلاً
-    suggested_date  = models.DateTimeField(null=True, blank=True)
-    doctor_note     = models.TextField(blank=True)
-    # الـ appointment المُنشأ بعد القبول
-    appointment     = models.OneToOneField(
-                        Appointment,
-                        on_delete=models.SET_NULL,
-                        null=True,
-                        blank=True,
-                        related_name="from_request",
-                      )
-    created_at      = models.DateTimeField(auto_now_add=True)
-    updated_at      = models.DateTimeField(auto_now=True)
+    patient        = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointment_requests")
+    requested_by   = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_requests")
+    doctor         = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="received_requests")
+    title          = models.CharField(max_length=255)
+    type           = models.CharField(max_length=20, choices=Appointment.Type.choices, default=Appointment.Type.GENERAL)
+    preferred_date = models.DateTimeField()
+    reason         = models.TextField(blank=True)
+    symptoms       = models.TextField(blank=True)
+    status         = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    suggested_date = models.DateTimeField(null=True, blank=True)
+    doctor_note    = models.TextField(blank=True)
+    appointment    = models.OneToOneField(Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name="from_request")
+    created_at     = models.DateTimeField(auto_now_add=True)
+    updated_at     = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]

@@ -184,13 +184,7 @@ Future<void> main() async {
     updateMedicationUseCase,
     deleteMedicationUseCase,
   );
-
-  final appointmentsCubit = AppointmentsCubit(
-    getAppointmentsUseCase,
-    addAppointmentUseCase,
-    updateAppointmentUseCase,
-    deleteAppointmentUseCase,
-  );
+final appointmentsCubit = AppointmentsCubit(appointmentsRepository);
 
   // ================= RUN APP =================
   runApp(

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/errors/app_error_handler.dart';
 import 'package:medixpro/core/notifications/notification_service.dart';
 import '../../domain/entities/login_request.dart';
 import '../../domain/entities/user.dart';
@@ -116,9 +117,7 @@ Future<void> logout() async {
   emit(AuthLoggedOut());
 }
 
-  String _parseError(Object e) {
-    final msg = e.toString();
-    if (msg.contains("Exception:")) return msg.replaceFirst("Exception: ", "");
-    return "Something went wrong. Please try again.";
-  }
+ String _parseError(Object e) { 
+  return AppErrorHandler.handle(e, context: "auth");
+}
 }

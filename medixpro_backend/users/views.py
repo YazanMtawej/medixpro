@@ -10,18 +10,23 @@ from .models import Profile
 from .serializers import ProfileSerializer
 from core.utils import api_response
 
+from .models import Profile
+from .serializers import ProfileSerializer
+from core.utils import api_response
+from patients.models import Patient
 User = get_user_model()
+
 
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username    = request.data.get("username", "").strip()
-        email       = request.data.get("email", "").strip()
-        password    = request.data.get("password", "")
-        role        = request.data.get("role", User.Role.PATIENT)
-        secret_key  = request.data.get("doctor_secret_key", "")
+        username   = request.data.get("username", "").strip()
+        email      = request.data.get("email", "").strip()
+        password   = request.data.get("password", "")
+        role       = request.data.get("role", User.Role.PATIENT)
+        secret_key = request.data.get("doctor_secret_key", "")
 
         if not username or not email or not password:
             return Response(
@@ -29,19 +34,19 @@ class RegisterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ التحقق من الكود السري إذا اختار صفة طبيب
+        if role not in [User.Role.DOCTOR, User.Role.PATIENT]:
+            return Response(
+                api_response(False, "Invalid role. Must be 'doctor' or 'patient'"),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if role == User.Role.DOCTOR:
-            if secret_key != django_settings.DOCTOR_SECRET_KEY:
+            expected = getattr(django_settings, "DOCTOR_SECRET_KEY", "")
+            if not expected or secret_key != expected:
                 return Response(
                     api_response(False, "Invalid doctor verification code"),
                     status=status.HTTP_403_FORBIDDEN,
                 )
-
-        if role not in [User.Role.DOCTOR, User.Role.PATIENT]:
-            return Response(
-                api_response(False, "Invalid role"),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
         if User.objects.filter(username=username).exists():
             return Response(
@@ -57,6 +62,17 @@ class RegisterView(APIView):
 
         user    = User.objects.create_user(username=username, email=email, password=password, role=role)
         profile = Profile.objects.create(user=user)
+
+        # ✅ إنشاء Patient record تلقائياً لكل مريض جديد
+        if role == User.Role.PATIENT:
+            Patient.objects.create(
+                user   = user,
+                name   = username,
+                age    = 0,
+                gender = Patient.Gender.MALE,
+                phone  = "",
+            )
+
         refresh = RefreshToken.for_user(user)
         update_last_login(None, user)
 
@@ -68,7 +84,6 @@ class RegisterView(APIView):
             }),
             status=status.HTTP_201_CREATED,
         )
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
