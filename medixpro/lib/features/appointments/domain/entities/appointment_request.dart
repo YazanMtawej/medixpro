@@ -39,26 +39,27 @@ class AppointmentRequest {
 
   factory AppointmentRequest.fromJson(Map<String, dynamic> json) {
     return AppointmentRequest(
-      id:             json["id"]               ?? 0,
-      patientId:      json["patient"]          ?? 0,
-      patientName:    json["patient_name"]     ?? "",
-      doctorId:       json["doctor"],
-      doctorName:     json["doctor_name"]      ?? "",
-      requestedById:  json["requested_by"]     ?? 0,
+      id:              json["id"]                ?? 0,
+      patientId:       json["patient"]           ?? 0,
+      patientName:     json["patient_name"]      ?? "",
+      doctorId:        json["doctor"],
+      doctorName:      json["doctor_name"]       ?? "",
+      requestedById:   json["requested_by"]      ?? 0,
       requestedByName: json["requested_by_name"] ?? "",
-      title:          json["title"]            ?? "",
-      type:           json["type"]             ?? "general",
-      preferredDate:  json["preferred_date"]   ?? "",
-      reason:         json["reason"]           ?? "",
-      symptoms:       json["symptoms"]         ?? "",
-      status:         json["status"]           ?? "pending",
-      suggestedDate:  json["suggested_date"],
-      doctorNote:     json["doctor_note"]      ?? "",
-      appointmentId:  json["appointment"],
-      createdAt:      json["created_at"],
+      title:           json["title"]             ?? "",
+      type:            json["type"]              ?? "general",
+      preferredDate:   json["preferred_date"]    ?? "",
+      reason:          json["reason"]            ?? "",
+      symptoms:        json["symptoms"]          ?? "",
+      status:          json["status"]            ?? "pending",
+      suggestedDate:   json["suggested_date"],
+      doctorNote:      json["doctor_note"]       ?? "",
+      appointmentId:   json["appointment"],
+      createdAt:       json["created_at"],
     );
   }
 
+  // ✅ يرسل فقط ما يحتاجه الـ server
   Map<String, dynamic> toJson() => {
     "title":          title,
     "type":           type,

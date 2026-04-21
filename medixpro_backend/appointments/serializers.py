@@ -15,7 +15,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "reason", "symptoms", "diagnosis", "notes", "follow_up_date",
             "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "patient_name", "patient_phone", "patient_age", "created_at", "updated_at"]
+        read_only_fields = [
+            "id", "patient_name", "patient_phone", "patient_age",
+            "created_at", "updated_at",
+        ]
 
 
 class AppointmentRequestSerializer(serializers.ModelSerializer):
@@ -26,18 +29,26 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model  = AppointmentRequest
         fields = [
-            "id", "patient", "patient_name",
+            "id",
+            "patient", "patient_name",
             "requested_by", "requested_by_name",
             "doctor", "doctor_name",
-            "title", "type", "preferred_date", "reason", "symptoms",
+            "title", "type",
+            "preferred_date", "reason", "symptoms",
             "status", "suggested_date", "doctor_note",
             "appointment", "created_at", "updated_at",
         ]
         read_only_fields = [
-            "id", "patient_name", "doctor_name", "requested_by_name",
+            "id",
+            # ✅ هذه تُعيَّن server-side — لا يرسلها الـ client
+            "patient", "patient_name",
+            "requested_by", "requested_by_name",
+            "doctor", "doctor_name",
             "status", "suggested_date", "doctor_note",
             "appointment", "created_at", "updated_at",
         ]
 
     def get_doctor_name(self, obj):
-        return obj.doctor.get_full_name() or obj.doctor.username if obj.doctor else ""
+        if not obj.doctor:
+            return ""
+        return obj.doctor.get_full_name() or obj.doctor.username

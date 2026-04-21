@@ -148,45 +148,75 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
             logger.error(f"list requests error: {e}")
             return Response(api_response(False, "Failed to load requests"), status=500)
 
-    def create(self, request, *args, **kwargs):
-        """المريض يرسل طلب موعد"""
+    def  create(self, request, *args, **kwargs):
         if request.user.is_doctor():
             return Response(
                 api_response(False, "Doctors cannot send appointment requests."),
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # ✅ التحقق من وجود Patient record
         patient = _get_patient_for_user(request.user)
         if not patient:
             logger.error(f"No patient profile for user: {request.user.username} (id={request.user.id})")
             return Response(
-                api_response(
-                    False,
-                    "Your patient profile is not set up yet. Please complete your profile first.",
-                ),
+                api_response(False, "Your patient profile is not set up. Please contact support."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # ✅ نمرر فقط الحقول التي يرسلها المريض
+        data = {
+            "title":          request.data.get("title", ""),
+            "type":           request.data.get("type", "general"),
+            "preferred_date": request.data.get("preferred_date", ""),
+            "reason":         request.data.get("reason", ""),
+            "symptoms":       request.data.get("symptoms", ""),
+        }
+
+        if not data["title"]:
+            return Response(
+                api_response(False, "Title is required."),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not data["preferred_date"]:
+            return Response(
+                api_response(False, "Preferred date is required."),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            s = self.get_serializer(data=request.data)
-            s.is_valid(raise_exception=True)
-            req = s.save(
-                requested_by=request.user,
-                patient=patient,
+            req = AppointmentRequest.objects.create(
+                patient        = patient,
+                requested_by   = request.user,
+                title          = data["title"],
+                type           = data["type"],
+                preferred_date = data["preferred_date"],
+                reason         = data.get("reason", ""),
+                symptoms       = data.get("symptoms", ""),
             )
 
             _notify_all_doctors(
                 title   = "🔔 New Appointment Request",
-                message = f"Patient {request.user.username} requested '{req.title}' on {req.preferred_date.strftime('%Y-%m-%d %H:%M')}.",
+                message = (
+                    f"Patient {request.user.username} requested "
+                    f"'{req.title}' on "
+                    f"{req.preferred_date.strftime('%Y-%m-%d %H:%M')}."
+                ),
             )
 
-            return Response(api_response(True, "Request sent successfully", s.data), status=201)
+            serializer = AppointmentRequestSerializer(req)
+            return Response(
+                api_response(True, "Request sent successfully", serializer.data),
+                status=status.HTTP_201_CREATED,
+            )
 
         except Exception as e:
-            logger.error(f"create request error for user {request.user.username}: {e}")
-            return Response(api_response(False, "Failed to send request. Please try again."), status=400)
-
+            logger.error(f"create request error | user={request.user.username} | {e}")
+            return Response(
+                api_response(False, "Failed to send request. Please try again."),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) 
+    
     @action(detail=True, methods=["post"], url_path="accept")
     def accept(self, request, pk=None):
         if request.user.is_patient():

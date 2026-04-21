@@ -3,8 +3,10 @@ import '../entities/user.dart';
 import '../repositories/auth_repository.dart';
 
 class RegisterUseCase {
-  final AuthRepository repository;
-  const RegisterUseCase(this.repository);
+  final AuthRepository _repository;
+  const RegisterUseCase(this._repository);
 
-  Future<User> call(LoginRequest request) => repository.register(request);
+  Future<User> call(LoginRequest request) {
+    return _repository.register(request.toJson());
+  }
 }

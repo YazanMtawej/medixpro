@@ -9535,3 +9535,11 @@ Traceback (most recent call last):
     )
 django.core.exceptions.FieldError: Cannot resolve keyword 'user' into field. Choices are: address, age, allergies, appointment_requests, appointments, birth_date, blood_type, chronic_diseases, created_at, current_medications, email, emergency_contact_name, emergency_contact_phone, gender, id, medications, name, national_id, notes, phone, previous_surgeries, reports, updated_at
 "GET /api/v1/patients/ HTTP/1.1" 500 24578
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83

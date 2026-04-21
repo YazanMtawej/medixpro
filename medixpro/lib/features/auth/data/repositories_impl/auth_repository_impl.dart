@@ -1,57 +1,96 @@
-import '../../domain/entities/login_request.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../datasources/auth_remote_datasource.dart';
-import '../models/login_response.dart';
 import '../../../../core/storage/token_storage.dart';
+import '../datasources/auth_remote_datasource.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDataSource remote;
-  final TokenStorage tokenStorage;
+  final AuthRemoteDataSource _remote;
+  final TokenStorage         _tokenStorage;
 
-  const AuthRepositoryImpl(this.remote, this.tokenStorage);
+  const AuthRepositoryImpl(this._remote, this._tokenStorage);
 
   @override
-  Future<User> login(LoginRequest request) async {
-    request.validate();
-    final data = await remote.login(request.toJson());
-    final response = LoginResponse.fromJson(data);
-    await tokenStorage.saveTokens(
-      response.access,
-      response.refresh,
-      role: response.user.role,
-    );
-    return response.user;
+  Future<User> login(String username, String password) async {
+    final data = await _remote.login(username, password);
+    return _saveAndReturn(data, fallbackUsername: username);
   }
 
   @override
-  Future<User> register(LoginRequest request) async {
-    request.validate(isRegister: true);
-    final data = await remote.register(request.toJson());
-    final response = LoginResponse.fromJson(data);
-    await tokenStorage.saveTokens(
-      response.access,
-      response.refresh,
-      role: response.user.role,
+  Future<User> register(Map<String, dynamic> requestData) async {
+    final data = await _remote.register(requestData);
+    return _saveAndReturn(
+      data,
+      fallbackRole: requestData["role"] as String? ?? "patient",
     );
-    return response.user;
   }
 
   @override
   Future<void> logout(String refreshToken) async {
-    await remote.logout(refreshToken);
-    await tokenStorage.clear();
+    await _remote.logout(refreshToken);
+    await _tokenStorage.clear();
   }
 
   @override
-  Future<bool> isLoggedIn() async => tokenStorage.hasToken();
+  Future<User?> autoLogin() async {
+    try {
+      final hasToken = await _tokenStorage.hasToken();
+      if (!hasToken) {
+        // ignore: avoid_print
+        print("ℹ️ autoLogin: no token");
+        return null;
+      }
+      final username = await _tokenStorage.getUsername();
+      final role     = await _tokenStorage.getRole();
+      final email    = await _tokenStorage.getEmail();
 
-  @override
-  Future<User?> getLoggedInUser() async {
-    final username = await tokenStorage.getUsername();
-    final email = await tokenStorage.getEmail();
-    final role = await tokenStorage.getRole();
-    if (username == null || email == null || role == null) return null;
-    return User(username: username, email: email, role: role);
+      if (username == null || username.isEmpty) {
+        // ignore: avoid_print
+        print("ℹ️ autoLogin: no username");
+        return null;
+      }
+      // ignore: avoid_print
+      print("✅ autoLogin: $username ($role)");
+      return User(username: username, email: email ?? "", role: role ?? "patient");
+    } catch (e) {
+      // ignore: avoid_print
+      print("❌ autoLogin error: $e");
+      return null;
+    }
+  }
+
+  // ─── Helper ────────────────────────────────────────────────────────────────
+  Future<User> _saveAndReturn(
+    Map<String, dynamic> data, {
+    String fallbackUsername = "",
+    String fallbackRole     = "patient",
+  }) async {
+    final access  = data["access"]  as String? ?? "";
+    final refresh = data["refresh"] as String? ?? "";
+    final userMap = data["user"]    as Map<String, dynamic>? ?? {};
+
+    if (access.isEmpty) throw Exception("Server returned no access token");
+
+    final role     = userMap["role"]     as String? ?? fallbackRole;
+    final username = userMap["username"] as String? ?? fallbackUsername;
+    final email    = userMap["email"]    as String? ?? "";
+
+    // ✅ sequential — لا race condition
+    await _tokenStorage.saveTokens(access, refresh, role: role);
+    await _tokenStorage.saveUserInfo(username, email);
+
+    // تحقق فوري
+    final check = await _tokenStorage.getAccessToken();
+    // ignore: avoid_print
+    print("✅ Token saved & verified: ${check != null ? 'OK' : 'FAILED'}");
+    // ignore: avoid_print
+    print("   role=$role | user=$username");
+
+    return User(
+      username:   username,
+      email:      email,
+      role:       role,
+      fullName:   userMap["full_name"]   as String?,
+      clinicName: userMap["clinic_name"] as String?,
+    );
   }
 }

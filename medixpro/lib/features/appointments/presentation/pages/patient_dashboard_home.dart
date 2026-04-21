@@ -17,46 +17,56 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<AppointmentsCubit>().fetchAppointments());
+    Future.microtask(
+      () => context.read<AppointmentsCubit>().fetchAppointments(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark    = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final authState = context.watch<AuthCubit>().state;
-    final user      = authState is AuthAuthenticated ? authState.user : null;
+    final user = authState is AuthAuthenticated ? authState.user : null;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          // ─── AppBar ───────────────────────────────────────────────────────
+          /// 🔥 MODERN APP BAR
           SliverAppBar(
-            expandedHeight: 170,
+            expandedHeight: 190,
             pinned: true,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: isDark ? AppColors.gradientDark : AppColors.gradientLight,
+                    colors: isDark
+                        ? AppColors.gradientDark
+                        : AppColors.gradientLight,
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        /// HEADER
                         Row(
                           children: [
                             Container(
-                              width: 50, height: 50,
+                              width: 52,
+                              height: 52,
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Center(
                                 child: Text(
@@ -64,50 +74,87 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
                                       ? user!.username[0].toUpperCase()
                                       : "P",
                                   style: const TextStyle(
-                                    fontSize: 22, fontWeight: FontWeight.w800,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
                                     color: AppColors.primary,
                                   ),
                                 ),
                               ),
                             ),
+
                             const SizedBox(width: 12),
+
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Welcome back,",
-                                    style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
-                                Text(user?.username ?? "Patient",
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+                                Text(
+                                  "Welcome back 👋",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.7),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Text(
+                                  user?.username ?? "Patient",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
                               ],
                             ),
+
                             const Spacer(),
+
+                            /// THEME BUTTON
                             BlocBuilder<ThemeCubit, ThemeMode>(
-                              builder: (context, mode) => Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(
-                                    mode == ThemeMode.dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                                    color: Colors.white, size: 20,
+                              builder: (context, mode) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  onPressed: () => context.read<ThemeCubit>().toggleTheme(),
-                                ),
-                              ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      mode == ThemeMode.dark
+                                          ? Icons.light_mode_rounded
+                                          : Icons.dark_mode_rounded,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () => context
+                                        .read<ThemeCubit>()
+                                        .toggleTheme(),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
+
+                        const Spacer(),
+
+                        /// QUICK INFO STRIP
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Text("Patient Portal 🏥",
-                              style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                          child: Row(
+                            children: const [
+                              Icon(
+                                Icons.health_and_safety,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                "Your health, simplified",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -115,26 +162,49 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
                 ),
               ),
             ),
-            backgroundColor: AppColors.primary,
           ),
 
-          // ─── Stats ────────────────────────────────────────────────────────
+          /// 🔥 STATS (UPGRADED)
           BlocBuilder<AppointmentsCubit, AppointmentsState>(
             builder: (context, state) {
-              final appointments = state is AppointmentsLoaded ? state.appointments : [];
-              final upcoming     = appointments.where((a) => a.status == "scheduled" && a.dateTime.isAfter(DateTime.now())).length;
-              final completed    = appointments.where((a) => a.status == "completed").length;
+              final appointments = state is AppointmentsLoaded
+                  ? state.appointments
+                  : [];
+
+              final upcoming = appointments
+                  .where(
+                    (a) =>
+                        a.status == "scheduled" &&
+                        a.dateTime.isAfter(DateTime.now()),
+                  )
+                  .length;
+
+              final completed = appointments
+                  .where((a) => a.status == "completed")
+                  .length;
 
               return SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 sliver: SliverToBoxAdapter(
                   child: Row(
                     children: [
-                      _StatChip(label: "Upcoming", value: "$upcoming", color: AppColors.primary, isDark: isDark),
-                      const SizedBox(width: 12),
-                      _StatChip(label: "Completed", value: "$completed", color: AppColors.success, isDark: isDark),
-                      const SizedBox(width: 12),
-                      _StatChip(label: "Total", value: "${appointments.length}", color: AppColors.warning, isDark: isDark),
+                      _ModernStatCard(
+                        "Upcoming",
+                        upcoming.toString(),
+                        AppColors.primary,
+                      ),
+                      const SizedBox(width: 10),
+                      _ModernStatCard(
+                        "Completed",
+                        completed.toString(),
+                        AppColors.success,
+                      ),
+                      const SizedBox(width: 10),
+                      _ModernStatCard(
+                        "Total",
+                        appointments.length.toString(),
+                        AppColors.warning,
+                      ),
                     ],
                   ),
                 ),
@@ -142,119 +212,48 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
             },
           ),
 
-          // ─── Upcoming Appointments ────────────────────────────────────────
+          /// 🔥 UPCOMING APPOINTMENTS
           BlocBuilder<AppointmentsCubit, AppointmentsState>(
             builder: (context, state) {
               if (state is AppointmentsLoading) {
-                return const SliverToBoxAdapter(
-                    child: Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator())));
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
               }
 
               final upcoming = state is AppointmentsLoaded
-                  ? state.appointments.where((a) => a.status == "scheduled" && a.dateTime.isAfter(DateTime.now())).take(5).toList()
+                  ? state.appointments
+                        .where(
+                          (a) =>
+                              a.status == "scheduled" &&
+                              a.dateTime.isAfter(DateTime.now()),
+                        )
+                        .take(5)
+                        .toList()
                   : [];
 
               return SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Upcoming Appointments",
-                          style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w800,
-                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                          )),
-                      const SizedBox(height: 12),
+                      /// TITLE
+                      const Text(
+                        "Upcoming Appointments",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      /// EMPTY STATE
                       if (upcoming.isEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                              width: 0.8,
-                            ),
-                          ),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Icon(Icons.event_available_outlined, size: 40,
-                                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
-                                const SizedBox(height: 8),
-                                Text("No upcoming appointments",
-                                    style: TextStyle(
-                                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                                    )),
-                                const SizedBox(height: 4),
-                                Text("Go to Requests tab to book one",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                                    )),
-                              ],
-                            ),
-                          ),
-                        )
+                        _EmptyState(isDark: isDark)
                       else
-                        ...upcoming.map((a) {
-                          final dt  = a.dateTime.toLocal();
-                          final str = "${dt.year}-${dt.month.toString().padLeft(2,'0')}-${dt.day.toString().padLeft(2,'0')} "
-                              "${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}";
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border(
-                                left: const BorderSide(color: AppColors.primary, width: 3),
-                                top: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 0.8),
-                                right: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 0.8),
-                                bottom: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 0.8),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(Icons.calendar_month_outlined, size: 18, color: AppColors.primary),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(a.title,
-                                          style: TextStyle(
-                                            fontSize: 13, fontWeight: FontWeight.w700,
-                                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                                          )),
-                                      const SizedBox(height: 2),
-                                      Text(str,
-                                          style: TextStyle(fontSize: 12,
-                                              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.success.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text("Scheduled",
-                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.success)),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
+                        ...upcoming.map((a) => _AppointmentCard(a)),
                     ],
                   ),
                 ),
@@ -267,32 +266,155 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
   }
 }
 
-class _StatChip extends StatelessWidget {
-  final String label;
+class _ModernStatCard extends StatelessWidget {
+  final String title;
   final String value;
-  final Color  color;
-  final bool   isDark;
+  final Color color;
 
-  const _StatChip({required this.label, required this.value, required this.color, required this.isDark});
+  const _ModernStatCard(this.title, this.value, this.color);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 0.8),
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.15), color.withOpacity(0.05)],
+          ),
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
-            const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 11,
-                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(title, style: const TextStyle(fontSize: 11)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AppointmentCard extends StatelessWidget {
+  final dynamic a;
+
+  const _AppointmentCard(this.a);
+
+  @override
+  Widget build(BuildContext context) {
+    final dt = a.dateTime.toLocal();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Theme.of(context).cardColor,
+        boxShadow: [
+          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.05)),
+        ],
+      ),
+      child: Row(
+        children: [
+          /// DATE BOX
+          Container(
+            width: 55,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  "${dt.day}",
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                Text("${dt.month}", style: const TextStyle(fontSize: 10)),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          /// DETAILS
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  a.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${dt.hour}:${dt.minute.toString().padLeft(2, '0')}",
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+
+          /// STATUS
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Text(
+              "Scheduled",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: Colors.green,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final bool isDark;
+
+  const _EmptyState({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Theme.of(context).cardColor,
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.event_busy, size: 42),
+          const SizedBox(height: 10),
+          const Text(
+            "No appointments yet",
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Start by booking your first appointment",
+            style: TextStyle(fontSize: 12),
+          ),
+        ],
       ),
     );
   }

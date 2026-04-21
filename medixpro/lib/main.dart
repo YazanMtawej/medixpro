@@ -72,25 +72,20 @@ import 'features/medications/presentation/pages/medications_page.dart';
 // ================= APPOINTMENTS =================
 import 'features/appointments/data/datasources/appointments_remote_datasource.dart';
 import 'features/appointments/data/repositories_impl/appointments_repository_impl.dart';
-import 'features/appointments/domain/usecases/get_appointments_usecase.dart';
-import 'features/appointments/domain/usecases/add_appointment_usecase.dart';
-import 'features/appointments/domain/usecases/update_appointment_usecase.dart';
-import 'features/appointments/domain/usecases/delete_appointment_usecase.dart';
 import 'features/appointments/presentation/cubit/appointments_cubit.dart';
 import 'features/appointments/presentation/pages/appointments_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ تهيئة الإشعارات المحلية
   await NotificationService().init();
 
-  // ================= CORE =================
+  // ─── Core ─────────────────────────────────────────────────────────────────
   const secureStorage = FlutterSecureStorage();
   final tokenStorage  = TokenStorage(secureStorage);
   final apiClient     = ApiClient(tokenStorage);
 
-  // ================= DATA SOURCES =================
+  // ─── Data Sources ─────────────────────────────────────────────────────────
   final authRemote         = AuthRemoteDataSource(apiClient);
   final dashboardRemote    = DashboardRemoteDataSource(apiClient);
   final settingsRemote     = SettingsRemoteDataSource(apiClient);
@@ -99,7 +94,7 @@ Future<void> main() async {
   final medicationsRemote  = MedicationsRemoteDataSource(apiClient);
   final appointmentsRemote = AppointmentsRemoteDataSource(apiClient);
 
-  // ================= REPOSITORIES =================
+  // ─── Repositories ─────────────────────────────────────────────────────────
   final authRepository         = AuthRepositoryImpl(authRemote, tokenStorage);
   final dashboardRepository    = DashboardRepositoryImpl(dashboardRemote);
   final settingsRepository     = SettingsRepositoryImpl(settingsRemote);
@@ -108,40 +103,42 @@ Future<void> main() async {
   final medicationsRepository  = MedicationsRepositoryImpl(medicationsRemote);
   final appointmentsRepository = AppointmentsRepositoryImpl(appointmentsRemote);
 
-  // ================= USE CASES =================
+  // ─── Use Cases ────────────────────────────────────────────────────────────
 
+  // Auth
   final loginUseCase    = LoginUseCase(authRepository);
   final registerUseCase = RegisterUseCase(authRepository);
 
-  final getDashboardStatsUseCase    = GetDashboardStatsUseCase(dashboardRepository);
-  final getTodayAppointmentsUseCase = GetTodayAppointmentsUseCase(dashboardRepository);
+  // Dashboard
+  final getDashboardStats    = GetDashboardStatsUseCase(dashboardRepository);
+  final getTodayAppointments = GetTodayAppointmentsUseCase(dashboardRepository);
 
-  final getProfileUseCase       = GetProfileUseCase(settingsRepository);
-  final updateProfileUseCase    = UpdateProfileUseCase(settingsRepository);
-  final getNotificationsUseCase = GetNotificationsUseCase(settingsRepository);
-  final logoutUseCase           = LogoutUseCase(settingsRepository);
+  // Settings
+  final getProfile       = GetProfileUseCase(settingsRepository);
+  final updateProfile    = UpdateProfileUseCase(settingsRepository);
+  final getNotifications = GetNotificationsUseCase(settingsRepository);
+  final logoutUseCase    = LogoutUseCase(settingsRepository);
 
-  final getPatientsUseCase   = GetPatientsUseCase(patientsRepository);
-  final addPatientUseCase    = AddPatientUseCase(patientsRepository);
-  final updatePatientUseCase = UpdatePatientUseCase(patientsRepository);
-  final deletePatientUseCase = DeletePatientUseCase(patientsRepository);
+  // Patients
+  final getPatients   = GetPatientsUseCase(patientsRepository);
+  final addPatient    = AddPatientUseCase(patientsRepository);
+  final updatePatient = UpdatePatientUseCase(patientsRepository);
+  final deletePatient = DeletePatientUseCase(patientsRepository);
 
-  final getReportsUseCase   = GetReportsUseCase(reportsRepository);
-  final addReportUseCase    = AddReportUseCase(reportsRepository);
-  final updateReportUseCase = UpdateReportUseCase(reportsRepository);
-  final deleteReportUseCase = DeleteReportUseCase(reportsRepository);
+  // Reports
+  final getReports   = GetReportsUseCase(reportsRepository);
+  final addReport    = AddReportUseCase(reportsRepository);
+  final updateReport = UpdateReportUseCase(reportsRepository);
+  final deleteReport = DeleteReportUseCase(reportsRepository);
 
-  final getMedicationsUseCase   = GetMedicationsUseCase(medicationsRepository);
-  final addMedicationUseCase    = AddMedicationUseCase(medicationsRepository);
-  final updateMedicationUseCase = UpdateMedicationUseCase(medicationsRepository);
-  final deleteMedicationUseCase = DeleteMedicationUseCase(medicationsRepository);
+  // Medications
+  final getMedications   = GetMedicationsUseCase(medicationsRepository);
+  final addMedication    = AddMedicationUseCase(medicationsRepository);
+  final updateMedication = UpdateMedicationUseCase(medicationsRepository);
+  final deleteMedication = DeleteMedicationUseCase(medicationsRepository);
 
-  final getAppointmentsUseCase   = GetAppointmentsUseCase(appointmentsRepository);
-  final addAppointmentUseCase    = AddAppointmentUseCase(appointmentsRepository);
-  final updateAppointmentUseCase = UpdateAppointmentUseCase(appointmentsRepository);
-  final deleteAppointmentUseCase = DeleteAppointmentUseCase(appointmentsRepository);
+  // ─── Cubits ───────────────────────────────────────────────────────────────
 
-  // ================= CUBITS =================
   final authCubit = AuthCubit(
     repository:      authRepository,
     loginUseCase:    loginUseCase,
@@ -149,44 +146,30 @@ Future<void> main() async {
     tokenStorage:    tokenStorage,
   );
 
-  final dashboardCubit = DashboardCubit(
-    getDashboardStatsUseCase,
-    getTodayAppointmentsUseCase,
-  );
+  final dashboardCubit = DashboardCubit(getDashboardStats, getTodayAppointments);
 
-  // ✅ SettingsCubit يقبل الآن repository إضافياً
   final settingsCubit = SettingsCubit(
-    getProfileUseCase,
-    updateProfileUseCase,
-    getNotificationsUseCase,
+    getProfile,
+    updateProfile,
+    getNotifications,
     logoutUseCase,
     tokenStorage,
     settingsRepository,
   );
 
   final patientsCubit = PatientsCubit(
-    getPatientsUseCase,
-    addPatientUseCase,
-    updatePatientUseCase,
-    deletePatientUseCase,
-  );
+      getPatients, addPatient, updatePatient, deletePatient);
 
   final reportsCubit = ReportsCubit(
-    getReportsUseCase,
-    addReportUseCase,
-    updateReportUseCase,
-    deleteReportUseCase,
-  );
+      getReports, addReport, updateReport, deleteReport);
 
   final medicationsCubit = MedicationsCubit(
-    getMedicationsUseCase,
-    addMedicationUseCase,
-    updateMedicationUseCase,
-    deleteMedicationUseCase,
-  );
-final appointmentsCubit = AppointmentsCubit(appointmentsRepository);
+      getMedications, addMedication, updateMedication, deleteMedication);
 
-  // ================= RUN APP =================
+  // ✅ AppointmentsCubit يأخذ الـ repository مباشرة
+  final appointmentsCubit = AppointmentsCubit(appointmentsRepository);
+
+  // ─── Run App ──────────────────────────────────────────────────────────────
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -226,9 +209,9 @@ class MedixProApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: "MedixPro",
-          theme: AppTheme.lightTheme(),
-          darkTheme: AppTheme.darkTheme(),
-          themeMode: themeMode,
+          theme:      AppTheme.lightTheme(),
+          darkTheme:  AppTheme.darkTheme(),
+          themeMode:  themeMode,
           home: const SplashPage(),
           routes: {
             "/login":         (_) => const LoginPage(),
