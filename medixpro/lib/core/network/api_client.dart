@@ -11,7 +11,7 @@ class ApiClient {
 
   ApiClient(this.tokenStorage) {
     final baseOptions = BaseOptions(
-      baseUrl: "http://127.0.0.1:8000/api/v1/",
+      baseUrl: "http://10.119.116.175:8000//api/v1/",
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
       headers: {

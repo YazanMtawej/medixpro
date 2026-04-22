@@ -9543,3 +9543,11 @@ Internal Server Error: /api/v1/appointment-requests/
 "POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
 Internal Server Error: /api/v1/appointment-requests/
 "POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+Internal Server Error: /api/v1/appointment-requests/
+"POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
