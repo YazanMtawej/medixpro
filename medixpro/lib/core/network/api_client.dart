@@ -7,11 +7,17 @@ class ApiClient {
   final TokenStorage tokenStorage;
 
   bool _isRefreshing = false;
-  final List<_PendingRequest> _pendingQueue = [];
+  final List<_PendingRequest> _queue = [];
+
+  static const _baseUrl = "http://127.0.0.1:8000/api/v1/";
+  // ✅ للـ production غير لـ:
+  // static const _baseUrl = "https://api.medixpro.com/api/v1/";
+
+  static const _publicPaths = ["auth/login/", "auth/register/", "auth/refresh/"];
 
   ApiClient(this.tokenStorage) {
-    final baseOptions = BaseOptions(
-      baseUrl: "http://10.119.116.175:8000//api/v1/",
+    final opts = BaseOptions(
+      baseUrl:        _baseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
       headers: {
@@ -20,150 +26,118 @@ class ApiClient {
       },
     );
 
-    dio         = Dio(baseOptions);
-    _refreshDio = Dio(baseOptions.copyWith());
+    dio         = Dio(opts);
+    _refreshDio = Dio(opts.copyWith());
 
-    _setupInterceptors();
+    _addTokenInterceptor();
+    _addLogInterceptor();
+    _addRefreshInterceptor();
   }
 
-  void _setupInterceptors() {
-    // ─── 1. Token Attachment ───────────────────────────────────────────────
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // مسارات عامة لا تحتاج token
-          const publicPaths = ["auth/login/", "auth/register/", "auth/refresh/"];
-          final isPublic    = publicPaths.any((p) => options.path.contains(p));
-
-          if (!isPublic) {
-            final token = await tokenStorage.getAccessToken();
-            // ignore: avoid_print
-            print("🔑 Attaching token: ${token != null ? '${token.substring(0, 20)}...' : 'NULL'}");
-
-            if (token != null && token.isNotEmpty) {
-              options.headers["Authorization"] = "Bearer $token";
-            }
+  void _addTokenInterceptor() {
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final isPublic = _publicPaths.any((p) => options.path.contains(p));
+        if (!isPublic) {
+          final token = await tokenStorage.getAccessToken();
+          if (token != null && token.isNotEmpty) {
+            options.headers["Authorization"] = "Bearer $token";
           }
-
-          handler.next(options);
-        },
-      ),
-    );
-
-    // ─── 2. Logging ────────────────────────────────────────────────────────
-    dio.interceptors.add(LogInterceptor(
-      request:         true,
-      requestHeader:   true,
-      requestBody:     true,
-      responseHeader:  false,
-      responseBody:    true,
-      error:           true,
-      // ignore: avoid_print
-      logPrint: (obj) => print(obj),
+        }
+        handler.next(options);
+      },
     ));
-
-    // ─── 3. Auto Refresh on 401 ────────────────────────────────────────────
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onError: (error, handler) async {
-          final statusCode = error.response?.statusCode;
-          final path       = error.requestOptions.path;
-
-          // فقط نعالج 401 وليس على endpoint الـ refresh نفسه
-          if (statusCode != 401 || path.contains("auth/")) {
-            return handler.next(error);
-          }
-
-          // ignore: avoid_print
-          print("🔄 401 detected on $path — attempting token refresh...");
-
-          // إذا كان الـ refresh جارياً، أضف الطلب للقائمة
-          if (_isRefreshing) {
-            // ignore: avoid_print
-            print("⏳ Refresh in progress — queuing request: $path");
-            _pendingQueue.add(_PendingRequest(error.requestOptions, handler));
-            return;
-          }
-
-          _isRefreshing = true;
-
-          try {
-            final refreshToken = await tokenStorage.getRefreshToken();
-
-            if (refreshToken == null || refreshToken.isEmpty) {
-              // ignore: avoid_print
-              print("❌ No refresh token — user must login again");
-              _isRefreshing = false;
-              return handler.next(error);
-            }
-
-            // ignore: avoid_print
-            print("🔄 Sending refresh request...");
-
-            final response = await _refreshDio.post(
-              "auth/refresh/",
-              data: {"refresh": refreshToken},
-            );
-
-            // ✅ يدعم هيكلين مختلفين للـ response
-            final body      = response.data as Map<String, dynamic>;
-            final newAccess = body["data"]?["access"] as String?
-                           ?? body["access"]           as String?;
-
-            if (newAccess == null || newAccess.isEmpty) {
-              // ignore: avoid_print
-              print("❌ Refresh returned no access token — body: $body");
-              _isRefreshing = false;
-              _failPending(error);
-              return handler.next(error);
-            }
-
-            // ignore: avoid_print
-            print("✅ Token refreshed successfully");
-            await tokenStorage.saveAccessToken(newAccess);
-
-            // تنفيذ الطلبات المعلقة
-            for (final pending in _pendingQueue) {
-              pending.options.headers["Authorization"] = "Bearer $newAccess";
-              try {
-                final retryRes = await dio.fetch(pending.options);
-                pending.handler.resolve(retryRes);
-              } catch (e) {
-                pending.handler.next(error);
-              }
-            }
-            _pendingQueue.clear();
-            _isRefreshing = false;
-
-            // إعادة الطلب الأصلي
-            final retryOptions = error.requestOptions;
-            retryOptions.headers["Authorization"] = "Bearer $newAccess";
-            final retryResponse = await dio.fetch(retryOptions);
-            return handler.resolve(retryResponse);
-
-          } catch (e) {
-            // ignore: avoid_print
-            print("❌ Token refresh FAILED: $e");
-            _isRefreshing = false;
-            _failPending(error);
-            // ✅ لا نمسح الـ token — المستخدم يقرر
-            return handler.next(error);
-          }
-        },
-      ),
-    );
   }
 
-  void _failPending(DioException error) {
-    for (final pending in _pendingQueue) {
-      pending.handler.next(error);
+  void _addLogInterceptor() {
+    dio.interceptors.add(LogInterceptor(
+      request:        true,
+      requestHeader:  true,
+      requestBody:    true,
+      responseHeader: false,
+      responseBody:   true,
+      error:          true,
+      // ignore: avoid_print
+      logPrint: (o) => print(o),
+    ));
+  }
+
+  void _addRefreshInterceptor() {
+    dio.interceptors.add(InterceptorsWrapper(
+      onError: (error, handler) async {
+        final status = error.response?.statusCode;
+        final path   = error.requestOptions.path;
+
+        if (status != 401 || path.contains("auth/")) {
+          return handler.next(error);
+        }
+
+        if (_isRefreshing) {
+          _queue.add(_PendingRequest(error.requestOptions, handler));
+          return;
+        }
+
+        _isRefreshing = true;
+
+        try {
+          final refresh = await tokenStorage.getRefreshToken();
+          if (refresh == null || refresh.isEmpty) {
+            _isRefreshing = false;
+            return handler.next(error);
+          }
+
+          final res  = await _refreshDio.post(
+            "auth/refresh/",
+            data: {"refresh": refresh},
+          );
+
+          final body      = res.data as Map<String, dynamic>;
+          final newAccess = body["data"]?["access"] as String?
+                         ?? body["access"]           as String?;
+
+          if (newAccess == null || newAccess.isEmpty) {
+            _isRefreshing = false;
+            _flushQueue(error);
+            return handler.next(error);
+          }
+
+          await tokenStorage.saveAccessToken(newAccess);
+
+          // تنفيذ الطلبات المعلقة
+          for (final p in _queue) {
+            p.options.headers["Authorization"] = "Bearer $newAccess";
+            try {
+              handler.resolve(await dio.fetch(p.options));
+            } catch (e) {
+              p.handler.next(error);
+            }
+          }
+          _queue.clear();
+          _isRefreshing = false;
+
+          // إعادة الطلب الأصلي
+          error.requestOptions.headers["Authorization"] = "Bearer $newAccess";
+          return handler.resolve(await dio.fetch(error.requestOptions));
+
+        } catch (e) {
+          _isRefreshing = false;
+          _flushQueue(error);
+          return handler.next(error);
+        }
+      },
+    ));
+  }
+
+  void _flushQueue(DioException error) {
+    for (final p in _queue) {
+      p.handler.next(error);
     }
-    _pendingQueue.clear();
+    _queue.clear();
   }
 }
 
 class _PendingRequest {
-  final RequestOptions         options;
+  final RequestOptions          options;
   final ErrorInterceptorHandler handler;
   _PendingRequest(this.options, this.handler);
 }

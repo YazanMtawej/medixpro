@@ -5,42 +5,41 @@ class TokenStorage {
 
   const TokenStorage(this._storage);
 
-  static const _accessKey   = "access_token";
-  static const _refreshKey  = "refresh_token";
-  static const _roleKey     = "user_role";
-  static const _usernameKey = "username";
-  static const _emailKey    = "email";
+  static const _kAccess   = "access_token";
+  static const _kRefresh  = "refresh_token";
+  static const _kRole     = "user_role";
+  static const _kUsername = "username";
+  static const _kEmail    = "email";
 
-  // ✅ sequential writes — لا Future.wait
+  // ✅ sequential writes — يحل مشكلة race condition على Android
   Future<void> saveTokens(
     String access,
     String refresh, {
     required String role,
   }) async {
-    await _storage.write(key: _accessKey,  value: access);
-    await _storage.write(key: _refreshKey, value: refresh);
-    await _storage.write(key: _roleKey,    value: role);
+    await _storage.write(key: _kAccess,  value: access);
+    await _storage.write(key: _kRefresh, value: refresh);
+    await _storage.write(key: _kRole,    value: role);
   }
 
-  Future<void> saveAccessToken(String access) async {
-    await _storage.write(key: _accessKey, value: access);
-  }
+  Future<void> saveAccessToken(String access) async =>
+      _storage.write(key: _kAccess, value: access);
 
   Future<void> saveUserInfo(String username, String email) async {
-    await _storage.write(key: _usernameKey, value: username);
-    await _storage.write(key: _emailKey,    value: email);
+    await _storage.write(key: _kUsername, value: username);
+    await _storage.write(key: _kEmail,    value: email);
   }
 
-  Future<String?> getAccessToken()  => _storage.read(key: _accessKey);
-  Future<String?> getRefreshToken() => _storage.read(key: _refreshKey);
-  Future<String?> getRole()         => _storage.read(key: _roleKey);
-  Future<String?> getUsername()     => _storage.read(key: _usernameKey);
-  Future<String?> getEmail()        => _storage.read(key: _emailKey);
+  Future<String?> getAccessToken()  => _storage.read(key: _kAccess);
+  Future<String?> getRefreshToken() => _storage.read(key: _kRefresh);
+  Future<String?> getRole()         => _storage.read(key: _kRole);
+  Future<String?> getUsername()     => _storage.read(key: _kUsername);
+  Future<String?> getEmail()        => _storage.read(key: _kEmail);
 
   Future<bool> hasToken() async {
-    final token = await _storage.read(key: _accessKey);
-    return token != null && token.isNotEmpty;
+    final t = await _storage.read(key: _kAccess);
+    return t != null && t.isNotEmpty;
   }
 
-  Future<void> clear() async => _storage.deleteAll();
+  Future<void> clear() => _storage.deleteAll();
 }

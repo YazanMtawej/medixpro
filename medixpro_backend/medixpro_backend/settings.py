@@ -1,14 +1,14 @@
 from pathlib import Path
 from datetime import timedelta
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "medixpro-super-secret"
-# ✅ الكود السري للتحقق من صفة الطبيب
-DOCTOR_SECRET_KEY = "MEDIX-DOCTOR-2026"
-DEBUG = True
-
-ALLOWED_HOSTS = ["*"]
+# ─── Security ─────────────────────────────────────────────────────────────────
+SECRET_KEY       = os.environ.get("DJANGO_SECRET_KEY", "change-me-in-production")
+DEBUG            = os.environ.get("DEBUG", "True") == "True"
+ALLOWED_HOSTS    = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+DOCTOR_SECRET_KEY = os.environ.get("DOCTOR_SECRET_KEY", "MEDIX-DOCTOR-2026")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -41,91 +41,102 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "medixpro_backend.urls"
+ROOT_URLCONF    = "medixpro_backend.urls"
+AUTH_USER_MODEL = "users.User"
 
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME":   BASE_DIR / "db.sqlite3",
+        # ✅ WAL mode يحسن الأداء على SQLite
+        "OPTIONS": {"timeout": 20},
+    }
+}
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],  # optional
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
-                "django.template.context_processors.request",
+                "django.template.context_processors.request",  # 🔥 مهم للـ admin
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
-AUTH_USER_MODEL = "users.User"
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-# ✅ تعريف واحد فقط — لا تكرار
+# ─── REST Framework ────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": (
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
-    ),
+    ],
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardPagination",
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
-    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
-    "DEFAULT_VERSION": "v1",
-    "ALLOWED_VERSIONS": ["v1"],
+    # ✅ throttling للحماية من brute force
     "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "user": "1000/day",
+        "anon": "30/minute",
+        "user": "500/hour",
     },
 }
 
+# ─── JWT ──────────────────────────────────────────────────────────────────────
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
+    "ACCESS_TOKEN_LIFETIME":  timedelta(hours=6),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
+    "ROTATE_REFRESH_TOKENS":  True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "UPDATE_LAST_LOGIN": True,
 }
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    }
-}
+# ─── CORS ─────────────────────────────────────────────────────────────────────
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # ✅ production: False
+CORS_ALLOWED_ORIGINS   = os.environ.get(
+    "CORS_ORIGINS", "http://localhost:8000"
+).split(",")
 
+# ─── Logging ──────────────────────────────────────────────────────────────────
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {module}: {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
         "file": {
-            "level": "ERROR",
             "class": "logging.FileHandler",
-            "filename": "medixpro_errors.log",
+            "filename": BASE_DIR / "medixpro.log",
+            "formatter": "verbose",
         },
     },
     "loggers": {
-        "django": {
-            "handlers": ["file"],
-            "level": "ERROR",
-            "propagate": True,
-        },
+        "django":        {"handlers": ["console", "file"], "level": "WARNING"},
+        "appointments":  {"handlers": ["console", "file"], "level": "DEBUG"},
+        "patients":      {"handlers": ["console", "file"], "level": "DEBUG"},
+        "notifications": {"handlers": ["console", "file"], "level": "DEBUG"},
     },
 }
 
-STATIC_URL = "static/"
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+LANGUAGE_CODE      = "en-us"
+TIME_ZONE          = "UTC"
+USE_TZ             = True
+STATIC_URL         = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
