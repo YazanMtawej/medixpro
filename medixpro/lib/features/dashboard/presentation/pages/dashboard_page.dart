@@ -415,22 +415,51 @@ class _HeaderBackground extends StatelessWidget {
 class _StatsGrid extends StatelessWidget {
   final DashboardStatsModel stats;
   final bool isDark;
-  const _StatsGrid({required this.stats, required this.isDark});
+
+  const _StatsGrid({
+    required this.stats,
+    required this.isDark,
+  });
+
+  int _getCrossAxisCount(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
+    if (width < 360) return 1; // 🔥 fix crash completely
+    if (width < 600) return 2;
+    return 2; // ممكن تخليه 3 لو تابلت لاحقًا
+  }
+
+  double _getAspectRatio(BuildContext context, int crossAxisCount) {
+    final width = MediaQuery.of(context).size.width;
+
+    if (crossAxisCount == 1) return 3.2; // card أطول شوي
+    if (width < 360) return 1.8;
+    if (width < 420) return 1.6;
+    return 1.55;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final crossAxisCount = _getCrossAxisCount(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle("Overview", isDark),
         const SizedBox(height: 14),
+
         GridView.count(
-          crossAxisCount: 2,
+          crossAxisCount: crossAxisCount,
+
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 1.55,
+
+          childAspectRatio:
+              _getAspectRatio(context, crossAxisCount),
+
           children: [
             _StatCard(
               label: "Total Patients",
@@ -438,8 +467,12 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.people_rounded,
               color: AppColors.primary,
               isDark: isDark,
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const PatientsListPage())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PatientsListPage(),
+                ),
+              ),
             ),
             _StatCard(
               label: "Today's Appointments",
@@ -447,8 +480,12 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.calendar_month_rounded,
               color: AppColors.success,
               isDark: isDark,
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AppointmentsPage())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AppointmentsPage(),
+                ),
+              ),
             ),
             _StatCard(
               label: "Medical Reports",
@@ -456,8 +493,12 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.description_rounded,
               color: AppColors.warning,
               isDark: isDark,
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const ReportsPage())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ReportsPage(),
+                ),
+              ),
             ),
             _StatCard(
               label: "Prescriptions",
@@ -465,8 +506,12 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.medication_rounded,
               color: Colors.purple,
               isDark: isDark,
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const MedicationsPage())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const MedicationsPage(),
+                ),
+              ),
             ),
           ],
         ),
@@ -474,13 +519,12 @@ class _StatsGrid extends StatelessWidget {
     );
   }
 }
-
 class _StatCard extends StatelessWidget {
-  final String   label;
-  final String   value;
+  final String label;
+  final String value;
   final IconData icon;
-  final Color    color;
-  final bool     isDark;
+  final Color color;
+  final bool isDark;
   final VoidCallback onTap;
 
   const _StatCard({
@@ -492,81 +536,124 @@ class _StatCard extends StatelessWidget {
     required this.onTap,
   });
 
+  double _scale(BuildContext context, double size) {
+    final width = MediaQuery.of(context).size.width;
+
+    if (width < 360) return size * 0.75;
+    if (width < 420) return size * 0.9;
+    return size;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            width: 0.8,
+    final valueSize = _scale(context, 18);
+    final labelSize = _scale(context, 10);
+    final iconSize = _scale(context, 18);
+    final arrowSize = _scale(context, 12);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.all(_scale(context, 14)),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkCard : AppColors.lightCard,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isDark
+                  ? AppColors.borderDark
+                  : AppColors.borderLight,
+              width: 0.8,
+            ),
+            boxShadow: isDark
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
           ),
-          boxShadow: isDark
-              ? []
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // TOP ROW
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(_scale(context, 8)),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: iconSize,
+                      color: color,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: arrowSize,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
                   ),
                 ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
+              ),
+
+              const SizedBox(height: 8),
+
+              // BOTTOM TEXT
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 🔥 VALUE (fix overflow)
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      value,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: valueSize,
+                        fontWeight: FontWeight.w800,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
                   ),
-                  child: Icon(icon, size: 18, color: color),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 12,
-                  color: isDark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary,
-                ),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value,
+
+                  const SizedBox(height: 2),
+
+                  // LABEL (safe wrap)
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary,
-                    )),
-                const SizedBox(height: 2),
-                Text(label,
-                    style: TextStyle(
-                      fontSize: 11,
+                      fontSize: labelSize,
+                      fontWeight: FontWeight.w900,
                       color: isDark
                           ? AppColors.darkTextSecondary
                           : AppColors.lightTextSecondary,
-                    )),
-              ],
-            ),
-          ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
 // ─── Patient Breakdown ────────────────────────────────────────────────────────
 class _PatientBreakdown extends StatelessWidget {
   final DashboardStatsModel stats;

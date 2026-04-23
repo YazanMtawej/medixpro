@@ -1,0 +1,22 @@
+[WARNING] 2026-04-23 01:46:54,616 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-23 01:46:54,617 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-23 01:46:54,652 log: Unauthorized: /api/v1/auth/refresh/
+[WARNING] 2026-04-23 01:46:54,653 basehttp: "POST /api/v1/auth/refresh/ HTTP/1.1" 401 74
+[WARNING] 2026-04-23 01:47:10,277 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-23 01:47:10,277 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-23 01:47:10,280 log: Unauthorized: /api/v1/appointments/
+[WARNING] 2026-04-23 01:47:10,281 basehttp: "GET /api/v1/appointments/ HTTP/1.1" 401 87
+[WARNING] 2026-04-23 01:47:10,356 log: Unauthorized: /api/v1/auth/refresh/
+[WARNING] 2026-04-23 01:47:10,357 basehttp: "POST /api/v1/auth/refresh/ HTTP/1.1" 401 74
+[WARNING] 2026-04-23 01:47:19,875 log: Unauthorized: /api/v1/appointments/
+[WARNING] 2026-04-23 01:47:19,876 basehttp: "GET /api/v1/appointments/ HTTP/1.1" 401 87
+[WARNING] 2026-04-23 01:47:19,909 log: Unauthorized: /api/v1/auth/refresh/
+[WARNING] 2026-04-23 01:47:19,909 basehttp: "POST /api/v1/auth/refresh/ HTTP/1.1" 401 74
+[WARNING] 2026-04-23 01:47:20,908 log: Unauthorized: /api/v1/appointment-requests/
+[WARNING] 2026-04-23 01:47:20,908 basehttp: "GET /api/v1/appointment-requests/ HTTP/1.1" 401 87
+[WARNING] 2026-04-23 01:47:20,940 log: Unauthorized: /api/v1/auth/refresh/
+[WARNING] 2026-04-23 01:47:20,941 basehttp: "POST /api/v1/auth/refresh/ HTTP/1.1" 401 74
+[WARNING] 2026-04-23 01:47:23,302 log: Unauthorized: /api/v1/auth/logout/
+[WARNING] 2026-04-23 01:47:23,303 basehttp: "POST /api/v1/auth/logout/ HTTP/1.1" 401 87
+[WARNING] 2026-04-23 02:11:45,479 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-23 02:11:45,483 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
