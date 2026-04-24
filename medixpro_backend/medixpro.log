@@ -20,3 +20,29 @@
 [WARNING] 2026-04-23 01:47:23,303 basehttp: "POST /api/v1/auth/logout/ HTTP/1.1" 401 87
 [WARNING] 2026-04-23 02:11:45,479 log: Unauthorized: /api/v1/dashboard/stats/
 [WARNING] 2026-04-23 02:11:45,483 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[ERROR] 2026-04-23 03:06:41,655 views: create request error | user=yazan | 'str' object has no attribute 'strftime'
+[ERROR] 2026-04-23 03:06:41,662 log: Internal Server Error: /api/v1/appointment-requests/
+[ERROR] 2026-04-23 03:06:41,663 basehttp: "POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+[WARNING] 2026-04-25 02:03:29,142 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 02:03:29,143 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[ERROR] 2026-04-25 02:05:03,263 views: create request error | user=yazan | 'str' object has no attribute 'strftime'
+[ERROR] 2026-04-25 02:05:03,263 log: Internal Server Error: /api/v1/appointment-requests/
+[ERROR] 2026-04-25 02:05:03,281 basehttp: "POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+[ERROR] 2026-04-25 02:16:21,028 views: create request error | user=yazan | 'str' object has no attribute 'strftime'
+[ERROR] 2026-04-25 02:16:21,030 log: Internal Server Error: /api/v1/appointment-requests/
+[ERROR] 2026-04-25 02:16:21,031 basehttp: "POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+[ERROR] 2026-04-25 02:18:17,075 views: create request error | user=yazan | 'str' object has no attribute 'strftime'
+[ERROR] 2026-04-25 02:18:17,075 log: Internal Server Error: /api/v1/appointment-requests/
+[ERROR] 2026-04-25 02:18:17,076 basehttp: "POST /api/v1/appointment-requests/ HTTP/1.1" 500 83
+[WARNING] 2026-04-25 02:20:51,606 log: Not Found: /api/v1/notifications/63/
+[WARNING] 2026-04-25 02:20:51,607 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59
+[WARNING] 2026-04-25 02:20:52,201 log: Not Found: /api/v1/notifications/63/
+[WARNING] 2026-04-25 02:20:52,202 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59
+[WARNING] 2026-04-25 02:20:53,106 log: Not Found: /api/v1/notifications/63/
+[WARNING] 2026-04-25 02:20:53,107 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59
+[WARNING] 2026-04-25 02:20:53,288 log: Not Found: /api/v1/notifications/63/
+[WARNING] 2026-04-25 02:20:53,288 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59
+[WARNING] 2026-04-25 02:20:54,320 log: Not Found: /api/v1/notifications/63/
+[WARNING] 2026-04-25 02:20:54,321 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59
+[WARNING] 2026-04-25 02:20:54,537 log: Not Found: /api/v1/notifications/63/
+[WARNING] 2026-04-25 02:20:54,537 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59

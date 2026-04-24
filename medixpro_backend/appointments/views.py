@@ -148,7 +148,7 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
             logger.error(f"list requests error: {e}")
             return Response(api_response(False, "Failed to load requests"), status=500)
 
-    def  create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         if request.user.is_doctor():
             return Response(
                 api_response(False, "Doctors cannot send appointment requests."),
@@ -163,9 +163,8 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ نمرر فقط الحقول التي يرسلها المريض
         data = {
-            "title":          request.data.get("title", ""),
+            "title":          request.data.get("title", "").strip(),
             "type":           request.data.get("type", "general"),
             "preferred_date": request.data.get("preferred_date", ""),
             "reason":         request.data.get("reason", ""),
@@ -173,16 +172,9 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
         }
 
         if not data["title"]:
-            return Response(
-                api_response(False, "Title is required."),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
+            return Response(api_response(False, "Title is required."), status=400)
         if not data["preferred_date"]:
-            return Response(
-                api_response(False, "Preferred date is required."),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(api_response(False, "Preferred date is required."), status=400)
 
         try:
             req = AppointmentRequest.objects.create(
@@ -191,32 +183,43 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
                 title          = data["title"],
                 type           = data["type"],
                 preferred_date = data["preferred_date"],
-                reason         = data.get("reason", ""),
-                symptoms       = data.get("symptoms", ""),
+                reason         = data["reason"],
+                symptoms       = data["symptoms"],
+            )
+        except Exception as e:
+            logger.error(f"create request DB error | user={request.user.username} | {e}")
+            return Response(
+                api_response(False, "Failed to save request. Please try again."),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+        # ✅ الإشعار منفصل — لا يؤثر على الـ response إذا فشل
+        try:
+            from django.utils.timezone import localtime
+            # ✅ يتعامل مع timezone-aware و naive datetime
+            dt_local  = localtime(req.preferred_date) if req.preferred_date.tzinfo else req.preferred_date
+            dt_str    = dt_local.strftime("%Y-%m-%d %H:%M")
             _notify_all_doctors(
                 title   = "🔔 New Appointment Request",
-                message = (
-                    f"Patient {request.user.username} requested "
-                    f"'{req.title}' on "
-                    f"{req.preferred_date.strftime('%Y-%m-%d %H:%M')}."
-                ),
+                message = f"Patient {request.user.username} requested '{req.title}' on {dt_str}.",
             )
+        except Exception as e:
+            logger.error(f"Notification failed (non-critical): {e}")
+            # ✅ لا نوقف العملية إذا فشل الإشعار
 
+        try:
             serializer = AppointmentRequestSerializer(req)
             return Response(
                 api_response(True, "Request sent successfully", serializer.data),
                 status=status.HTTP_201_CREATED,
             )
-
         except Exception as e:
-            logger.error(f"create request error | user={request.user.username} | {e}")
+            logger.error(f"Serializer error: {e}")
+            # الطلب محفوظ — نرجع success بدون data
             return Response(
-                api_response(False, "Failed to send request. Please try again."),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            ) 
-    
+                api_response(True, "Request sent successfully", {"id": req.id}),
+                status=status.HTTP_201_CREATED,
+            )
     @action(detail=True, methods=["post"], url_path="accept")
     def accept(self, request, pk=None):
         if request.user.is_patient():
