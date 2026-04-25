@@ -46,3 +46,142 @@
 [WARNING] 2026-04-25 02:20:54,321 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59
 [WARNING] 2026-04-25 02:20:54,537 log: Not Found: /api/v1/notifications/63/
 [WARNING] 2026-04-25 02:20:54,537 basehttp: "PATCH /api/v1/notifications/63/ HTTP/1.1" 404 59
+[ERROR] 2026-04-25 02:33:55,744 views: Notification failed (non-critical): 'str' object has no attribute 'tzinfo'
+[WARNING] 2026-04-25 03:06:32,702 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:06:32,706 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:07:17,633 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:07:17,634 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:08:02,633 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:08:02,634 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:09:26,953 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:09:26,954 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:10:37,621 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:10:37,621 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:11:22,574 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:11:22,576 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:12:07,575 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:12:07,575 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:12:52,572 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:12:52,572 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:13:56,166 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:13:56,166 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:14:41,120 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:14:41,121 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:15:26,120 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:15:26,120 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:16:11,127 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:16:11,127 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:16:56,112 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:16:56,112 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:17:41,120 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:17:41,120 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:18:26,119 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:18:26,120 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:19:11,113 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:19:11,113 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:19:56,113 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:19:56,113 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:20:41,110 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:20:41,111 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:22:08,690 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:22:08,691 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:22:53,651 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:22:53,652 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:23:38,662 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:23:38,663 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:24:23,643 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:24:23,644 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:25:08,644 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:25:08,645 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:25:53,647 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:25:53,647 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:26:38,647 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:26:38,647 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:27:23,648 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:27:23,649 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:28:08,672 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:28:08,675 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:28:53,649 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:28:53,650 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:29:38,648 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:29:38,649 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:30:23,646 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:30:23,649 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:31:08,647 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:31:08,647 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:31:53,645 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:31:53,646 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:32:38,659 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:32:38,662 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:33:43,376 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:33:43,377 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:34:28,325 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:34:28,326 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:35:13,319 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:35:13,320 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:35:58,321 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:35:58,323 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:36:43,320 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:36:43,321 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:37:28,323 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:37:28,323 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:38:13,329 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:38:13,329 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:38:58,321 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:38:58,322 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:39:43,322 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:39:43,323 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:40:28,322 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:40:28,324 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:41:13,318 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:41:13,318 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:41:58,326 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:41:58,326 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:43:16,870 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:43:16,871 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:44:37,530 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:44:37,531 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:45:22,481 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:45:22,481 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:46:07,472 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:46:07,473 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:46:52,472 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:46:52,473 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:47:37,473 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:47:37,474 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:48:22,471 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:48:22,472 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:49:07,471 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:49:07,471 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:49:52,472 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:49:52,472 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:50:37,473 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:50:37,474 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:51:22,471 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:51:22,471 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:52:07,473 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:52:07,474 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:52:52,484 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:52:52,484 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:53:40,045 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:53:40,046 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:54:25,004 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:54:25,006 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:55:09,995 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:55:09,995 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:55:55,001 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:55:55,001 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 03:56:39,997 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 03:56:39,998 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 04:21:12,928 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-04-25 04:21:12,929 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-04-25 04:23:21,989 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 04:23:21,989 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 04:24:06,985 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 04:24:06,986 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 04:24:51,130 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-04-25 04:24:51,130 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-04-25 04:24:51,985 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-04-25 04:24:51,985 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-04-25 04:24:52,222 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-04-25 04:24:52,222 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61

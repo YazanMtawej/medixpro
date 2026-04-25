@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/features/dashboard/presentation/pages/dashboard_page.dart';
 import '../cubit/auth_cubit.dart';
 import 'login_page.dart';
@@ -119,71 +120,102 @@ void _onRegister() {
                               }
                             },
                             builder: (context, state) {
-                              if (state is AuthLoading) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(32),
-                                  child: Center(
-                                      child: CircularProgressIndicator()),
-                                );
-                              }
-                              return Column(
-                                children: [
-                                  TextField(
-                                    controller: _usernameController,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration:
-                                        _inputDecoration("Username", Icons.person),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  TextField(
-                                    controller: _emailController,
-                                    keyboardType: TextInputType.emailAddress,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration:
-                                        _inputDecoration("Email", Icons.email),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  TextField(
-                                    controller: _passwordController,
-                                    obscureText: true,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration:
-                                        _inputDecoration("Password", Icons.lock),
-                                  ),
-                                  const SizedBox(height: 25),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.white,
-                                        foregroundColor: Colors.blue,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(15)),
-                                      ),
-                                      onPressed: _onRegister,
-                                      child: const Text("Create Account",
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  TextButton(
-                                    onPressed: () => Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => const LoginPage()),
-                                    ),
-                                    child: const Text(
-                                        "Already have an account? Login",
-                                        style:
-                                            TextStyle(color: Colors.white)),
-                                  ),
-                                ],
-                              );
-                            },
+  final isLoading = state is AuthLoading;
+
+  return Stack(
+    children: [
+      /// ─── FORM ─────────────────────────────
+      Column(
+        children: [
+          TextField(
+            controller: _usernameController,
+            style: const TextStyle(color: Colors.white),
+            decoration: _inputDecoration("Username", Icons.person),
+          ),
+          const SizedBox(height: 15),
+
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            style: const TextStyle(color: Colors.white),
+            decoration: _inputDecoration("Email", Icons.email),
+          ),
+          const SizedBox(height: 15),
+
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            style: const TextStyle(color: Colors.white),
+            decoration: _inputDecoration("Password", Icons.lock),
+          ),
+          const SizedBox(height: 25),
+
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              onPressed: isLoading ? null : _onRegister,
+              child: const Text(
+                "Create Account",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          TextButton(
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginPage()),
+            ),
+            child: const Text(
+              "Already have an account? Login",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+
+      /// ─── LOADING OVERLAY (NEW PREMIUM) ─────────────────────────────
+      if (isLoading)
+        Positioned.fill(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(25),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
+                color: Colors.black.withOpacity(0.25),
+                child: const Center(
+                  child: MedicalLoading(
+                    text: "Creating secure medical profile...",
+                    size: 150,
+                    showText: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+      /// ─── BLOCK INTERACTION ─────────────────────────────
+      if (isLoading)
+        const Positioned.fill(
+          child: AbsorbPointer(),
+        ),
+    ],
+  );
+},
                           ),
                         ),
                       ),

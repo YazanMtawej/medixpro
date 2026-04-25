@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medixpro/core/widgets/medical_animation.dart';
 import 'login_page.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -12,157 +13,130 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
-  final List<_OnboardingItem> _items = const [
-    _OnboardingItem(
-      title: "The Sanctuary",
-      subtitle: "Healing begins with a peaceful state of mind.",
-    ),
-    _OnboardingItem(
-      title: "Care That Matters",
-      subtitle: "Compassionate healthcare, designed for your needs.",
-    ),
-    _OnboardingItem(
-      title: "Your Health, Simplified",
-      subtitle: "Manage appointments, records, and care with ease.",
-    ),
-  ];
+  static const _items = [
+  _OnboardingItem(
+    title: "Book Appointments Instantly",
+    subtitle:
+        "Find the right doctor and schedule appointments in seconds — no waiting, no calls.",
+    animation: "assets/animations/Doctor welcoming pacient.json",
+    sizeFactor: 0.88, 
+  ),
+  _OnboardingItem(
+    title: "Smart Medical Records",
+    subtitle:
+        "Access your health history, prescriptions, and reports anytime in one secure place.",
+    animation: "assets/animations/Islamic business woman with gestures up.json",
+    sizeFactor: 0.88, 
+  ),
+  _OnboardingItem(
+    title: "Doctor-Patient Communication",
+    subtitle:
+        "Stay connected with your doctor, receive updates, and manage your care easily.",
+    animation: "assets/animations/DOCTOR.json",
+    sizeFactor: 0.88,)
+];
 
   void _onNext() {
     if (_currentPage < _items.length - 1) {
       _controller.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOut,
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 400),
+          pageBuilder: (_, __, ___) => const LoginPage(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+        ),
       );
     }
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    const primary = Color(0xFF0A4EDC);
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             const Spacer(),
 
-            /// Pages
+            /// 🔥 Pages
             Expanded(
               flex: 6,
               child: PageView.builder(
                 controller: _controller,
                 itemCount: _items.length,
-                onPageChanged: (index) {
-                  setState(() => _currentPage = index);
-                },
-                itemBuilder: (context, index) {
-                  final item = _items[index];
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      /// Logo
-                      Container(
-                        width: 96,
-                        height: 96,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(blurRadius: 20, color: Colors.black12),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.local_florist,
-                          size: 48,
-                          color: Color(0xFF0A4EDC),
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      Text(
-                        item.title,
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0A4EDC),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          item.subtitle,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                physics: const BouncingScrollPhysics(),
+                onPageChanged: (index) =>
+                    setState(() => _currentPage = index),
+                itemBuilder: (_, index) =>
+                    _OnboardingContent(item: _items[index]),
               ),
             ),
 
-            /// Indicators
+            /// 🔥 Indicators
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 _items.length,
                 (index) => AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: _currentPage == index ? 12 : 6,
+                  width: _currentPage == index ? 20 : 6,
                   height: 6,
                   decoration: BoxDecoration(
                     color: _currentPage == index
-                        ? const Color(0xFF0A4EDC)
-                        : Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(3),
+                        ? primary
+                        : Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
-            /// Button
+            /// 🔥 Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 54,
                 child: ElevatedButton(
                   onPressed: _onNext,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A4EDC),
+                    backgroundColor: primary,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _currentPage == _items.length - 1
-                            ? "Start Now"
-                            : "Get Started",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: Text(
+                      _currentPage == _items.length - 1
+                          ? "Start Your Journey"
+                          : "Continue",
+                      key: ValueKey(_currentPage),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, color: Colors.white),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -170,8 +144,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
             const SizedBox(height: 24),
 
+            /// Footer
             Text(
-              "PRECISION HEALTHCARE · 2024",
+              "PRECISION HEALTHCARE · 2026",
               style: TextStyle(
                 fontSize: 10,
                 color: Colors.grey.shade400,
@@ -186,11 +161,85 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 }
+class _OnboardingContent extends StatelessWidget {
+  final _OnboardingItem item;
 
-/// Model
+  const _OnboardingContent({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    const primary = Color(0xFF0A4EDC);
+
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    /// 🔥 حساب الحجم بشكل ذكي
+    final rawSize = screenWidth * item.sizeFactor;
+
+    /// 🔥 حدود أمان (super مهم)
+    final animationSize = rawSize.clamp(180.0, 320.0);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        /// 🔥 Animation responsive
+        RepaintBoundary(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: MedicalAnimation(
+              key: ValueKey(item.animation),
+              asset: item.animation,
+              size: animationSize,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 40),
+
+        /// Title
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            item.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: primary,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        /// Subtitle
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Text(
+            item.subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.6,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 🔥 Model
 class _OnboardingItem {
   final String title;
   final String subtitle;
+  final String animation;
+  final double sizeFactor; // 🔥 جديد
 
-  const _OnboardingItem({required this.title, required this.subtitle});
+  const _OnboardingItem({
+    required this.title,
+    required this.subtitle,
+    required this.animation,
+    required this.sizeFactor,
+  });
 }

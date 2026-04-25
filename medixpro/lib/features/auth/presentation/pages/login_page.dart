@@ -1,6 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/medical_animation.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/auth_cubit.dart';
 import 'role_selection_page.dart';
@@ -60,6 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                 : AppColors.lightBackground,
           ),
 
+          // ─── Main Content ─────────────────────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -101,8 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                   Text(
                     "Smart Clinic Management",
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 13),
+                        color: Colors.white.withOpacity(0.8), fontSize: 13),
                   ),
 
                   const SizedBox(height: 36),
@@ -111,9 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkCard
-                          : AppColors.lightCard,
+                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: isDark
@@ -153,109 +152,129 @@ class _LoginPageState extends State<LoginPage> {
                         }
                       },
                       builder: (context, state) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        final isLoading = state is AuthLoading;
+
+                        return Stack(
                           children: [
-                            Text(
-                              "Welcome back",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: isDark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.lightTextPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Sign in to your account",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Username
-                            TextFormField(
-                              controller: _usernameController,
-                              decoration: const InputDecoration(
-                                labelText: "Username",
-                                prefixIcon: Icon(Icons.person_outline),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-
-                            // Password
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscure,
-                              decoration: InputDecoration(
-                                labelText: "Password",
-                                prefixIcon:
-                                    const Icon(Icons.lock_outline),
-                                suffixIcon: IconButton(
-                                  icon: Icon(_obscure
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined),
-                                  onPressed: () =>
-                                      setState(() => _obscure = !_obscure),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Login Button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: state is AuthLoading
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
-                                  : ElevatedButton(
-                                      onPressed: _onLogin,
-                                      child: const Text("Sign In",
-                                          style: TextStyle(fontSize: 15)),
-                                    ),
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Register
-                            Center(
-                              child: TextButton(
-                                onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const RoleSelectionPage(),
+                            // ─── Form UI ────────────────────────────────
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Welcome back",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary,
                                   ),
                                 ),
-                                child: RichText(
-                                  text: TextSpan(
-                                    text: "Don't have an account? ",
-                                    style: TextStyle(
-                                      color: isDark
-                                          ? AppColors.darkTextSecondary
-                                          : AppColors.lightTextSecondary,
-                                      fontSize: 13,
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Sign in to your account",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Username
+                                TextFormField(
+                                  controller: _usernameController,
+                                  decoration: const InputDecoration(
+                                    labelText: "Username",
+                                    prefixIcon: Icon(Icons.person_outline),
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+
+                                // Password
+                                TextFormField(
+                                  controller: _passwordController,
+                                  obscureText: _obscure,
+                                  decoration: InputDecoration(
+                                    labelText: "Password",
+                                    prefixIcon:
+                                        const Icon(Icons.lock_outline),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(_obscure
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined),
+                                      onPressed: () => setState(
+                                          () => _obscure = !_obscure),
                                     ),
-                                    children: const [
-                                      TextSpan(
-                                        text: "Register",
-                                        style: TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                // Login Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    onPressed: isLoading ? null : _onLogin,
+                                    child: const Text("Sign In",
+                                        style: TextStyle(fontSize: 15)),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 16),
+
+                                // Register
+                                Center(
+                                  child: TextButton(
+                                    onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const RoleSelectionPage(),
                                       ),
-                                    ],
+                                    ),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        text: "Don't have an account? ",
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? AppColors.darkTextSecondary
+                                              : AppColors.lightTextSecondary,
+                                          fontSize: 13,
+                                        ),
+                                        children: const [
+                                          TextSpan(
+                                            text: "Register",
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // ─── Loading Overlay ─────────────────────────
+                            if (isLoading)
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.35),
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: const MedicalLoading(
+                                    text: "Checking credentials...",
+                                    size: 160,
+                                    showText: true,
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         );
                       },
@@ -272,8 +291,25 @@ class _LoginPageState extends State<LoginPage> {
                           : AppColors.lightTextSecondary,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  // space for bottom animation
+                  const SizedBox(height: 100),
                 ],
+              ),
+            ),
+          ),
+
+          // ─── Lottie Bottom Animation ──────────────────────────────────
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.85,
+                child: MedicalAnimation(
+                  asset: "assets/animations/sign in hover.json",
+                  size: size.width * 0.45,
+                ),
               ),
             ),
           ),
