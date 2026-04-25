@@ -308,7 +308,7 @@ class _LoginPageState extends State<LoginPage> {
                 opacity: 0.85,
                 child: MedicalAnimation(
                   asset: "assets/animations/sign in hover.json",
-                  size: size.width * 0.45,
+                  size: size.width * 0.4,
                 ),
               ),
             ),

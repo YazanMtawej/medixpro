@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import '../cubit/patients_cubit.dart';
 import '../cubit/patients_state.dart';
 import '../../domain/entities/patient.dart';
@@ -162,9 +163,9 @@ class _PatientsListPageState extends State<PatientsListPage> {
           BlocBuilder<PatientsCubit, PatientsState>(
             builder: (context, state) {
               if (state is PatientsLoading) {
-                return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()));
-              }
+              const SliverFillRemaining(
+                  child: Center(child: MedicalLoading()),
+                );}
 
               if (state is PatientsError) {
                 return SliverFillRemaining(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/appointments_cubit.dart';
 import '../cubit/appointments_state.dart';
@@ -192,8 +193,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           BlocBuilder<AppointmentsCubit, AppointmentsState>(
             builder: (context, state) {
               if (state is AppointmentsLoading) {
-                return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()));
+               const SliverFillRemaining(
+                  child: Center(child: MedicalLoading()),
+                );
               }
 
               if (state is AppointmentsError) {

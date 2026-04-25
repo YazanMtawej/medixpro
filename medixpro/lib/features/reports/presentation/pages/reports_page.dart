@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/medical_animation.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/features/reports/presentation/pages/add_report_page.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/reports_cubit.dart';
@@ -188,8 +190,8 @@ class _ReportsPageState extends State<ReportsPage> {
           BlocBuilder<ReportsCubit, ReportsState>(
             builder: (context, state) {
               if (state is ReportsLoading) {
-                return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
+                const SliverFillRemaining(
+                  child: Center(child: MedicalLoading()),
                 );
               }
 
@@ -249,6 +251,13 @@ class _ReportsPageState extends State<ReportsPage> {
                               color: isDark
                                   ? AppColors.darkTextSecondary
                                   : AppColors.lightTextSecondary,
+                            ),
+                          ),
+                          SizedBox(height: 12,),
+                          Center(
+                            child: MedicalAnimation(
+                              asset: "assets/animations/Doctor and health symbols.json",
+                              size: MediaQuery.of(context).size.width * 0.7,
                             ),
                           ),
                         ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/theme/theme_cubit.dart';
+import 'package:medixpro/core/widgets/medical_animation.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/features/appointments/presentation/pages/doctor_requests_page.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_dashboard_home.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_requests_page.dart';
@@ -257,7 +259,7 @@ class _DashboardHome extends StatelessWidget {
 
             if (state is DashboardLoading)
               const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: MedicalLoading()),
               )
             else if (state is DashboardError)
               SliverFillRemaining(
@@ -310,6 +312,7 @@ class _DashboardHome extends StatelessWidget {
                 child: SizedBox(
                     height: MediaQuery.of(context).padding.bottom + 100),
               ),
+              
             ],
           ],
         );
@@ -515,6 +518,12 @@ class _StatsGrid extends StatelessWidget {
             ),
           ],
         ),
+         Center(
+           child: MedicalAnimation(
+                    asset: "assets/animations/3D Doctor Dancing.json",
+                    size: MediaQuery.of(context).size.width * 0.45,
+                  ),
+         ),
       ],
     );
   }

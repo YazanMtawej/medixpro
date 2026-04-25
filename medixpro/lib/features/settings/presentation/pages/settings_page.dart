@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_cubit.dart';
 import '../cubit/settings_cubit.dart';
@@ -63,8 +64,8 @@ class SettingsPage extends StatelessWidget {
               ),
 
               if (state is SettingsLoading)
-                const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
+               const SliverFillRemaining(
+                  child: Center(child: MedicalLoading()),
                 )
               else
                 SliverPadding(

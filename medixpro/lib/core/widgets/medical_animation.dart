@@ -16,8 +16,6 @@ class MedicalAnimation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-
-    /// 🔥 تحسين مهم: نخلي الحجم نسبي إذا الشاشة صغيرة
     final adaptiveSize = size > screenSize.shortestSide * 0.6
         ? screenSize.shortestSide * 0.6
         : size;

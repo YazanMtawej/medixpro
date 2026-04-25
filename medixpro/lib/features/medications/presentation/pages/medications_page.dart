@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/medical_loading.dart';
 import '../cubit/medications_cubit.dart';
 import '../../domain/entities/medication.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -129,7 +130,7 @@ class _MedicationsPageState extends State<MedicationsPage> {
             builder: (context, state) {
               if (state is MedicationsLoading) {
                 return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(child: MedicalLoading()),
                 );
               }
 
