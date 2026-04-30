@@ -10,6 +10,7 @@ from .models import Profile
 from .serializers import ProfileSerializer
 from core.utils import api_response
 import logging
+from rest_framework.throttling import ScopedRateThrottle
 
 from .models import Profile
 from .serializers import ProfileSerializer
@@ -129,7 +130,8 @@ class RegisterView(APIView):
             )
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
+    throttle_classes=[ScopedRateThrottle]
+    throttle_scope = "login"
     def post(self, request):
         username = request.data.get("username", "").strip()
         email = request.data.get("email", "").strip()
