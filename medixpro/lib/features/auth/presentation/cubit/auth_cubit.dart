@@ -120,4 +120,12 @@ class AuthCubit extends Cubit<AuthState> {
     NotificationService().notifyLogout();
     emit(AuthLoggedOut());
   }
+  Future<bool> verifyDoctorKey(String code) async {
+  try {
+    await _repository.verifyDoctorKey(code);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 }

@@ -36,4 +36,12 @@ class AuthRemoteDataSource {
       // فشل الـ server لا يمنع تسجيل الخروج محلياً
     }
   }
+  Future<void> verifyDoctorKey(String code) async {
+  await api.dio.post(
+    "auth/verify-doctor-key/",
+    data: {
+      "doctor_secret_key": code,
+    },
+  );
+}
 }

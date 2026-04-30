@@ -235,3 +235,86 @@ class LogoutView(APIView):
                 api_response(False, "Invalid token"),
                 status=status.HTTP_400_BAD_REQUEST,
             )
+class PatientAccountManagementView(APIView):
+    """الطبيب يدير حسابات المرضى — يرى القائمة ويحذف"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_doctor():
+            return Response(api_response(False, "Doctors only."), status=403)
+
+        from patients.models import Patient
+        # المرضى الذين لديهم حسابات فعلية فقط
+        patients = Patient.objects.filter(
+            user__isnull=False
+        ).select_related("user").order_by("-user__date_joined")
+
+        data = [
+            {
+                "patient_id":  p.id,
+                "user_id":     p.user.id,
+                "username":    p.user.username,
+                "email":       p.user.email,
+                "name":        p.name,
+                "phone":       p.phone,
+                "joined":      p.user.date_joined.strftime("%Y-%m-%d"),
+                "is_active":   p.user.is_active,
+            }
+            for p in patients
+        ]
+        return Response(api_response(True, "Patient accounts fetched", data))
+
+    def delete(self, request):
+        if not request.user.is_doctor():
+            return Response(api_response(False, "Doctors only."), status=403)
+
+        user_id = request.data.get("user_id")
+        if not user_id:
+            return Response(
+                api_response(False, "user_id is required"), status=400
+            )
+
+        try:
+            target = User.objects.get(id=user_id, role="patient")
+        except User.DoesNotExist:
+            return Response(
+                api_response(False, "Patient account not found"), status=404
+            )
+
+        # لا يمكن للطبيب حذف نفسه
+        if target == request.user:
+            return Response(
+                api_response(False, "Cannot delete your own account"), status=400
+            )
+
+        username = target.username
+        # cascade يحذف Patient + Appointments + Requests تلقائياً
+        target.delete()
+
+        logger.info(f"Doctor {request.user.username} deleted patient account: {username}")
+        return Response(
+            api_response(True, f"Account '{username}' deleted permanently")
+        )
+class VerifyDoctorKeyView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        code = request.data.get("doctor_secret_key", "").strip()
+
+        if not code:
+            return Response(
+                api_response(False, "Verification code required"),
+                status=400
+            )
+
+        expected = getattr(django_settings, "DOCTOR_SECRET_KEY", "")
+
+        if code == expected:
+            return Response(
+                api_response(True, "Code valid")
+            )
+
+        return Response(
+            api_response(False, "Invalid verification code"),
+            status=403
+        )

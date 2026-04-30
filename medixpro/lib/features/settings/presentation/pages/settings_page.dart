@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
+import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:medixpro/features/settings/presentation/pages/patient_accounts_page.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_cubit.dart';
 import '../cubit/settings_cubit.dart';
@@ -12,12 +14,12 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    final authState = context.watch<AuthCubit>().state;
+    final isDoctor = authState is AuthAuthenticated && authState.user.isDoctor;
     return BlocConsumer<SettingsCubit, SettingsState>(
       listener: (context, state) {
         if (state is SettingsLoggedOut) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, "/login", (_) => false);
+          Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
         } else if (state is SettingsError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -25,7 +27,8 @@ class SettingsPage extends StatelessWidget {
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           );
         }
@@ -56,7 +59,9 @@ class SettingsPage extends StatelessWidget {
                   title: const Text(
                     "Settings",
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w700),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   centerTitle: true,
                 ),
@@ -64,7 +69,7 @@ class SettingsPage extends StatelessWidget {
               ),
 
               if (state is SettingsLoading)
-               const SliverFillRemaining(
+                const SliverFillRemaining(
                   child: Center(child: MedicalLoading()),
                 )
               else
@@ -80,12 +85,26 @@ class SettingsPage extends StatelessWidget {
                         title: "Profile",
                         subtitle: "View and edit your profile",
                         isDark: isDark,
-                        onTap: () =>
-                            Navigator.pushNamed(context, "/profile"),
+                        onTap: () => Navigator.pushNamed(context, "/profile"),
                       ),
 
+                      
+                      if (isDoctor) ...[
+                        const SizedBox(height: 8),
+                        _SettingsTile(
+                          icon: Icons.manage_accounts_outlined,
+                          title: "Patient Accounts",
+                          subtitle: "Manage and delete patient accounts",
+                          isDark: isDark,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PatientAccountsPage(),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 20),
-
                       // ─── Notifications ───────────────────────────
                       _SectionLabel("Notifications", isDark),
                       const SizedBox(height: 8),
@@ -94,8 +113,8 @@ class SettingsPage extends StatelessWidget {
                         title: "Notifications",
                         subtitle: "View all alerts and updates",
                         isDark: isDark,
-                        onTap: () => Navigator.pushNamed(
-                            context, "/notifications"),
+                        onTap: () =>
+                            Navigator.pushNamed(context, "/notifications"),
                         trailing: _NotifBadge(isDark: isDark),
                       ),
 
@@ -134,13 +153,16 @@ class SettingsPage extends StatelessWidget {
                         height: 52,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.logout_rounded),
-                          label: const Text("Logout",
-                              style: TextStyle(fontSize: 15)),
+                          label: const Text(
+                            "Logout",
+                            style: TextStyle(fontSize: 15),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.error,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                           onPressed: () => _confirmLogout(context),
                         ),
@@ -161,10 +183,11 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18)),
-        title: const Text("Logout",
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
+          "Logout",
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
         content: const Text("Are you sure you want to logout?"),
         actions: [
           TextButton(
@@ -176,7 +199,8 @@ class SettingsPage extends StatelessWidget {
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -213,9 +237,10 @@ class _NotifBadge extends StatelessWidget {
               child: Text(
                 "${state.unreadCount}",
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700),
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             const SizedBox(width: 6),
@@ -249,12 +274,12 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _SettingsTile extends StatelessWidget {
-  final IconData  icon;
-  final String    title;
-  final String    subtitle;
-  final bool      isDark;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool isDark;
   final VoidCallback onTap;
-  final Widget?   trailing;
+  final Widget? trailing;
 
   const _SettingsTile({
     required this.icon,
@@ -324,11 +349,13 @@ class _SettingsTile extends StatelessWidget {
                   ),
                 ),
                 trailing ??
-                    Icon(Icons.arrow_forward_ios_rounded,
-                        size: 14,
-                        color: isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
               ],
             ),
           ),

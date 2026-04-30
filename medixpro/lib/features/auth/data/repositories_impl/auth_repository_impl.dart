@@ -93,4 +93,8 @@ class AuthRepositoryImpl implements AuthRepository {
       clinicName: userMap["clinic_name"] as String?,
     );
   }
+  @override
+Future<void> verifyDoctorKey(String code) {
+  return _remote.verifyDoctorKey(code);
+}
 }

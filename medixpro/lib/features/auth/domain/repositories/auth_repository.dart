@@ -5,4 +5,5 @@ abstract class AuthRepository {
   Future<User>  register(Map<String, dynamic> data);
   Future<void>  logout(String refreshToken);
   Future<User?> autoLogin();
+  Future<void> verifyDoctorKey(String code);
 }

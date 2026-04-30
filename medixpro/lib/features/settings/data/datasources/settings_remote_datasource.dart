@@ -48,4 +48,13 @@ class SettingsRemoteDataSource {
   Future<void> logout(String refreshToken) async {
     await api.dio.post("auth/logout/", data: {"refresh": refreshToken});
   }
+  Future<List<Map<String, dynamic>>> getPatientAccounts() async {
+  final response = await api.dio.get("patient-accounts/");
+  final List data = response.data["data"] as List;
+  return data.cast<Map<String, dynamic>>();
+}
+
+Future<void> deletePatientAccount(int userId) async {
+  await api.dio.delete("patient-accounts/", data: {"user_id": userId});
+}
 }

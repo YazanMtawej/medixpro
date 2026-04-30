@@ -17,7 +17,8 @@ from patients.views import PatientViewSet
 
 from django.conf import settings
 from django.conf.urls.static import static
-
+from users.views import PatientAccountManagementView
+from users.views import VerifyDoctorKeyView
 
 router = DefaultRouter()
 router.register(r'patients', PatientViewSet, basename='patients')
@@ -31,7 +32,8 @@ urlpatterns = [
     path('api/v1/auth/login/', LoginView.as_view()),
     path('api/v1/auth/refresh/', RefreshTokenView.as_view()),
     path("api/v1/auth/logout/", LogoutView.as_view()),
-
+    path("api/v1/patient-accounts/", PatientAccountManagementView.as_view()),
+    path('api/v1/auth/verify-doctor-key/', VerifyDoctorKeyView.as_view()),
     # 👤 PROFILE
     path('api/v1/profile/', ProfileView.as_view()),
     # 📊 DASHBOARD

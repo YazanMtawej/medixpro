@@ -14,8 +14,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       remote.updateProfile(data);
 
   @override
-  Future<Map<String, dynamic>> getNotifications() =>
-      remote.getNotifications();
+  Future<Map<String, dynamic>> getNotifications() => remote.getNotifications();
 
   @override
   Future<void> markAsRead(int id) => remote.markAsRead(id);
@@ -24,14 +23,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
   Future<void> markAllAsRead() => remote.markAllAsRead();
 
   @override
-  Future<void> deleteNotification(int id) =>
-      remote.deleteNotification(id);
+  Future<void> deleteNotification(int id) => remote.deleteNotification(id);
 
   @override
-  Future<void> clearAllNotifications() =>
-      remote.clearAllNotifications();
+  Future<void> clearAllNotifications() => remote.clearAllNotifications();
 
   @override
-  Future<void> logout(String refreshToken) =>
-      remote.logout(refreshToken);
+  Future<void> logout(String refreshToken) => remote.logout(refreshToken);
+  @override
+  Future<List<Map<String, dynamic>>> getPatientAccounts() =>
+      remote.getPatientAccounts();
+
+  @override
+  Future<void> deletePatientAccount(int userId) =>
+      remote.deletePatientAccount(userId);
 }

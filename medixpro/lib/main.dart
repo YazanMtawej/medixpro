@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:medixpro/features/settings/domain/repositories/settings_repository.dart';
 
 // ================= CORE =================
 import 'core/network/api_client.dart';
@@ -175,7 +176,7 @@ Future<void> main() async {
       providers: [
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: dashboardRepository),
-        RepositoryProvider.value(value: settingsRepository),
+        RepositoryProvider<SettingsRepository>.value(value: settingsRepository),
         RepositoryProvider.value(value: patientsRepository),
         RepositoryProvider.value(value: reportsRepository),
         RepositoryProvider.value(value: medicationsRepository),
