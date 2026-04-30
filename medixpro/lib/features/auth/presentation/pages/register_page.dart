@@ -1,15 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:medixpro/core/widgets/medical_loading.dart';
-import 'package:medixpro/features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../cubit/auth_cubit.dart';
-import 'login_page.dart';
+
 
 class RegisterPage extends StatefulWidget {
-  final String role;
+  final String  role;
   final String? doctorSecretKey;
- 
+
   const RegisterPage({
     super.key,
     required this.role,
@@ -21,231 +20,388 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _formKey      = GlobalKey<FormState>();
+  final _usernameCtrl = TextEditingController();
+  final _emailCtrl    = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _fullNameCtrl = TextEditingController();
+  final _ageCtrl      = TextEditingController();
+  final _phoneCtrl    = TextEditingController();
+  String _gender      = "male";
+  bool   _obscure     = true;
+
+  bool get _isPatient => widget.role == "patient";
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
+    _usernameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    _fullNameCtrl.dispose();
+    _ageCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
-void _onRegister() {
-  context.read<AuthCubit>().register(
-    username:        _usernameController.text.trim(),
-    email:           _emailController.text.trim(),
-    password:        _passwordController.text,
-    role:            widget.role,
-    doctorSecretKey: widget.doctorSecretKey, // ✅
-  );
-}
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    context.read<AuthCubit>().register(
+      username:        _usernameCtrl.text.trim(),
+      email:           _emailCtrl.text.trim(),
+      password:        _passwordCtrl.text,
+      role:            widget.role,
+      doctorSecretKey: widget.doctorSecretKey,
+      fullName:        _isPatient ? _fullNameCtrl.text.trim() : null,
+      age:             _isPatient ? _ageCtrl.text.trim()      : null,
+      phone:           _isPatient ? _phoneCtrl.text.trim()    : null,
+      gender:          _isPatient ? _gender                   : null,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                    : [const Color(0xFF1976D2), const Color(0xFF42A5F5)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, "/dashboard", (_) => false);
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:         Text(state.message),
+            backgroundColor: AppColors.error,
+            behavior:        SnackBarBehavior.floating,
+            margin:          const EdgeInsets.all(12),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ));
+        }
+      },
+      child: Scaffold(
+        backgroundColor:
+            isDark ? AppColors.darkBackground : AppColors.lightBackground,
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 140,
+              pinned: true,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isDark
+                          ? AppColors.gradientDark
+                          : AppColors.gradientLight,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                ),
+                title: Text(
+                  _isPatient ? "Patient Registration" : "Doctor Registration",
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700),
+                ),
+                centerTitle: true,
               ),
             ),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    const Icon(Icons.person_add_alt_1_rounded,
-                        size: 72, color: Colors.white),
-                    const SizedBox(height: 10),
-                    Text(
-                      widget.role == "doctor"
-                          ? "Register as Doctor"
-                          : "Register as Patient",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "Join MedixPro",
-                      style:
-                          TextStyle(color: Colors.white.withOpacity(0.8)),
-                    ),
-                    const SizedBox(height: 32),
-
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(25),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                        child: Container(
-                          width: size.width,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.05)
-                                : Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                                color: Colors.white.withOpacity(0.2)),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 60),
+              sliver: SliverToBoxAdapter(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ─── Account Information ───────────────────────────
+                      _label("Account Information"),
+                      const SizedBox(height: 12),
+                      _field(
+                        ctrl:  _usernameCtrl,
+                        label: "Username",
+                        icon:  Icons.person_outline,
+                        isDark: isDark,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty)
+                            return "Username is required";
+                          if (v.trim().length < 3)
+                            return "At least 3 characters";
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _field(
+                        ctrl:      _emailCtrl,
+                        label:     "Email",
+                        icon:      Icons.email_outlined,
+                        isDark:    isDark,
+                        inputType: TextInputType.emailAddress,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty)
+                            return "Email is required";
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                              .hasMatch(v.trim()))
+                            return "Enter a valid email";
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller:  _passwordCtrl,
+                        obscureText: _obscure,
+                        decoration: _decor(
+                          "Password",
+                          Icons.lock_outline,
+                          isDark,
+                          suffix: IconButton(
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              size: 20,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
                           ),
-                          child: BlocConsumer<AuthCubit, AuthState>(
-                            listener: (context, state) {
-                              if (state is AuthAuthenticated) {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const DashboardPage()),
-                                  (_) => false,
-                                );
-                              } else if (state is AuthError) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(state.message)),
-                                );
-                              }
-                            },
-                            builder: (context, state) {
-  final isLoading = state is AuthLoading;
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty)
+                            return "Password is required";
+                          if (v.length < 8)
+                            return "At least 8 characters";
+                          return null;
+                        },
+                      ),
 
-  return Stack(
-    children: [
-      /// ─── FORM ─────────────────────────────
-      Column(
-        children: [
-          TextField(
-            controller: _usernameController,
-            style: const TextStyle(color: Colors.white),
-            decoration: _inputDecoration("Username", Icons.person),
-          ),
-          const SizedBox(height: 15),
+                      // ─── Patient Profile Fields ────────────────────────
+                      if (_isPatient) ...[
+                        const SizedBox(height: 28),
+                        _label("Personal Information"),
+                        const SizedBox(height: 12),
 
-          TextField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            style: const TextStyle(color: Colors.white),
-            decoration: _inputDecoration("Email", Icons.email),
-          ),
-          const SizedBox(height: 15),
+                        // Full Name
+                        _field(
+                          ctrl:  _fullNameCtrl,
+                          label: "Full Name",
+                          icon:  Icons.badge_outlined,
+                          isDark: isDark,
+                          validator: (v) =>
+                              (v == null || v.trim().isEmpty)
+                                  ? "Full name is required"
+                                  : null,
+                        ),
+                        const SizedBox(height: 12),
 
-          TextField(
-            controller: _passwordController,
-            obscureText: true,
-            style: const TextStyle(color: Colors.white),
-            decoration: _inputDecoration("Password", Icons.lock),
-          ),
-          const SizedBox(height: 25),
+                        // Age — digits only
+                        TextFormField(
+                          controller:  _ageCtrl,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(3),
+                          ],
+                          decoration:
+                              _decor("Age", Icons.cake_outlined, isDark),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty)
+                              return "Age is required";
+                            final age = int.tryParse(v);
+                            if (age == null || age <= 0 || age > 150)
+                              return "Enter a valid age (1–150)";
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
 
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              onPressed: isLoading ? null : _onRegister,
-              child: const Text(
-                "Create Account",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
+                        // Phone — numbers + + - space
+                        TextFormField(
+                          controller:  _phoneCtrl,
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[\d\+\-\s]')),
+                            LengthLimitingTextInputFormatter(15),
+                          ],
+                          decoration: _decor(
+                              "Phone Number", Icons.phone_outlined, isDark),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty)
+                              return "Phone number is required";
+                            final digits =
+                                v.replaceAll(RegExp(r'\D'), '');
+                            if (digits.length < 7)
+                              return "Enter a valid phone number";
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
 
-          const SizedBox(height: 15),
+                        // Gender selector
+                        Text("Gender",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary,
+                            )),
+                        const SizedBox(height: 8),
+                        _genderSelector(isDark),
+                      ],
 
-          TextButton(
-            onPressed: () => Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginPage()),
-            ),
-            child: const Text(
-              "Already have an account? Login",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
+                      const SizedBox(height: 32),
 
-      /// ─── LOADING OVERLAY (NEW PREMIUM) ─────────────────────────────
-      if (isLoading)
-        Positioned.fill(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(25),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: Container(
-                color: Colors.black.withOpacity(0.25),
-                child: const Center(
-                  child: MedicalLoading(
-                    text: "Creating secure medical profile...",
-                    size: 150,
-                    showText: true,
+                      // ─── Submit ───────────────────────────────────────
+                      BlocBuilder<AuthCubit, AuthState>(
+                        builder: (context, state) {
+                          final loading = state is AuthLoading;
+                          return SizedBox(
+                            width:  double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: loading ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(14)),
+                              ),
+                              child: loading
+                                  ? const SizedBox(
+                                      width: 22, height: 22,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          color: Colors.white))
+                                  : const Text(
+                                      "Create Account",
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
+      ),
+    );
+  }
 
-      /// ─── BLOCK INTERACTION ─────────────────────────────
-      if (isLoading)
-        const Positioned.fill(
-          child: AbsorbPointer(),
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  Widget _label(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 2),
+        child: Text(text,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            )),
+      );
+
+  Widget _field({
+    required TextEditingController ctrl,
+    required String label,
+    required IconData icon,
+    required bool isDark,
+    TextInputType? inputType,
+    String? Function(String?)? validator,
+  }) =>
+      TextFormField(
+        controller:   ctrl,
+        keyboardType: inputType,
+        decoration:   _decor(label, icon, isDark),
+        validator:    validator,
+      );
+
+  InputDecoration _decor(String label, IconData icon, bool isDark,
+      {Widget? suffix}) =>
+      InputDecoration(
+        labelText:  label,
+        prefixIcon: Icon(icon, size: 18, color: AppColors.primary),
+        suffixIcon: suffix,
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              color: isDark
+                  ? AppColors.borderDark
+                  : AppColors.borderLight),
         ),
-    ],
-  );
-},
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text("© 2026 MedixPro",
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 12)),
-                  ],
-                ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:
+              const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        filled: true,
+        fillColor: isDark
+            ? AppColors.darkBackground
+            : AppColors.lightBackground,
+      );
+
+  Widget _genderSelector(bool isDark) => Row(
+        children: [
+          _genderOption("male",   Icons.male_rounded,   "Male",   Colors.blue,  isDark),
+          const SizedBox(width: 12),
+          _genderOption("female", Icons.female_rounded, "Female", Colors.pink,  isDark),
+        ],
+      );
+
+  Widget _genderOption(String value, IconData icon, String label,
+      Color color, bool isDark) =>
+      Expanded(
+        child: GestureDetector(
+          onTap: () => setState(() => _gender = value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(vertical: 13),
+            decoration: BoxDecoration(
+              color: _gender == value
+                  ? color
+                  : (isDark ? AppColors.darkCard : AppColors.lightCard),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _gender == value
+                    ? color
+                    : (isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight),
               ),
             ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon,
+                    size: 18,
+                    color: _gender == value
+                        ? Colors.white
+                        : AppColors.lightTextSecondary),
+                const SizedBox(width: 6),
+                Text(label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: _gender == value
+                          ? Colors.white
+                          : (isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary),
+                    )),
+              ],
+            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String hint, IconData icon) {
-    return InputDecoration(
-      prefixIcon: Icon(icon, color: Colors.white),
-      hintText: hint,
-      hintStyle: const TextStyle(color: Colors.white70),
-      filled: true,
-      fillColor: Colors.white.withOpacity(0.1),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide.none,
-      ),
-    );
-  }
+        ),
+      );
 }

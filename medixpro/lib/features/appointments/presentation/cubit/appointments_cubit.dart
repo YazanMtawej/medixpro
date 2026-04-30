@@ -8,15 +8,12 @@ import 'appointments_state.dart';
 
 class AppointmentsCubit extends Cubit<AppointmentsState> {
   final AppointmentsRepository _repo;
-
   AppointmentsCubit(this._repo) : super(AppointmentsInitial());
 
   // ─── Appointments ─────────────────────────────────────────────────────────
 
   Future<void> fetchAppointments({
-    int? patientId,
-    String? status,
-    String? search,
+    int? patientId, String? status, String? search,
   }) async {
     emit(AppointmentsLoading());
     try {
@@ -35,9 +32,9 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _repo.addAppointment(a);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Appointment Scheduled",
-        body: "'$title' for $patientName has been created.",
+        body:  "'$title' for $patientName has been created.",
       );
       await fetchAppointments();
     } catch (e) {
@@ -50,9 +47,9 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _repo.updateAppointment(a);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Appointment Updated",
-        body: "'${a.title}' is now: ${a.status}.",
+        body:  "'${a.title}' is now: ${a.status}.",
       );
       await fetchAppointments();
     } catch (e) {
@@ -65,16 +62,15 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     String title = "Appointment";
     final cur    = state;
     if (cur is AppointmentsLoaded) {
-      try {
-        title = cur.appointments.firstWhere((a) => a.id == id).title;
-      } catch (_) {}
+      try { title = cur.appointments.firstWhere((a) => a.id == id).title; }
+      catch (_) {}
     }
     try {
       await _repo.deleteAppointment(id);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Appointment Removed",
-        body: "'$title' has been deleted.",
+        body:  "'$title' has been deleted.",
       );
       await fetchAppointments();
     } catch (e) {
@@ -100,9 +96,9 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _repo.sendRequest(req);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Request Sent ✅",
-        body: "Your appointment request '${req.title}' has been sent to the doctor.",
+        body:  "Your request '${req.title}' has been sent to the doctor.",
       );
       await fetchRequests();
     } catch (e) {
@@ -115,9 +111,9 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _repo.acceptRequest(id, notes: notes);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Request Accepted ✅",
-        body: "Appointment has been created and scheduled.",
+        body:  "Appointment has been created.",
       );
       emit(RequestActionSuccess("Request accepted. Appointment has been created."));
       await fetchRequests();
@@ -131,11 +127,11 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _repo.rejectRequest(id, doctorNote: doctorNote);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Request Rejected",
-        body: "The appointment request has been rejected.",
+        body:  "The request has been rejected.",
       );
-      emit(RequestActionSuccess("Request has been rejected."));
+      emit(RequestActionSuccess("Request rejected."));
       await fetchRequests();
     } catch (e) {
       emit(AppointmentsError(
@@ -148,9 +144,9 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _repo.suggestAlternative(id, suggestedDate, note);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
-        title: "Alternative Time Suggested",
-        body: "The patient has been notified of the suggested time.",
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Alternative Suggested",
+        body:  "Patient has been notified.",
       );
       emit(RequestActionSuccess("Alternative time suggested to patient."));
       await fetchRequests();
@@ -164,16 +160,49 @@ class AppointmentsCubit extends Cubit<AppointmentsState> {
     try {
       await _repo.confirmSuggestion(id);
       NotificationService().showNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
         title: "Appointment Confirmed ✅",
-        body: "You confirmed the suggested appointment time.",
+        body:  "You confirmed the suggested time.",
       );
       emit(RequestActionSuccess(
-          "Appointment confirmed! Check your appointments for details."));
+          "Appointment confirmed! Check your appointments."));
       await fetchRequests();
     } catch (e) {
       emit(AppointmentsError(
           AppErrorHandler.handle(e, context: "confirmSuggestion")));
+    }
+  }
+
+  // ✅ جديد — المريض يرفض اقتراح الطبيب
+  Future<void> declineSuggestion(int id, {String patientNote = ""}) async {
+    try {
+      await _repo.declineSuggestion(id, patientNote: patientNote);
+      NotificationService().showNotification(
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Suggestion Declined",
+        body:  "You declined the suggested time. The doctor will be notified.",
+      );
+      emit(RequestActionSuccess("Suggestion declined. Doctor has been notified."));
+      await fetchRequests();
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "declineSuggestion")));
+    }
+  }
+
+  // ✅ جديد — مسح الطلبات المنجزة
+  Future<void> clearCompletedRequests() async {
+    try {
+      await _repo.clearCompletedRequests();
+      NotificationService().showNotification(
+        id:    DateTime.now().millisecondsSinceEpoch % 100000,
+        title: "Cleared",
+        body:  "Completed requests have been removed.",
+      );
+      await fetchRequests();
+    } catch (e) {
+      emit(AppointmentsError(
+          AppErrorHandler.handle(e, context: "clearCompletedRequests")));
     }
   }
 }

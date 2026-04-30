@@ -9,14 +9,14 @@ from django.conf import settings as django_settings
 from .models import Profile
 from .serializers import ProfileSerializer
 from core.utils import api_response
+import logging
 
 from .models import Profile
 from .serializers import ProfileSerializer
 from core.utils import api_response
 from patients.models import Patient
 User = get_user_model()
-
-
+logger = logging.getLogger(__name__)
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -28,62 +28,105 @@ class RegisterView(APIView):
         role       = request.data.get("role", User.Role.PATIENT)
         secret_key = request.data.get("doctor_secret_key", "")
 
+        # ─── Basic validation ─────────────────────────────────────────────
         if not username or not email or not password:
             return Response(
-                api_response(False, "All fields are required"),
-                status=status.HTTP_400_BAD_REQUEST,
+                api_response(False, "Username, email and password are required"),
+                status=400,
             )
 
         if role not in [User.Role.DOCTOR, User.Role.PATIENT]:
-            return Response(
-                api_response(False, "Invalid role. Must be 'doctor' or 'patient'"),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(api_response(False, "Invalid role"), status=400)
 
         if role == User.Role.DOCTOR:
             expected = getattr(django_settings, "DOCTOR_SECRET_KEY", "")
             if not expected or secret_key != expected:
                 return Response(
                     api_response(False, "Invalid doctor verification code"),
-                    status=status.HTTP_403_FORBIDDEN,
+                    status=403,
                 )
 
         if User.objects.filter(username=username).exists():
-            return Response(
-                api_response(False, "Username already exists"),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(api_response(False, "Username already exists"), status=400)
 
         if User.objects.filter(email=email).exists():
-            return Response(
-                api_response(False, "Email already exists"),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(api_response(False, "Email already exists"), status=400)
 
-        user    = User.objects.create_user(username=username, email=email, password=password, role=role)
-        profile = Profile.objects.create(user=user)
+        # ─── Patient profile validation ───────────────────────────────────
+        patient_name   = None
+        patient_age    = None
+        patient_phone  = None
+        patient_gender = None
 
-        # ✅ إنشاء Patient record تلقائياً لكل مريض جديد
         if role == User.Role.PATIENT:
-            Patient.objects.create(
-                user   = user,
-                name   = username,
-                age    = 0,
-                gender = Patient.Gender.MALE,
-                phone  = "",
+            patient_name   = request.data.get("full_name", "").strip()
+            patient_age_raw = request.data.get("age", "")
+            patient_phone  = request.data.get("phone", "").strip()
+            patient_gender = request.data.get("gender", "").strip()
+
+            if not patient_name:
+                return Response(
+                    api_response(False, "Full name is required"), status=400
+                )
+            if not patient_phone:
+                return Response(
+                    api_response(False, "Phone number is required"), status=400
+                )
+            if not patient_age_raw:
+                return Response(
+                    api_response(False, "Age is required"), status=400
+                )
+            try:
+                patient_age = int(patient_age_raw)
+                if patient_age <= 0 or patient_age > 150:
+                    raise ValueError
+            except (ValueError, TypeError):
+                return Response(
+                    api_response(False, "Age must be a valid number between 1 and 150"),
+                    status=400,
+                )
+            if patient_gender not in ["male", "female"]:
+                return Response(
+                    api_response(False, "Gender must be 'male' or 'female'"),
+                    status=400,
+                )
+
+        # ─── Create user ──────────────────────────────────────────────────
+        try:
+            user    = User.objects.create_user(
+                username=username, email=email,
+                password=password, role=role,
             )
+            profile = Profile.objects.create(user=user)
 
-        refresh = RefreshToken.for_user(user)
-        update_last_login(None, user)
+            # ✅ إنشاء Patient مع البيانات الكاملة
+            if role == User.Role.PATIENT:
+                Patient.objects.create(
+                    user   = user,
+                    name   = patient_name,
+                    age    = patient_age,
+                    phone  = patient_phone,
+                    gender = patient_gender,
+                    email  = email,
+                )
 
-        return Response(
-            api_response(True, "Account created successfully", {
-                "access":  str(refresh.access_token),
-                "refresh": str(refresh),
-                "user":    ProfileSerializer(profile).data,
-            }),
-            status=status.HTTP_201_CREATED,
-        )
+            refresh = RefreshToken.for_user(user)
+            update_last_login(None, user)
+
+            return Response(
+                api_response(True, "Account created successfully", {
+                    "access":  str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "user":    ProfileSerializer(profile).data,
+                }),
+                status=201,
+            )
+        except Exception as e:
+            logger.error(f"Register error: {e}")
+            return Response(
+                api_response(False, "Failed to create account. Please try again."),
+                status=500,
+            )
 class LoginView(APIView):
     permission_classes = [AllowAny]
 

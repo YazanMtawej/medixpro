@@ -44,7 +44,6 @@ class AuthCubit extends Cubit<AuthState> {
         _tokenStorage    = tokenStorage,
         super(AuthInitial());
 
-  // ─── Auto Login ─────────────────────────────────────────────────────────────
   Future<void> autoLogin() async {
     emit(AuthLoading());
     try {
@@ -59,7 +58,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // ─── Login ──────────────────────────────────────────────────────────────────
   Future<void> login({
     required String password,
     String? username,
@@ -70,7 +68,6 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await _loginUseCase(
         LoginRequest(username: username, email: email, password: password),
       );
-      // ✅ لا نستدعي saveUserInfo هنا — _saveAndReturn فعلها بالفعل
       NotificationService().notifyLogin(user.username);
       emit(AuthAuthenticated(user));
     } catch (e) {
@@ -78,13 +75,17 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // ─── Register ───────────────────────────────────────────────────────────────
   Future<void> register({
     required String username,
     required String email,
     required String password,
     required String role,
     String? doctorSecretKey,
+    // Patient-only fields
+    String? fullName,
+    String? age,
+    String? phone,
+    String? gender,
   }) async {
     emit(AuthLoading());
     try {
@@ -95,16 +96,20 @@ class AuthCubit extends Cubit<AuthState> {
           password:        password,
           role:            role,
           doctorSecretKey: doctorSecretKey,
+          extra: {
+            if (fullName != null && fullName.isNotEmpty) "full_name": fullName,
+            if (age      != null && age.isNotEmpty)      "age":       age,
+            if (phone    != null && phone.isNotEmpty)    "phone":     phone,
+            if (gender   != null && gender.isNotEmpty)   "gender":    gender,
+          },
         ),
       );
-      // ✅ لا نستدعي saveUserInfo هنا — _saveAndReturn فعلها
       emit(AuthAuthenticated(user));
     } catch (e) {
       emit(AuthError(AppErrorHandler.handle(e, context: "register")));
     }
   }
 
-  // ─── Logout ─────────────────────────────────────────────────────────────────
   Future<void> logout() async {
     try {
       final refresh = await _tokenStorage.getRefreshToken();

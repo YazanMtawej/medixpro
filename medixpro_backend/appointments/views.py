@@ -20,7 +20,7 @@ def _notify(user, title, message, category="appointment"):
             user=user, title=title, message=message, category=category
         )
     except Exception as e:
-        logger.error(f"Failed to create notification: {e}")
+        logger.error(f"Notification failed: {e}")
 
 
 def _notify_all_doctors(title, message, category="appointment"):
@@ -32,16 +32,17 @@ def _notify_all_doctors(title, message, category="appointment"):
                 for d in doctors
             ])
     except Exception as e:
-        logger.error(f"Failed to notify doctors: {e}")
+        logger.error(f"Notify doctors failed: {e}")
 
 
 def _get_patient_for_user(user):
-    """يُرجع Patient المرتبط بالمستخدم أو None"""
     try:
         return user.patient_profile
     except Exception:
         return None
 
+
+# ─── Appointment ViewSet ──────────────────────────────────────────────────────
 
 class AppointmentViewSet(viewsets.ModelViewSet):
     serializer_class   = AppointmentSerializer
@@ -61,16 +62,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         status_f   = self.request.query_params.get("status")
         search     = self.request.query_params.get("search", "")
 
-        if patient_id:
-            qs = qs.filter(patient_id=patient_id)
-        if status_f:
-            qs = qs.filter(status=status_f)
+        if patient_id: qs = qs.filter(patient_id=patient_id)
+        if status_f:   qs = qs.filter(status=status_f)
         if search:
-            qs = (
-                qs.filter(title__icontains=search)
-                | qs.filter(patient__name__icontains=search)
-            )
-
+            qs = (qs.filter(title__icontains=search) |
+                  qs.filter(patient__name__icontains=search))
         return qs
 
     def list(self, request, *args, **kwargs):
@@ -78,7 +74,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             s = self.get_serializer(self.get_queryset(), many=True)
             return Response(api_response(True, "Appointments fetched", s.data))
         except Exception as e:
-            logger.error(f"list appointments error: {e}")
+            logger.error(f"list appointments: {e}")
             return Response(api_response(False, "Failed to load appointments"), status=500)
 
     def retrieve(self, request, *args, **kwargs):
@@ -86,14 +82,14 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             s = self.get_serializer(self.get_object())
             return Response(api_response(True, "Appointment fetched", s.data))
         except Exception as e:
-            logger.error(f"retrieve appointment error: {e}")
+            logger.error(f"retrieve appointment: {e}")
             return Response(api_response(False, "Appointment not found"), status=404)
 
     def create(self, request, *args, **kwargs):
         if request.user.is_patient():
             return Response(
-                api_response(False, "Patients cannot create appointments directly. Please use appointment requests."),
-                status=status.HTTP_403_FORBIDDEN,
+                api_response(False, "Patients cannot create appointments directly."),
+                status=403,
             )
         try:
             s = self.get_serializer(data=request.data)
@@ -101,32 +97,36 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             s.save()
             return Response(api_response(True, "Appointment created", s.data), status=201)
         except Exception as e:
-            logger.error(f"create appointment error: {e}")
+            logger.error(f"create appointment: {e}")
             return Response(api_response(False, "Failed to create appointment"), status=400)
 
     def update(self, request, *args, **kwargs):
         if request.user.is_patient():
-            return Response(api_response(False, "Patients cannot modify appointments."), status=403)
+            return Response(api_response(False, "Not allowed."), status=403)
         try:
             partial = kwargs.pop("partial", False)
-            s       = self.get_serializer(self.get_object(), data=request.data, partial=partial)
+            s = self.get_serializer(
+                self.get_object(), data=request.data, partial=partial
+            )
             s.is_valid(raise_exception=True)
             s.save()
             return Response(api_response(True, "Appointment updated", s.data))
         except Exception as e:
-            logger.error(f"update appointment error: {e}")
+            logger.error(f"update appointment: {e}")
             return Response(api_response(False, "Failed to update appointment"), status=400)
 
     def destroy(self, request, *args, **kwargs):
         if request.user.is_patient():
-            return Response(api_response(False, "Patients cannot delete appointments."), status=403)
+            return Response(api_response(False, "Not allowed."), status=403)
         try:
             self.get_object().delete()
             return Response(api_response(True, "Appointment deleted"))
         except Exception as e:
-            logger.error(f"delete appointment error: {e}")
+            logger.error(f"delete appointment: {e}")
             return Response(api_response(False, "Failed to delete appointment"), status=400)
 
+
+# ─── Appointment Request ViewSet ──────────────────────────────────────────────
 
 class AppointmentRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -135,7 +135,9 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_patient():
-            return AppointmentRequest.objects.filter(requested_by=user).order_by("-created_at")
+            return AppointmentRequest.objects.filter(
+                requested_by=user
+            ).order_by("-created_at")
         return AppointmentRequest.objects.select_related(
             "patient", "requested_by", "doctor"
         ).order_by("-created_at")
@@ -145,22 +147,25 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
             s = self.get_serializer(self.get_queryset(), many=True)
             return Response(api_response(True, "Requests fetched", s.data))
         except Exception as e:
-            logger.error(f"list requests error: {e}")
+            logger.error(f"list requests: {e}")
             return Response(api_response(False, "Failed to load requests"), status=500)
 
     def create(self, request, *args, **kwargs):
+        """المريض يرسل طلب موعد"""
         if request.user.is_doctor():
             return Response(
                 api_response(False, "Doctors cannot send appointment requests."),
-                status=status.HTTP_403_FORBIDDEN,
+                status=403,
             )
 
         patient = _get_patient_for_user(request.user)
         if not patient:
-            logger.error(f"No patient profile for user: {request.user.username} (id={request.user.id})")
+            logger.error(
+                f"No patient profile: {request.user.username} (id={request.user.id})"
+            )
             return Response(
                 api_response(False, "Your patient profile is not set up. Please contact support."),
-                status=status.HTTP_400_BAD_REQUEST,
+                status=400,
             )
 
         data = {
@@ -187,43 +192,42 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
                 symptoms       = data["symptoms"],
             )
         except Exception as e:
-            logger.error(f"create request DB error | user={request.user.username} | {e}")
+            logger.error(f"create request DB error | {request.user.username} | {e}")
             return Response(
                 api_response(False, "Failed to save request. Please try again."),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=500,
             )
 
-        # ✅ الإشعار منفصل — لا يؤثر على الـ response إذا فشل
         try:
-            from django.utils.timezone import localtime
-            # ✅ يتعامل مع timezone-aware و naive datetime
-            dt_local  = localtime(req.preferred_date) if req.preferred_date.tzinfo else req.preferred_date
-            dt_str    = dt_local.strftime("%Y-%m-%d %H:%M")
+            from django.utils.timezone import localtime, is_aware
+            dt     = req.preferred_date
+            dt_str = localtime(dt).strftime("%Y-%m-%d %H:%M") if is_aware(dt) else dt.strftime("%Y-%m-%d %H:%M")
             _notify_all_doctors(
                 title   = "🔔 New Appointment Request",
                 message = f"Patient {request.user.username} requested '{req.title}' on {dt_str}.",
             )
         except Exception as e:
-            logger.error(f"Notification failed (non-critical): {e}")
-            # ✅ لا نوقف العملية إذا فشل الإشعار
+            logger.error(f"Notify error (non-critical): {e}")
 
         try:
             serializer = AppointmentRequestSerializer(req)
             return Response(
                 api_response(True, "Request sent successfully", serializer.data),
-                status=status.HTTP_201_CREATED,
+                status=201,
             )
         except Exception as e:
             logger.error(f"Serializer error: {e}")
-            # الطلب محفوظ — نرجع success بدون data
             return Response(
                 api_response(True, "Request sent successfully", {"id": req.id}),
-                status=status.HTTP_201_CREATED,
+                status=201,
             )
+
+    # ─── Accept ───────────────────────────────────────────────────────────────
     @action(detail=True, methods=["post"], url_path="accept")
     def accept(self, request, pk=None):
+        """الطبيب يقبل الطلب وينشئ موعداً"""
         if request.user.is_patient():
-            return Response(api_response(False, "Only doctors can accept requests."), status=403)
+            return Response(api_response(False, "Only doctors can accept."), status=403)
 
         try:
             req = self.get_object()
@@ -232,8 +236,7 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
 
         if req.status != AppointmentRequest.Status.PENDING:
             return Response(
-                api_response(False, f"This request has already been {req.status}."),
-                status=status.HTTP_400_BAD_REQUEST,
+                api_response(False, f"Request is already {req.status}."), status=400
             )
 
         try:
@@ -248,7 +251,6 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
                 symptoms         = req.symptoms,
                 notes            = request.data.get("notes", ""),
             )
-
             req.status      = AppointmentRequest.Status.ACCEPTED
             req.doctor      = request.user
             req.appointment = appointment
@@ -257,21 +259,21 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
             _notify(
                 user    = req.requested_by,
                 title   = "✅ Appointment Confirmed",
-                message = f"Your request '{req.title}' has been confirmed for {appointment.date_time.strftime('%Y-%m-%d %H:%M')}.",
+                message = f"Your request '{req.title}' confirmed for {appointment.date_time.strftime('%Y-%m-%d %H:%M')}.",
             )
-
             return Response(
-                api_response(True, "Request accepted and appointment created",
-                             AppointmentSerializer(appointment).data)
+                api_response(True, "Accepted", AppointmentSerializer(appointment).data)
             )
         except Exception as e:
-            logger.error(f"accept request error: {e}")
-            return Response(api_response(False, "Failed to accept request."), status=500)
+            logger.error(f"accept error: {e}")
+            return Response(api_response(False, "Failed to accept."), status=500)
 
+    # ─── Suggest ──────────────────────────────────────────────────────────────
     @action(detail=True, methods=["post"], url_path="suggest")
     def suggest(self, request, pk=None):
+        """الطبيب يقترح موعداً بديلاً"""
         if request.user.is_patient():
-            return Response(api_response(False, "Only doctors can suggest alternatives."), status=403)
+            return Response(api_response(False, "Only doctors can suggest."), status=403)
 
         try:
             req = self.get_object()
@@ -282,10 +284,7 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
         doctor_note    = request.data.get("doctor_note", "")
 
         if not suggested_date:
-            return Response(
-                api_response(False, "Please provide a suggested date and time."),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(api_response(False, "suggested_date is required."), status=400)
 
         try:
             req.status         = AppointmentRequest.Status.SUGGESTED
@@ -297,32 +296,28 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
             _notify(
                 user    = req.requested_by,
                 title   = "📅 Doctor Suggested New Time",
-                message = f"Dr. {request.user.username} suggested '{suggested_date}' for '{req.title}'. Note: {doctor_note}",
+                message = f"Dr. {request.user.username} suggested a new time for '{req.title}'. Note: {doctor_note}",
             )
-
             return Response(
-                api_response(True, "Alternative time suggested",
-                             AppointmentRequestSerializer(req).data)
+                api_response(True, "Suggestion sent", AppointmentRequestSerializer(req).data)
             )
         except Exception as e:
             logger.error(f"suggest error: {e}")
-            return Response(api_response(False, "Failed to suggest alternative."), status=500)
+            return Response(api_response(False, "Failed to suggest."), status=500)
 
+    # ─── Confirm (Patient accepts suggestion) ─────────────────────────────────
     @action(detail=True, methods=["post"], url_path="confirm")
     def confirm(self, request, pk=None):
+        """المريض يوافق على الموعد المقترح"""
         try:
             req = self.get_object()
         except Exception:
             return Response(api_response(False, "Request not found."), status=404)
 
         if req.requested_by != request.user:
-            return Response(api_response(False, "You are not authorized to confirm this request."), status=403)
-
+            return Response(api_response(False, "Not authorized."), status=403)
         if req.status != AppointmentRequest.Status.SUGGESTED:
-            return Response(
-                api_response(False, "There is no suggested time to confirm."),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(api_response(False, "No suggestion to confirm."), status=400)
 
         try:
             appointment = Appointment.objects.create(
@@ -335,7 +330,6 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
                 reason           = req.reason,
                 symptoms         = req.symptoms,
             )
-
             req.status      = AppointmentRequest.Status.ACCEPTED
             req.appointment = appointment
             req.save()
@@ -346,19 +340,52 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
                     title   = "✅ Patient Confirmed Your Suggestion",
                     message = f"Patient confirmed the suggested time for '{req.title}'.",
                 )
-
             return Response(
-                api_response(True, "Appointment confirmed successfully",
-                             AppointmentSerializer(appointment).data)
+                api_response(True, "Appointment confirmed", AppointmentSerializer(appointment).data)
             )
         except Exception as e:
-            logger.error(f"confirm suggestion error: {e}")
-            return Response(api_response(False, "Failed to confirm appointment."), status=500)
+            logger.error(f"confirm error: {e}")
+            return Response(api_response(False, "Failed to confirm."), status=500)
 
+    # ─── Decline suggestion (Patient rejects suggestion) ─────────────────────
+    @action(detail=True, methods=["post"], url_path="decline")
+    def decline(self, request, pk=None):
+        """المريض يرفض الموعد المقترح من الطبيب"""
+        try:
+            req = self.get_object()
+        except Exception:
+            return Response(api_response(False, "Request not found."), status=404)
+
+        if req.requested_by != request.user:
+            return Response(api_response(False, "Not authorized."), status=403)
+        if req.status != AppointmentRequest.Status.SUGGESTED:
+            return Response(api_response(False, "No suggestion to decline."), status=400)
+
+        try:
+            patient_note    = request.data.get("patient_note", "")
+            req.status      = AppointmentRequest.Status.REJECTED
+            req.doctor_note = f"[Patient declined] {patient_note}".strip()
+            req.save()
+
+            if req.doctor:
+                _notify(
+                    user    = req.doctor,
+                    title   = "❌ Patient Declined Suggestion",
+                    message = f"Patient declined your suggested time for '{req.title}'. {patient_note}",
+                )
+            return Response(
+                api_response(True, "Suggestion declined", AppointmentRequestSerializer(req).data)
+            )
+        except Exception as e:
+            logger.error(f"decline error: {e}")
+            return Response(api_response(False, "Failed to decline."), status=500)
+
+    # ─── Reject (Doctor rejects request) ─────────────────────────────────────
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, pk=None):
+        """الطبيب يرفض الطلب"""
         if request.user.is_patient():
-            return Response(api_response(False, "Only doctors can reject requests."), status=403)
+            return Response(api_response(False, "Only doctors can reject."), status=403)
 
         try:
             req = self.get_object()
@@ -373,14 +400,35 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
 
             _notify(
                 user    = req.requested_by,
-                title   = "❌ Appointment Request Rejected",
+                title   = "❌ Request Rejected",
                 message = f"Your request '{req.title}' was not approved. {req.doctor_note}",
             )
-
             return Response(
-                api_response(True, "Request rejected",
-                             AppointmentRequestSerializer(req).data)
+                api_response(True, "Rejected", AppointmentRequestSerializer(req).data)
             )
         except Exception as e:
             logger.error(f"reject error: {e}")
-            return Response(api_response(False, "Failed to reject request."), status=500)
+            return Response(api_response(False, "Failed to reject."), status=500)
+
+    # ─── Clear completed ──────────────────────────────────────────────────────
+    @action(detail=False, methods=["delete"], url_path="clear-completed")
+    def clear_completed(self, request):
+        """حذف الطلبات المنجزة من الذاكرة"""
+        try:
+            user = request.user
+            qs   = AppointmentRequest.objects.filter(
+                status__in=[
+                    AppointmentRequest.Status.ACCEPTED,
+                    AppointmentRequest.Status.REJECTED,
+                ],
+            )
+            if user.is_patient():
+                qs = qs.filter(requested_by=user)
+
+            count, _ = qs.delete()
+            return Response(
+                api_response(True, f"Cleared {count} completed request(s)")
+            )
+        except Exception as e:
+            logger.error(f"clear_completed error: {e}")
+            return Response(api_response(False, "Failed to clear."), status=500)

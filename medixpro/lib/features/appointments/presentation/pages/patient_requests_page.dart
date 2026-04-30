@@ -32,10 +32,10 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
   void _showSnack(String msg, Color color) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: const TextStyle(fontSize: 13)),
+      content:         Text(msg, style: const TextStyle(fontSize: 13)),
       backgroundColor: color,
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.all(12),
+      behavior:        SnackBarBehavior.floating,
+      margin:          const EdgeInsets.all(12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ));
   }
@@ -69,14 +69,11 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
                   titlePadding: const EdgeInsets.only(bottom: 52),
-                  title: const Text(
-                    "Appointments",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 17,
-                    ),
-                  ),
+                  title: const Text("Appointments",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 17)),
                   background: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -92,11 +89,11 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
                 bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(46),
                   child: TabBar(
-                    controller: _tab,
-                    indicatorColor: Colors.white,
-                    indicatorWeight: 3,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white54,
+                    controller:            _tab,
+                    indicatorColor:        Colors.white,
+                    indicatorWeight:       3,
+                    labelColor:            Colors.white,
+                    unselectedLabelColor:  Colors.white54,
                     labelStyle: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 13),
                     tabs: const [
@@ -113,7 +110,7 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
             children: [
               _MyRequestsTab(isDark: isDark),
               _NewRequestTab(
-                isDark: isDark,
+                isDark:   isDark,
                 onSubmit: (req) =>
                     context.read<AppointmentsCubit>().sendRequest(req),
               ),
@@ -125,7 +122,7 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
   }
 }
 
-// ─── Tab 1: My Requests ───────────────────────────────────────────────────────
+// ─── Tab 1 ────────────────────────────────────────────────────────────────────
 class _MyRequestsTab extends StatelessWidget {
   final bool isDark;
   const _MyRequestsTab({required this.isDark});
@@ -144,37 +141,76 @@ class _MyRequestsTab extends StatelessWidget {
                 ? state.requests
                 : <AppointmentRequest>[];
 
+            // ─── Empty ───────────────────────────────────────────────────
             if (requests.isEmpty) {
-              return CustomScrollView(
-                slivers: [
-                  SliverOverlapInjector(
-                    handle:
-                        NestedScrollView.sliverOverlapAbsorberHandleFor(ctx),
-                  ),
-                  SliverFillRemaining(
-                    child: _EmptyState(isDark: isDark),
-                  ),
-                ],
-              );
+              return CustomScrollView(slivers: [
+                SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(ctx)),
+                SliverFillRemaining(child: _EmptyState(isDark: isDark)),
+              ]);
             }
+
+            // ─── Has completed? → show clear button ───────────────────────
+            final hasCompleted =
+                requests.any((r) => r.isAccepted || r.isRejected);
 
             return CustomScrollView(
               slivers: [
                 SliverOverlapInjector(
-                  handle:
-                      NestedScrollView.sliverOverlapAbsorberHandleFor(ctx),
-                ),
+                    handle:
+                        NestedScrollView.sliverOverlapAbsorberHandleFor(ctx)),
+
+                // Clear button
+                if (hasCompleted)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () => _confirmClear(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: AppColors.error.withOpacity(0.07),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: AppColors.error.withOpacity(0.3)),
+                              ),
+                              child: const Row(children: [
+                                Icon(Icons.delete_sweep_outlined,
+                                    size: 15, color: AppColors.error),
+                                SizedBox(width: 5),
+                                Text("Clear Completed",
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.error)),
+                              ]),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 100),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (_, i) => _RequestCard(
-                        request: requests[i],
-                        isDark: isDark,
+                        request:   requests[i],
+                        isDark:    isDark,
                         onConfirm: requests[i].isSuggested
                             ? () => context
                                 .read<AppointmentsCubit>()
                                 .confirmSuggestion(requests[i].id)
+                            : null,
+                        onDecline: requests[i].isSuggested
+                            ? () => _showDeclineDialog(
+                                context, requests[i].id)
                             : null,
                       ),
                       childCount: requests.length,
@@ -188,18 +224,112 @@ class _MyRequestsTab extends StatelessWidget {
       },
     );
   }
+
+  void _confirmClear(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: const Text("Clear Completed",
+            style: TextStyle(fontWeight: FontWeight.w700)),
+        content: const Text(
+            "Remove all accepted and rejected requests from your list?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<AppointmentsCubit>().clearCompletedRequests();
+            },
+            child: const Text("Clear"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeclineDialog(BuildContext context, int id) {
+    final noteCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: const Row(children: [
+          Icon(Icons.cancel_outlined, color: AppColors.error),
+          SizedBox(width: 8),
+          Text("Decline Suggestion",
+              style: TextStyle(fontWeight: FontWeight.w700)),
+        ]),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+                "The doctor will be notified that you declined the suggested time.",
+                style: TextStyle(fontSize: 13)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: noteCtrl,
+              maxLines:   2,
+              decoration: InputDecoration(
+                hintText: "Reason (optional)",
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                contentPadding: const EdgeInsets.all(10),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<AppointmentsCubit>().declineSuggestion(
+                id,
+                patientNote: noteCtrl.text.trim(),
+              );
+            },
+            child: const Text("Decline ❌"),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ─── Request Card — Fixed borderRadius crash ──────────────────────────────────
+// ─── Request Card ─────────────────────────────────────────────────────────────
 class _RequestCard extends StatelessWidget {
   final AppointmentRequest request;
   final bool               isDark;
   final VoidCallback?      onConfirm;
+  final VoidCallback?      onDecline;
 
   const _RequestCard({
     required this.request,
     required this.isDark,
     this.onConfirm,
+    this.onDecline,
   });
 
   Color get _accent {
@@ -225,14 +355,12 @@ class _RequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // ─── Main card ──────────────────────────────────────────────────────
         Container(
-          margin: const EdgeInsets.only(bottom: 12, left: 4),
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+          margin:  const EdgeInsets.only(bottom: 12, left: 4),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
             borderRadius: BorderRadius.circular(14),
-            // ✅ uniform border — no crash
             border: Border.all(
               color: isDark ? AppColors.borderDark : AppColors.borderLight,
               width: 0.8,
@@ -247,21 +375,18 @@ class _RequestCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title + type
+              // Title + Type badge
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text(
-                      request.title,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: isDark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.lightTextPrimary,
-                      ),
-                    ),
+                    child: Text(request.title,
+                        style: TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary,
+                        )),
                   ),
                   const SizedBox(width: 8),
                   Container(
@@ -274,10 +399,9 @@ class _RequestCard extends StatelessWidget {
                     child: Text(
                       request.type.replaceAll("_", " "),
                       style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: _accent,
-                      ),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: _accent),
                     ),
                   ),
                 ],
@@ -287,55 +411,49 @@ class _RequestCard extends StatelessWidget {
 
               // Status pill
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: _accent.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  _statusLabel,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _accent,
-                  ),
-                ),
+                child: Text(_statusLabel,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _accent)),
               ),
 
               const SizedBox(height: 10),
 
-              // Date
-              _Row(
-                icon: Icons.calendar_today_outlined,
-                text: "Preferred: ${_fmt(request.preferredDate)}",
+              _InfoRow(
+                icon:   Icons.calendar_today_outlined,
+                text:   "Preferred: ${_fmt(request.preferredDate)}",
                 isDark: isDark,
               ),
-
               if (request.reason.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                _Row(
-                  icon: Icons.info_outline_rounded,
-                  text: request.reason,
-                  isDark: isDark,
-                ),
+                _InfoRow(
+                    icon: Icons.info_outline_rounded,
+                    text: request.reason,
+                    isDark: isDark),
               ],
-
               if (request.doctorName.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                _Row(
-                  icon: Icons.medical_services_outlined,
-                  text: "Dr. ${request.doctorName}",
-                  isDark: isDark,
-                ),
+                _InfoRow(
+                    icon: Icons.medical_services_outlined,
+                    text: "Dr. ${request.doctorName}",
+                    isDark: isDark),
               ],
 
-              // Suggested alternative
+              // ── Suggested alternative ─────────────────────────────────
               if (request.isSuggested && request.suggestedDate != null) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(isDark ? 0.1 : 0.07),
+                    color: AppColors.warning
+                        .withOpacity(isDark ? 0.1 : 0.07),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                         color: AppColors.warning.withOpacity(0.3)),
@@ -358,8 +476,7 @@ class _RequestCard extends StatelessWidget {
                       Text(
                         _fmt(request.suggestedDate!),
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 14, fontWeight: FontWeight.w700,
                           color: isDark
                               ? AppColors.darkTextPrimary
                               : AppColors.lightTextPrimary,
@@ -367,40 +484,61 @@ class _RequestCard extends StatelessWidget {
                       ),
                       if (request.doctorNote.isNotEmpty) ...[
                         const SizedBox(height: 4),
-                        Text(
-                          "Note: ${request.doctorNote}",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark
-                                ? AppColors.darkTextSecondary
-                                : AppColors.lightTextSecondary,
-                          ),
-                        ),
+                        Text("Note: ${request.doctorNote}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary,
+                            )),
                       ],
                     ],
                   ),
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.check_circle_outline_rounded,
-                        size: 18),
-                    label: const Text("Confirm This Time"),
-                    onPressed: onConfirm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.success,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                // ✅ زران — Confirm + Decline
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(
+                            Icons.check_circle_outline_rounded, size: 16),
+                        label: const Text("Confirm"),
+                        onPressed: onConfirm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.success,
+                          foregroundColor: Colors.white,
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 11),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.cancel_outlined, size: 16),
+                        label: const Text("Decline"),
+                        onPressed: onDecline,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.error,
+                          side: const BorderSide(
+                              color: AppColors.error, width: 1.2),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 11),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
 
-              // Rejection
-              if (request.isRejected && request.doctorNote.isNotEmpty) ...[
+              // ── Rejection note ────────────────────────────────────────
+              if (request.isRejected &&
+                  request.doctorNote.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Container(
                   padding: const EdgeInsets.all(10),
@@ -415,39 +553,33 @@ class _RequestCard extends StatelessWidget {
                           size: 14, color: AppColors.error),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text(
-                          "Doctor's note: ${request.doctorNote}",
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.error),
-                        ),
+                        child: Text("Note: ${request.doctorNote}",
+                            style: const TextStyle(
+                                fontSize: 12, color: AppColors.error)),
                       ),
                     ],
                   ),
                 ),
               ],
 
-              // Time ago
+              // ── Time ago ──────────────────────────────────────────────
               if (request.createdAt != null) ...[
                 const SizedBox(height: 8),
-                Text(
-                  "Sent ${_ago(request.createdAt!)}",
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary,
-                  ),
-                ),
+                Text("Sent ${_ago(request.createdAt!)}",
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    )),
               ],
             ],
           ),
         ),
 
-        // ✅ Left accent bar — Positioned بشكل منفصل
+        // Accent bar
         Positioned(
-          left: 0,
-          top: 0,
-          bottom: 12,
+          left: 0, top: 0, bottom: 12,
           child: Container(
             width: 4,
             decoration: BoxDecoration(
@@ -466,14 +598,18 @@ class _RequestCard extends StatelessWidget {
   String _fmt(String raw) {
     try {
       final dt = DateTime.parse(raw).toLocal();
-      const m = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-      return "${m[dt.month]} ${dt.day}, ${dt.year}  ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}";
+      const m  = ["","Jan","Feb","Mar","Apr","May","Jun",
+                   "Jul","Aug","Sep","Oct","Nov","Dec"];
+      return "${m[dt.month]} ${dt.day}, ${dt.year}  "
+          "${dt.hour.toString().padLeft(2, '0')}:"
+          "${dt.minute.toString().padLeft(2, '0')}";
     } catch (_) { return raw; }
   }
 
   String _ago(String raw) {
     try {
-      final d = DateTime.now().difference(DateTime.parse(raw).toLocal());
+      final d = DateTime.now()
+          .difference(DateTime.parse(raw).toLocal());
       if (d.inMinutes < 1)  return "just now";
       if (d.inMinutes < 60) return "${d.inMinutes}m ago";
       if (d.inHours < 24)   return "${d.inHours}h ago";
@@ -482,19 +618,18 @@ class _RequestCard extends StatelessWidget {
   }
 }
 
-class _Row extends StatelessWidget {
+class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String   text;
   final bool     isDark;
-  const _Row({required this.icon, required this.text, required this.isDark});
+  const _InfoRow({required this.icon, required this.text, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon,
-            size: 13,
+        Icon(icon, size: 13,
             color: isDark
                 ? AppColors.darkTextSecondary
                 : AppColors.lightTextSecondary),
@@ -536,27 +671,22 @@ class _EmptyState extends StatelessWidget {
                   size: 52, color: AppColors.primary),
             ),
             const SizedBox(height: 18),
-            Text(
-              "No requests yet",
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: isDark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.lightTextPrimary,
-              ),
-            ),
+            Text("No requests yet",
+                style: TextStyle(
+                  fontSize: 17, fontWeight: FontWeight.w700,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                )),
             const SizedBox(height: 8),
-            Text(
-              "Tap \"New Request\" above to book your first appointment",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary,
-              ),
-            ),
+            Text("Tap \"New Request\" to book your first appointment",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
+                )),
           ],
         ),
       ),
@@ -564,11 +694,10 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ─── Tab 2: New Request ───────────────────────────────────────────────────────
+// ─── Tab 2 ────────────────────────────────────────────────────────────────────
 class _NewRequestTab extends StatefulWidget {
   final bool isDark;
   final void Function(AppointmentRequest) onSubmit;
-
   const _NewRequestTab({required this.isDark, required this.onSubmit});
 
   @override
@@ -580,7 +709,6 @@ class _NewRequestTabState extends State<_NewRequestTab> {
   final _titleCtrl    = TextEditingController();
   final _reasonCtrl   = TextEditingController();
   final _symptomsCtrl = TextEditingController();
-
   String     _type    = "general";
   DateTime?  _date;
   TimeOfDay? _time;
@@ -606,10 +734,10 @@ class _NewRequestTabState extends State<_NewRequestTab> {
   void _showErr(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
+      content:         Text(msg),
       backgroundColor: AppColors.error,
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.all(12),
+      behavior:        SnackBarBehavior.floating,
+      margin:          const EdgeInsets.all(12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ));
   }
@@ -645,7 +773,12 @@ class _NewRequestTabState extends State<_NewRequestTab> {
     _titleCtrl.clear();
     _reasonCtrl.clear();
     _symptomsCtrl.clear();
-    setState(() { _date = null; _time = null; _type = "general"; _loading = false; });
+    setState(() {
+      _date    = null;
+      _time    = null;
+      _type    = "general";
+      _loading = false;
+    });
   }
 
   @override
@@ -663,57 +796,47 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    // Details section
                     _Section(
                       isDark: widget.isDark,
-                      title: "Request Details",
-                      icon: Icons.edit_note_rounded,
+                      title:  "Request Details",
+                      icon:   Icons.edit_note_rounded,
                       child: Column(children: [
                         _field(_titleCtrl, "What do you need?",
                             "e.g. Routine checkup, back pain...",
-                            Icons.title_rounded,
-                            required: true),
+                            Icons.title_rounded, required: true),
                         const SizedBox(height: 14),
                         _typeGrid(),
                       ]),
                     ),
-
                     const SizedBox(height: 14),
-
-                    // Date & Time
                     _Section(
                       isDark: widget.isDark,
-                      title: "Preferred Date & Time",
-                      icon: Icons.schedule_rounded,
+                      title:  "Preferred Date & Time",
+                      icon:   Icons.schedule_rounded,
                       child: Column(children: [
                         _datePicker(),
                         const SizedBox(height: 10),
                         _timePicker(),
                       ]),
                     ),
-
                     const SizedBox(height: 14),
-
-                    // Extra
                     _Section(
                       isDark: widget.isDark,
-                      title: "Additional Info (optional)",
-                      icon: Icons.description_outlined,
+                      title:  "Additional Info (optional)",
+                      icon:   Icons.description_outlined,
                       child: Column(children: [
-                        _field(_reasonCtrl, "Reason for visit", "Why do you need this appointment?",
+                        _field(_reasonCtrl, "Reason for visit",
+                            "Why do you need this appointment?",
                             Icons.help_outline_rounded, maxLines: 3),
                         const SizedBox(height: 12),
-                        _field(_symptomsCtrl, "Symptoms", "Describe your symptoms...",
+                        _field(_symptomsCtrl, "Symptoms",
+                            "Describe your symptoms...",
                             Icons.sick_outlined, maxLines: 3),
                       ]),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Submit
                     SizedBox(
-                      width: double.infinity,
-                      height: 52,
+                      width: double.infinity, height: 52,
                       child: ElevatedButton(
                         onPressed: _loading ? null : _submit,
                         style: ElevatedButton.styleFrom(
@@ -728,7 +851,8 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2.5, color: Colors.white))
                             : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.send_rounded, size: 18),
                                   SizedBox(width: 8),
@@ -750,86 +874,97 @@ class _NewRequestTabState extends State<_NewRequestTab> {
     );
   }
 
-  Widget _field(TextEditingController c, String label, String hint, IconData icon,
-      {bool required = false, int maxLines = 1}) {
-    return TextFormField(
-      controller: c,
-      maxLines: maxLines,
-      validator: required
-          ? (v) => v == null || v.trim().isEmpty ? "Required" : null
-          : null,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, size: 18, color: AppColors.primary),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: widget.isDark ? AppColors.borderDark : AppColors.borderLight,
+  Widget _field(TextEditingController c, String label, String hint,
+      IconData icon,
+      {bool required = false, int maxLines = 1}) =>
+      TextFormField(
+        controller:  c,
+        maxLines:    maxLines,
+        validator:   required
+            ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+            : null,
+        decoration: InputDecoration(
+          labelText:  label,
+          hintText:   hint,
+          prefixIcon: Icon(icon, size: 18, color: AppColors.primary),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: widget.isDark
+                    ? AppColors.borderDark
+                    : AppColors.borderLight),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          filled: true,
+          fillColor: widget.isDark
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        filled: true,
-        fillColor: widget.isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      ),
-    );
-  }
+      );
 
-  Widget _typeGrid() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: _types.map((t) {
-        final sel = _type == t.$1;
-        return GestureDetector(
-          onTap: () => setState(() => _type = t.$1),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: sel
-                  ? AppColors.primary
-                  : (widget.isDark ? AppColors.darkBackground : AppColors.lightBackground),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
+  Widget _typeGrid() => Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: _types.map((t) {
+          final sel = _type == t.$1;
+          return GestureDetector(
+            onTap: () => setState(() => _type = t.$1),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
                 color: sel
                     ? AppColors.primary
-                    : (widget.isDark ? AppColors.borderDark : AppColors.borderLight),
+                    : (widget.isDark
+                        ? AppColors.darkBackground
+                        : AppColors.lightBackground),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: sel
+                      ? AppColors.primary
+                      : (widget.isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight),
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(t.$2,
-                    size: 14,
-                    color: sel
-                        ? Colors.white
-                        : (widget.isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary)),
-                const SizedBox(width: 5),
-                Text(t.$3,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: sel ? FontWeight.w700 : FontWeight.normal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(t.$2,
+                      size: 14,
                       color: sel
                           ? Colors.white
                           : (widget.isDark
                               ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary),
-                    )),
-              ],
+                              : AppColors.lightTextSecondary)),
+                  const SizedBox(width: 5),
+                  Text(t.$3,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: sel
+                            ? FontWeight.w700
+                            : FontWeight.normal,
+                        color: sel
+                            ? Colors.white
+                            : (widget.isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary),
+                      )),
+                ],
+              ),
             ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+          );
+        }).toList(),
+      );
 
   Widget _datePicker() {
     final has = _date != null;
@@ -844,10 +979,8 @@ class _NewRequestTabState extends State<_NewRequestTab> {
         if (p != null) setState(() => _date = p);
       },
       child: _pickerBox(
-        icon: Icons.calendar_month_rounded,
-        text: has
-            ? _fmtDate(_date!)
-            : "Select preferred date",
+        icon:     Icons.calendar_month_rounded,
+        text:     has ? _fmtDate(_date!) : "Select preferred date",
         hasValue: has,
       ),
     );
@@ -864,8 +997,8 @@ class _NewRequestTabState extends State<_NewRequestTab> {
         if (p != null) setState(() => _time = p);
       },
       child: _pickerBox(
-        icon: Icons.access_time_rounded,
-        text: has ? _time!.format(context) : "Select preferred time",
+        icon:     Icons.access_time_rounded,
+        text:     has ? _time!.format(context) : "Select preferred time",
         hasValue: has,
       ),
     );
@@ -873,61 +1006,66 @@ class _NewRequestTabState extends State<_NewRequestTab> {
 
   Widget _pickerBox({
     required IconData icon,
-    required String text,
-    required bool hasValue,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      decoration: BoxDecoration(
-        color: widget.isDark ? AppColors.darkBackground : AppColors.lightBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: hasValue
-              ? AppColors.primary
-              : (widget.isDark ? AppColors.borderDark : AppColors.borderLight),
-          width: hasValue ? 1.5 : 0.8,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(icon,
-              size: 18,
-              color: hasValue ? AppColors.primary : AppColors.lightTextSecondary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 14,
-                color: hasValue
-                    ? (widget.isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)
-                    : AppColors.lightTextSecondary,
-              ),
-            ),
+    required String   text,
+    required bool     hasValue,
+  }) =>
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: widget.isDark
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: hasValue
+                ? AppColors.primary
+                : (widget.isDark
+                    ? AppColors.borderDark
+                    : AppColors.borderLight),
+            width: hasValue ? 1.5 : 0.8,
           ),
-          Icon(Icons.chevron_right_rounded,
-              size: 18,
-              color: widget.isDark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary),
-        ],
-      ),
-    );
-  }
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                size: 18,
+                color: hasValue
+                    ? AppColors.primary
+                    : AppColors.lightTextSecondary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(text,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: hasValue
+                        ? (widget.isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary)
+                        : AppColors.lightTextSecondary,
+                  )),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                size: 18,
+                color: widget.isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary),
+          ],
+        ),
+      );
 
   String _fmtDate(DateTime dt) {
-    const m = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const m = ["","Jan","Feb","Mar","Apr","May","Jun",
+                "Jul","Aug","Sep","Oct","Nov","Dec"];
     const d = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-    return "${d[dt.weekday-1]}, ${m[dt.month]} ${dt.day} ${dt.year}";
+    return "${d[dt.weekday - 1]}, ${m[dt.month]} ${dt.day} ${dt.year}";
   }
 }
 
-// ─── Section Card ─────────────────────────────────────────────────────────────
 class _Section extends StatelessWidget {
-  final bool isDark;
-  final String title;
+  final bool     isDark;
+  final String   title;
   final IconData icon;
-  final Widget child;
+  final Widget   child;
 
   const _Section({
     required this.isDark,
@@ -968,14 +1106,13 @@ class _Section extends StatelessWidget {
                 child: Icon(icon, size: 15, color: AppColors.primary),
               ),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                ),
-              ),
+              Text(title,
+                  style: TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w700,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary,
+                  )),
             ],
           ),
           const SizedBox(height: 12),
