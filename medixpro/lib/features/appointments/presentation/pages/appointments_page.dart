@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
+import 'package:medixpro/core/widgets/skeleton.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/appointments_cubit.dart';
@@ -216,8 +217,15 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           BlocBuilder<AppointmentsCubit, AppointmentsState>(
             builder: (context, state) {
               if (state is AppointmentsLoading) {
-                const SliverFillRemaining(
-                  child: Center(child: MedicalLoading()),
+                return SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 100),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) =>
+                          AppointmentCardSkeleton(isDark: isDark),
+                      childCount: 6,
+                    ),
+                  ),
                 );
               }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
+import 'package:medixpro/core/widgets/skeleton.dart';
 import '../cubit/patients_cubit.dart';
 import '../cubit/patients_state.dart';
 import '../../domain/entities/patient.dart';
@@ -60,20 +61,23 @@ class _PatientsListPageState extends State<PatientsListPage> {
               title: const Text(
                 "Patients",
                 style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w700),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               centerTitle: true,
             ),
             backgroundColor: cs.primary,
             actions: [
               IconButton(
-                icon: const Icon(Icons.person_add_outlined,
-                    color: Colors.white),
+                icon: const Icon(
+                  Icons.person_add_outlined,
+                  color: Colors.white,
+                ),
                 onPressed: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (_) => const AddPatientPage()),
+                    MaterialPageRoute(builder: (_) => const AddPatientPage()),
                   );
                   if (mounted) {
                     context.read<PatientsCubit>().loadPatients();
@@ -92,15 +96,21 @@ class _PatientsListPageState extends State<PatientsListPage> {
                   decoration: InputDecoration(
                     hintText: "Search by name or phone...",
                     hintStyle: TextStyle(
-                        color: Colors.white.withOpacity(0.65),
-                        fontSize: 13),
-                    prefixIcon: Icon(Icons.search,
-                        color: Colors.white.withOpacity(0.8), size: 20),
+                      color: Colors.white.withOpacity(0.65),
+                      fontSize: 13,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.white.withOpacity(0.8),
+                      size: 20,
+                    ),
                     suffixIcon: _search.isNotEmpty
                         ? IconButton(
-                            icon: Icon(Icons.clear,
-                                color: Colors.white.withOpacity(0.8),
-                                size: 18),
+                            icon: Icon(
+                              Icons.clear,
+                              color: Colors.white.withOpacity(0.8),
+                              size: 18,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                               setState(() => _search = "");
@@ -139,7 +149,8 @@ class _PatientsListPageState extends State<PatientsListPage> {
                       const SizedBox(width: 12),
                       _StatCard(
                         label: "Male",
-                        value: "${state.patients.where((p) => p.gender.toLowerCase() == "male").length}",
+                        value:
+                            "${state.patients.where((p) => p.gender.toLowerCase() == "male").length}",
                         icon: Icons.male_rounded,
                         color: AppColors.info,
                         isDark: isDark,
@@ -147,7 +158,8 @@ class _PatientsListPageState extends State<PatientsListPage> {
                       const SizedBox(width: 12),
                       _StatCard(
                         label: "Female",
-                        value: "${state.patients.where((p) => p.gender.toLowerCase() == "female").length}",
+                        value:
+                            "${state.patients.where((p) => p.gender.toLowerCase() == "female").length}",
                         icon: Icons.female_rounded,
                         color: Colors.pink,
                         isDark: isDark,
@@ -163,9 +175,16 @@ class _PatientsListPageState extends State<PatientsListPage> {
           BlocBuilder<PatientsCubit, PatientsState>(
             builder: (context, state) {
               if (state is PatientsLoading) {
-              const SliverFillRemaining(
-                  child: Center(child: MedicalLoading()),
-                );}
+                return SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 100),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => PatientCardSkeleton(isDark: isDark),
+                      childCount: 6,
+                    ),
+                  ),
+                );
+              }
 
               if (state is PatientsError) {
                 return SliverFillRemaining(
@@ -173,8 +192,11 @@ class _PatientsListPageState extends State<PatientsListPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline,
-                            size: 52, color: AppColors.error),
+                        const Icon(
+                          Icons.error_outline,
+                          size: 52,
+                          color: AppColors.error,
+                        ),
                         const SizedBox(height: 12),
                         Text(state.message),
                         const SizedBox(height: 16),
@@ -210,8 +232,11 @@ class _PatientsListPageState extends State<PatientsListPage> {
                                   : AppColors.chipBlue,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.people_outline,
-                                size: 52, color: AppColors.primary),
+                            child: const Icon(
+                              Icons.people_outline,
+                              size: 52,
+                              color: AppColors.primary,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -258,8 +283,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
                             context.read<PatientsCubit>().loadPatients();
                           }
                         },
-                        onDelete: () =>
-                            _confirmDelete(context, filtered[i].id),
+                        onDelete: () => _confirmDelete(context, filtered[i].id),
                       ),
                       childCount: filtered.length,
                     ),
@@ -278,8 +302,10 @@ class _PatientsListPageState extends State<PatientsListPage> {
         foregroundColor: Colors.white,
         elevation: 2,
         icon: const Icon(Icons.person_add),
-        label: const Text("Add Patient",
-            style: TextStyle(fontWeight: FontWeight.w600)),
+        label: const Text(
+          "Add Patient",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         onPressed: () async {
           await Navigator.push(
             context,
@@ -297,8 +323,10 @@ class _PatientsListPageState extends State<PatientsListPage> {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text("Delete Patient",
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text(
+          "Delete Patient",
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
         content: const Text(
           "This will permanently delete the patient and all related records.",
         ),
@@ -312,7 +340,8 @@ class _PatientsListPageState extends State<PatientsListPage> {
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -351,8 +380,9 @@ class _StatCard extends StatelessWidget {
           color: isDark ? AppColors.darkCard : AppColors.lightCard,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-              width: 0.8),
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            width: 0.8,
+          ),
         ),
         child: Row(
           children: [
@@ -368,21 +398,25 @@ class _StatCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(value,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary,
-                    )),
-                Text(label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary,
-                    )),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                  ),
+                ),
               ],
             ),
           ],
@@ -419,8 +453,9 @@ class _PatientCard extends StatelessWidget {
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            width: 0.8),
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.8,
+        ),
         boxShadow: isDark
             ? []
             : [
@@ -506,11 +541,13 @@ class _PatientCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.phone_outlined,
-                              size: 12,
-                              color: isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary),
+                          Icon(
+                            Icons.phone_outlined,
+                            size: 12,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             patient.phone,
@@ -567,9 +604,10 @@ class _MiniChip extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(label,
-          style: TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg),
+      ),
     );
   }
 }
@@ -579,8 +617,11 @@ class _ActionBtn extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _ActionBtn(
-      {required this.icon, required this.color, required this.onTap});
+  const _ActionBtn({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

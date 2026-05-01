@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/theme/theme_cubit.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
+import 'package:medixpro/core/widgets/skeleton.dart';
 import 'package:medixpro/features/appointments/presentation/pages/doctor_requests_page.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_dashboard_home.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_requests_page.dart';
@@ -40,13 +41,13 @@ class _DashboardPageState extends State<DashboardPage> {
   ];
 
   static const _doctorNavItems = <(IconData, IconData, String)>[
-    (Icons.dashboard_rounded,      Icons.dashboard_outlined,      "Home"),
-    (Icons.people_rounded,         Icons.people_outline,          "Patients"),
-    (Icons.description_rounded,    Icons.description_outlined,    "Reports"),
-    (Icons.medication_rounded,     Icons.medication_outlined,     "Meds"),
+    (Icons.dashboard_rounded, Icons.dashboard_outlined, "Home"),
+    (Icons.people_rounded, Icons.people_outline, "Patients"),
+    (Icons.description_rounded, Icons.description_outlined, "Reports"),
+    (Icons.medication_rounded, Icons.medication_outlined, "Meds"),
     (Icons.calendar_month_rounded, Icons.calendar_month_outlined, "Schedule"),
-    (Icons.inbox_rounded,          Icons.inbox_outlined,          "Requests"),
-    (Icons.settings_rounded,       Icons.settings_outlined,       "Settings"),
+    (Icons.inbox_rounded, Icons.inbox_outlined, "Requests"),
+    (Icons.settings_rounded, Icons.settings_outlined, "Settings"),
   ];
 
   // ─── Patient Pages ────────────────────────────────────────────────────────
@@ -58,10 +59,10 @@ class _DashboardPageState extends State<DashboardPage> {
   ];
 
   static const _patientNavItems = <(IconData, IconData, String)>[
-    (Icons.home_rounded,           Icons.home_outlined,           "Home"),
+    (Icons.home_rounded, Icons.home_outlined, "Home"),
     (Icons.calendar_month_rounded, Icons.calendar_month_outlined, "My Appts"),
-    (Icons.send_rounded,           Icons.send_outlined,           "Requests"),
-    (Icons.settings_rounded,       Icons.settings_outlined,       "Settings"),
+    (Icons.send_rounded, Icons.send_outlined, "Requests"),
+    (Icons.settings_rounded, Icons.settings_outlined, "Settings"),
   ];
 
   @override
@@ -72,12 +73,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark    = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final authState = context.watch<AuthCubit>().state;
-    final user      = authState is AuthAuthenticated ? authState.user : null;
-    final isDoctor  = user?.isDoctor ?? true; // افتراضي طبيب لو لم يُحدد
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final isDoctor = user?.isDoctor ?? true; // افتراضي طبيب لو لم يُحدد
 
-    final pages    = isDoctor ? _doctorPages    : _patientPages;
+    final pages = isDoctor ? _doctorPages : _patientPages;
     final navItems = isDoctor ? _doctorNavItems : _patientNavItems;
 
     // تأكد أن الـ index لا يتجاوز عدد الصفحات
@@ -89,10 +90,7 @@ class _DashboardPageState extends State<DashboardPage> {
         duration: const Duration(milliseconds: 250),
         switchInCurve: Curves.easeIn,
         switchOutCurve: Curves.easeOut,
-        child: KeyedSubtree(
-          key: ValueKey(safeIndex),
-          child: pages[safeIndex],
-        ),
+        child: KeyedSubtree(key: ValueKey(safeIndex), child: pages[safeIndex]),
       ),
       bottomNavigationBar: _BottomNav(
         selectedIndex: safeIndex,
@@ -165,7 +163,9 @@ class _BottomNav extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 220),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: selected
                           ? AppColors.primary.withOpacity(0.12)
@@ -181,8 +181,8 @@ class _BottomNav extends StatelessWidget {
                           color: selected
                               ? AppColors.primary
                               : (isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.lightTextSecondary),
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary),
                         ),
                         const SizedBox(height: 3),
                         Text(
@@ -195,8 +195,8 @@ class _BottomNav extends StatelessWidget {
                             color: selected
                                 ? AppColors.primary
                                 : (isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
                           ),
                         ),
                       ],
@@ -211,6 +211,7 @@ class _BottomNav extends StatelessWidget {
     );
   }
 }
+
 // ─── Dashboard Home (Doctor only) ─────────────────────────────────────────────
 class _DashboardHome extends StatelessWidget {
   const _DashboardHome();
@@ -249,26 +250,34 @@ class _DashboardHome extends StatelessWidget {
                         color: Colors.white,
                         size: 20,
                       ),
-                      onPressed: () =>
-                          context.read<ThemeCubit>().toggleTheme(),
+                      onPressed: () => context.read<ThemeCubit>().toggleTheme(),
                     ),
                   ),
                 ),
               ],
             ),
 
-            if (state is DashboardLoading)
-              const SliverFillRemaining(
-                child: Center(child: MedicalLoading()),
-              )
-            else if (state is DashboardError)
+            if (state is DashboardLoading) ...[
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => DashboardStatsSkeleton(isDark: isDark),
+                    childCount: 6,
+                  ),
+                ),
+              ),
+            ] else if (state is DashboardError) ...[
               SliverFillRemaining(
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.wifi_off_rounded,
-                          size: 52, color: AppColors.error),
+                      const Icon(
+                        Icons.wifi_off_rounded,
+                        size: 52,
+                        color: AppColors.error,
+                      ),
                       const SizedBox(height: 12),
                       Text(state.message),
                       const SizedBox(height: 16),
@@ -281,8 +290,8 @@ class _DashboardHome extends StatelessWidget {
                     ],
                   ),
                 ),
-              )
-            else if (state is DashboardLoaded) ...[
+              ),
+            ] else if (state is DashboardLoaded) ...[
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 sliver: SliverToBoxAdapter(
@@ -305,14 +314,16 @@ class _DashboardHome extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 sliver: SliverToBoxAdapter(
                   child: _TodaySchedule(
-                      appointments: state.appointments, isDark: isDark),
+                    appointments: state.appointments,
+                    isDark: isDark,
+                  ),
                 ),
               ),
               SliverToBoxAdapter(
                 child: SizedBox(
-                    height: MediaQuery.of(context).padding.bottom + 100),
+                  height: MediaQuery.of(context).padding.bottom + 100,
+                ),
               ),
-              
             ],
           ],
         );
@@ -336,8 +347,19 @@ class _HeaderBackground extends StatelessWidget {
   String _todayDate() {
     final now = DateTime.now();
     const months = [
-      "", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     return "${days[now.weekday - 1]}, ${months[now.month]} ${now.day}";
@@ -363,46 +385,58 @@ class _HeaderBackground extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 44, height: 44,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.local_hospital_rounded,
-                        size: 24, color: AppColors.primary),
+                    child: const Icon(
+                      Icons.local_hospital_rounded,
+                      size: 24,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("MedixPro",
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          )),
-                      Text(_greeting(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                          )),
+                      Text(
+                        "MedixPro",
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        _greeting(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(_todayDate(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        )),
+                    child: Text(
+                      _todayDate(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -419,10 +453,7 @@ class _StatsGrid extends StatelessWidget {
   final DashboardStatsModel stats;
   final bool isDark;
 
-  const _StatsGrid({
-    required this.stats,
-    required this.isDark,
-  });
+  const _StatsGrid({required this.stats, required this.isDark});
 
   int _getCrossAxisCount(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -460,8 +491,7 @@ class _StatsGrid extends StatelessWidget {
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
 
-          childAspectRatio:
-              _getAspectRatio(context, crossAxisCount),
+          childAspectRatio: _getAspectRatio(context, crossAxisCount),
 
           children: [
             _StatCard(
@@ -472,9 +502,7 @@ class _StatsGrid extends StatelessWidget {
               isDark: isDark,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const PatientsListPage(),
-                ),
+                MaterialPageRoute(builder: (_) => const PatientsListPage()),
               ),
             ),
             _StatCard(
@@ -485,9 +513,7 @@ class _StatsGrid extends StatelessWidget {
               isDark: isDark,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const AppointmentsPage(),
-                ),
+                MaterialPageRoute(builder: (_) => const AppointmentsPage()),
               ),
             ),
             _StatCard(
@@ -498,9 +524,7 @@ class _StatsGrid extends StatelessWidget {
               isDark: isDark,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const ReportsPage(),
-                ),
+                MaterialPageRoute(builder: (_) => const ReportsPage()),
               ),
             ),
             _StatCard(
@@ -511,23 +535,22 @@ class _StatsGrid extends StatelessWidget {
               isDark: isDark,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const MedicationsPage(),
-                ),
+                MaterialPageRoute(builder: (_) => const MedicationsPage()),
               ),
             ),
           ],
         ),
-         Center(
-           child: MedicalAnimation(
-                    asset: "assets/animations/3D Doctor Dancing.json",
-                    size: MediaQuery.of(context).size.width * 0.45,
-                  ),
-         ),
+        Center(
+          child: MedicalAnimation(
+            asset: "assets/animations/3D Doctor Dancing.json",
+            size: MediaQuery.of(context).size.width * 0.45,
+          ),
+        ),
       ],
     );
   }
 }
+
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -571,9 +594,7 @@ class _StatCard extends StatelessWidget {
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark
-                  ? AppColors.borderDark
-                  : AppColors.borderLight,
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
               width: 0.8,
             ),
             boxShadow: isDark
@@ -600,11 +621,7 @@ class _StatCard extends StatelessWidget {
                       color: color.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      icon,
-                      size: iconSize,
-                      color: color,
-                    ),
+                    child: Icon(icon, size: iconSize, color: color),
                   ),
                   Icon(
                     Icons.arrow_forward_ios_rounded,
@@ -663,6 +680,7 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+
 // ─── Patient Breakdown ────────────────────────────────────────────────────────
 class _PatientBreakdown extends StatelessWidget {
   final DashboardStatsModel stats;
@@ -705,10 +723,10 @@ class _PatientBreakdown extends StatelessWidget {
 
 class _DemoBar extends StatelessWidget {
   final String label;
-  final int    count;
-  final int    total;
-  final Color  color;
-  final bool   isDark;
+  final int count;
+  final int total;
+  final Color color;
+  final bool isDark;
 
   const _DemoBar({
     required this.label,
@@ -729,20 +747,24 @@ class _DemoBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isDark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary,
-                  )),
-              Text("$count",
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: color,
-                  )),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                ),
+              ),
+              Text(
+                "$count",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -756,13 +778,15 @@ class _DemoBar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text("${(pct * 100).toStringAsFixed(0)}%",
-              style: TextStyle(
-                fontSize: 11,
-                color: isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary,
-              )),
+          Text(
+            "${(pct * 100).toStringAsFixed(0)}%",
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -832,8 +856,8 @@ class _ReportBreakdown extends StatelessWidget {
 class _MiniStat extends StatelessWidget {
   final String label;
   final String value;
-  final Color  color;
-  final bool   isDark;
+  final Color color;
+  final bool isDark;
 
   const _MiniStat({
     required this.label,
@@ -853,21 +877,25 @@ class _MiniStat extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: color,
-              )),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                color: isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary,
-              )),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -883,21 +911,31 @@ class _TodaySchedule extends StatelessWidget {
 
   Color _statusColor(String status) {
     switch (status) {
-      case "completed":   return AppColors.success;
-      case "cancelled":   return AppColors.error;
-      case "no_show":     return AppColors.warning;
-      case "rescheduled": return Colors.orange;
-      default:            return AppColors.primary;
+      case "completed":
+        return AppColors.success;
+      case "cancelled":
+        return AppColors.error;
+      case "no_show":
+        return AppColors.warning;
+      case "rescheduled":
+        return Colors.orange;
+      default:
+        return AppColors.primary;
     }
   }
 
   IconData _typeIcon(String type) {
     switch (type) {
-      case "emergency":   return Icons.emergency_rounded;
-      case "follow_up":   return Icons.refresh_rounded;
-      case "lab_results": return Icons.science_outlined;
-      case "vaccination": return Icons.vaccines_outlined;
-      default:            return Icons.calendar_month_outlined;
+      case "emergency":
+        return Icons.emergency_rounded;
+      case "follow_up":
+        return Icons.refresh_rounded;
+      case "lab_results":
+        return Icons.science_outlined;
+      case "vaccination":
+        return Icons.vaccines_outlined;
+      default:
+        return Icons.calendar_month_outlined;
     }
   }
 
@@ -917,8 +955,10 @@ class _TodaySchedule extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (_) => const AppointmentsPage()),
                 ),
-                child: const Text("View all",
-                    style: TextStyle(fontSize: 12, color: AppColors.primary)),
+                child: const Text(
+                  "View all",
+                  style: TextStyle(fontSize: 12, color: AppColors.primary),
+                ),
               ),
             ],
           ),
@@ -929,11 +969,13 @@ class _TodaySchedule extends StatelessWidget {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.event_available_outlined,
-                        size: 40,
-                        color: isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary),
+                    Icon(
+                      Icons.event_available_outlined,
+                      size: 40,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       "No appointments today",
@@ -976,56 +1018,69 @@ class _TodaySchedule extends StatelessWidget {
                               color: AppColors.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(_typeIcon(a.type),
-                                size: 16, color: AppColors.primary),
+                            child: Icon(
+                              _typeIcon(a.type),
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(a.patientName,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark
-                                          ? AppColors.darkTextPrimary
-                                          : AppColors.lightTextPrimary,
-                                    )),
+                                Text(
+                                  a.patientName,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary,
+                                  ),
+                                ),
                                 const SizedBox(height: 2),
-                                Text(a.title,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: isDark
-                                          ? AppColors.darkTextSecondary
-                                          : AppColors.lightTextSecondary,
-                                    )),
+                                Text(
+                                  a.title,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(a.time,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.primary,
-                                  )),
+                              Text(
+                                a.time,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                ),
+                              ),
                               const SizedBox(height: 4),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: statusColor.withOpacity(0.12),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: Text(a.status,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: statusColor,
-                                    )),
+                                child: Text(
+                                  a.status,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: statusColor,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -1034,7 +1089,9 @@ class _TodaySchedule extends StatelessWidget {
                     ),
                     // Accent bar
                     Positioned(
-                      left: 0, top: 0, bottom: 0,
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
                       child: Container(
                         width: 3,
                         decoration: BoxDecoration(
@@ -1090,7 +1147,7 @@ class _Card extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String text;
-  final bool   isDark;
+  final bool isDark;
   const _SectionTitle(this.text, this.isDark);
 
   @override
