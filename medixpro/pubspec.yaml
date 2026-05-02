@@ -29,7 +29,6 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   connectivity_plus: ^6.0.3
-  fl_chart: ^0.68.0
   bloc: ^9.2.0
   cupertino_icons: ^1.0.8
   dio: ^5.9.1

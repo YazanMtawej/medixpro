@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:medixpro/core/theme/app_colors.dart';
 import 'package:medixpro/core/theme/theme_cubit.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
-import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/core/widgets/skeleton.dart';
+
+import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
+
+import 'package:medixpro/features/dashboard/presentation/cubit/dashboard_cubit.dart';
+import 'package:medixpro/features/dashboard/presentation/cubit/dashboard_state.dart';
+import 'package:medixpro/features/dashboard/data/models/dashboard_stats_model.dart';
+import 'package:medixpro/features/dashboard/data/models/today_appointment_model.dart';
+import 'package:medixpro/features/dashboard/presentation/widgets/stats_chart.dart';
+
+import 'package:medixpro/features/patients/presentation/pages/patients_list_page.dart';
+import 'package:medixpro/features/reports/presentation/pages/reports_page.dart';
+import 'package:medixpro/features/medications/presentation/pages/medications_page.dart';
+import 'package:medixpro/features/appointments/presentation/pages/appointments_page.dart';
 import 'package:medixpro/features/appointments/presentation/pages/doctor_requests_page.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_dashboard_home.dart';
 import 'package:medixpro/features/appointments/presentation/pages/patient_requests_page.dart';
-import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../patients/presentation/pages/patients_list_page.dart';
-import '../../../reports/presentation/pages/reports_page.dart';
-import '../../../medications/presentation/pages/medications_page.dart';
-import '../../../appointments/presentation/pages/appointments_page.dart';
-import '../../../settings/presentation/pages/settings_page.dart';
-import '../cubit/dashboard_cubit.dart';
-import '../cubit/dashboard_state.dart';
-import '../../data/models/dashboard_stats_model.dart';
-import '../../data/models/today_appointment_model.dart';
-
+import 'package:medixpro/features/settings/presentation/pages/settings_page.dart';
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -298,16 +301,20 @@ class _DashboardHome extends StatelessWidget {
                   child: _StatsGrid(stats: state.stats, isDark: isDark),
                 ),
               ),
+              // أضف الـ charts بعد _StatsGrid مباشرة
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _PatientBreakdown(stats: state.stats, isDark: isDark),
+                  child: AppointmentStatusChart(
+                    stats: state.stats,
+                    isDark: isDark,
+                  ),
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _ReportBreakdown(stats: state.stats, isDark: isDark),
+                  child: PatientGenderChart(stats: state.stats, isDark: isDark),
                 ),
               ),
               SliverPadding(
