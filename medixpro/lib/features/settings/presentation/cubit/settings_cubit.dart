@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/storage/token_storage.dart';
-import '../../../../core/notifications/notification_service.dart';
 import '../../domain/entities/notification_item.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/update_profile_usecase.dart';

@@ -4,11 +4,6 @@ import '../../domain/entities/medication.dart';
 import '../cubit/medications_cubit.dart';
 import '../../../patients/presentation/cubit/patients_cubit.dart';
 import '../../../patients/presentation/cubit/patients_state.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/token_storage.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../data/datasources/medications_remote_datasource.dart';
-
 class AddMedicationPage extends StatefulWidget {
   final int? preselectedPatientId;
   const AddMedicationPage({super.key, this.preselectedPatientId});
@@ -67,15 +62,15 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
   }
 
   Future<void> _loadCommonMeds({String? search}) async {
-    setState(() => _loadingCommon = true);
-    try {
-      final tokenStorage = TokenStorage(const FlutterSecureStorage());
-      final apiClient = ApiClient(tokenStorage);
-      final ds = MedicationsRemoteDataSource(apiClient);
-      _commonMeds = await ds.getCommonMedications(search: search);
-    } catch (_) {}
-    if (mounted) setState(() => _loadingCommon = false);
-  }
+  if (!mounted) return;                               // ← early mounted check
+  setState(() => _loadingCommon = true);
+  try {
+    _commonMeds = await context                       // ← correct DI path
+        .read<MedicationsCubit>()
+        .fetchCommonMedications(search: search);
+  } catch (_) {}
+  if (mounted) setState(() => _loadingCommon = false);
+}
 
   @override
   void dispose() {

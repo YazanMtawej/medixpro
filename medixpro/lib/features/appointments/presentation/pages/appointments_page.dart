@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/core/widgets/skeleton.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -101,30 +100,24 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             ),
             backgroundColor: cs.primary,
             actions: [
-              if (isDoctor)
+              if (isDoctor) // ← single guarded button
                 IconButton(
                   icon: const Icon(
                     Icons.add_circle_outline,
                     color: Colors.white,
                   ),
                   onPressed: () async {
-                    /* ... */
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AddAppointmentPage(),
+                      ),
+                    );
+                    if (mounted) {
+                      context.read<AppointmentsCubit>().fetchAppointments();
+                    }
                   },
                 ),
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AddAppointmentPage(),
-                    ),
-                  );
-                  if (mounted) {
-                    context.read<AppointmentsCubit>().fetchAppointments();
-                  }
-                },
-              ),
             ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(52),
@@ -339,7 +332,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: isDoctor             // ← conditional FAB
+    ? FloatingActionButton.extended(
         backgroundColor: cs.primary,
         foregroundColor: Colors.white,
         elevation: 2,
@@ -355,8 +349,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           );
           if (mounted) context.read<AppointmentsCubit>().fetchAppointments();
         },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      )
+    : null,                                // ← null hides FAB for patients
+floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+
     );
   }
 

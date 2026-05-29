@@ -71,7 +71,7 @@ import 'features/medications/domain/usecases/update_medication_usecase.dart';
 import 'features/medications/domain/usecases/delete_medication_usecase.dart';
 import 'features/medications/presentation/cubit/medications_cubit.dart';
 import 'features/medications/presentation/pages/medications_page.dart';
-
+import 'features/medications/domain/usecases/get_common_medications_usecase.dart';
 // ================= APPOINTMENTS =================
 import 'features/appointments/data/datasources/appointments_remote_datasource.dart';
 import 'features/appointments/data/repositories_impl/appointments_repository_impl.dart';
@@ -139,7 +139,7 @@ Future<void> main() async {
   final addMedication = AddMedicationUseCase(medicationsRepository);
   final updateMedication = UpdateMedicationUseCase(medicationsRepository);
   final deleteMedication = DeleteMedicationUseCase(medicationsRepository);
-
+  final getCommonMedications = GetCommonMedicationsUseCase(medicationsRepository);
   // ─── Cubits ───────────────────────────────────────────────────────────────
 
   final authCubit = AuthCubit(
@@ -182,6 +182,7 @@ Future<void> main() async {
     addMedication,
     updateMedication,
     deleteMedication,
+    getCommonMedications,
   );
 
   // ✅ AppointmentsCubit يأخذ الـ repository مباشرة

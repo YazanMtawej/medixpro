@@ -18,22 +18,26 @@ class DashboardCubit extends Cubit<DashboardState> {
   }
 
   // 🔥 تحميل البيانات الأساسي
-  Future<void> loadDashboard() async {
-    if (_isLoading) return;
+ Future<void> loadDashboard() async {
+  if (_isLoading || isClosed) return;        // ← early exit if already closed
 
-    _isLoading = true;
+  _isLoading = true;
 
-    try {
-      final stats = await _getStats();
-      final appointments = await _getAppointments();
+  try {
+    final stats        = await _getStats();
+    final appointments = await _getAppointments();
 
+    if (!isClosed) {                         // ← guard before emit
       emit(DashboardLoaded(stats, appointments));
-    } catch (_) {
-      emit(DashboardError("Failed to load dashboard"));
-    } finally {
-      _isLoading = false;
     }
+  } catch (_) {
+    if (!isClosed) {                         // ← guard before emit
+      emit(DashboardError("Failed to load dashboard"));
+    }
+  } finally {
+    _isLoading = false;
   }
+}
 
   // 🔥 تشغيل التحديث التلقائي كل 30 ثانية
   void _startAutoRefresh() {

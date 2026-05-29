@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lottie/lottie.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
 
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
