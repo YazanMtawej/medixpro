@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/appointment_request.dart';
+import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
 import '../cubit/appointments_state.dart';
 
@@ -67,10 +69,10 @@ class _DoctorRequestsPageState extends State<DoctorRequestsPage>
                   labelColor: AppColors.primary,
                   unselectedLabelColor:
                       isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                  tabs: const [
-                    Tab(text: "Pending"),
-                    Tab(text: "Suggested"),
-                    Tab(text: "Done"),
+                  tabs: [
+                    Tab(text: AppLocalizations.of(context).statusPending),
+                    Tab(text: AppLocalizations.of(context).tabSuggested),
+                    Tab(text: AppLocalizations.of(context).tabDone),
                   ],
                 ),
               ),
@@ -108,7 +110,7 @@ class _DoctorRequestsPageState extends State<DoctorRequestsPage>
                       );
                     }
 
-                    return const Center(child: Text("Pull to refresh"));
+                    return Center(child: Text(AppLocalizations.of(context).pullToRefresh));
                   },
                 ),
               ),
@@ -138,21 +140,21 @@ class _Header extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.inbox_rounded, color: Colors.white, size: 28),
-          SizedBox(width: 12),
+          const Icon(Icons.inbox_rounded, color: Colors.white, size: 28),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Appointment Requests",
-                  style: TextStyle(
+              Text(AppLocalizations.of(context).appointmentRequests,
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text("Review and respond to patient requests",
-                  style: TextStyle(color: Colors.white70, fontSize: 12)),
+              const SizedBox(height: 4),
+              Text(AppLocalizations.of(context).reviewRespondRequests,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12)),
             ],
           ),
         ],
@@ -191,7 +193,7 @@ class _RequestList extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              "Nothing here yet",
+              AppLocalizations.of(context).nothingHereYet,
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -331,7 +333,9 @@ class _RequestCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            request.status.toUpperCase(),
+                            appointmentRequestStatusLabel(
+                                    context, request.status)
+                                .toUpperCase(),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -349,7 +353,7 @@ class _RequestCard extends StatelessWidget {
                     // ── Info ──────────────────────────────────────────────
                     _InfoRow(
                       icon: Icons.calendar_month_outlined,
-                      label: "Requested",
+                      label: AppLocalizations.of(context).requested,
                       value: _fmt(request.preferredDate),
                       color: AppColors.primary,
                       isDark: isDark,
@@ -357,15 +361,15 @@ class _RequestCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     _InfoRow(
                       icon: Icons.medical_services_outlined,
-                      label: "Type",
-                      value: request.type.replaceAll("_", " "),
+                      label: AppLocalizations.of(context).typeLabel,
+                      value: appointmentTypeLabel(context, request.type),
                       isDark: isDark,
                     ),
                     if (request.reason.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       _InfoRow(
                         icon: Icons.notes_outlined,
-                        label: "Reason",
+                        label: AppLocalizations.of(context).reason,
                         value: request.reason,
                         isDark: isDark,
                       ),
@@ -374,7 +378,7 @@ class _RequestCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       _InfoRow(
                         icon: Icons.sick_outlined,
-                        label: "Symptoms",
+                        label: AppLocalizations.of(context).symptoms,
                         value: request.symptoms,
                         isDark: isDark,
                       ),
@@ -397,7 +401,8 @@ class _RequestCard extends StatelessWidget {
                                 size: 15, color: AppColors.warning),
                             const SizedBox(width: 6),
                             Text(
-                              "Suggested: ${_fmt(request.suggestedDate!)}",
+                              AppLocalizations.of(context).suggestedDateLabel(
+                                  _fmt(request.suggestedDate!)),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -440,7 +445,7 @@ class _RequestCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _ActionBtn(
-                              label: "Accept",
+                              label: AppLocalizations.of(context).accept,
                               icon: Icons.check_circle_outline,
                               color: AppColors.success,
                               onTap: () => _showAcceptDialog(context, request.id),
@@ -449,7 +454,7 @@ class _RequestCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: _ActionBtn(
-                              label: "Suggest",
+                              label: AppLocalizations.of(context).suggest,
                               icon: Icons.schedule_outlined,
                               color: AppColors.warning,
                               // ✅ إصلاح الـ callback الفارغ
@@ -459,7 +464,7 @@ class _RequestCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: _ActionBtn(
-                              label: "Reject",
+                              label: AppLocalizations.of(context).reject,
                               icon: Icons.cancel_outlined,
                               color: AppColors.error,
                               onTap: () => _showRejectDialog(context, request.id),
@@ -485,23 +490,24 @@ class _RequestCard extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(children: [
-          Icon(Icons.check_circle_outline, color: AppColors.success),
-          SizedBox(width: 8),
-          Text("Accept Request", style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Row(children: [
+          const Icon(Icons.check_circle_outline, color: AppColors.success),
+          const SizedBox(width: 8),
+          Text(AppLocalizations.of(context).acceptRequest,
+              style: const TextStyle(fontWeight: FontWeight.w700)),
         ]),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Appointment will be created at the patient's requested time.",
-                style: TextStyle(fontSize: 13)),
+            Text(AppLocalizations.of(context).appointmentCreatedAtRequestedTime,
+                style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 12),
             TextField(
               controller: notesCtrl,
               maxLines: 2,
               decoration: InputDecoration(
-                hintText: "Optional note for the patient",
+                hintText: AppLocalizations.of(context).optionalNoteForPatient,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.all(10),
@@ -512,7 +518,7 @@ class _RequestCard extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -528,7 +534,7 @@ class _RequestCard extends StatelessWidget {
                 notes: notesCtrl.text.trim(),
               );
             },
-            child: const Text("Confirm ✅"),
+            child: Text("${AppLocalizations.of(context).confirm} ✅"),
           ),
         ],
       ),
@@ -546,19 +552,19 @@ class _RequestCard extends StatelessWidget {
       builder: (_) => StatefulBuilder(
         builder: (ctx, setStateDialog) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(children: [
-            Icon(Icons.schedule_outlined, color: AppColors.warning),
-            SizedBox(width: 8),
-            Text("Suggest Alternative Time",
-                style: TextStyle(fontWeight: FontWeight.w700)),
+          title: Row(children: [
+            const Icon(Icons.schedule_outlined, color: AppColors.warning),
+            const SizedBox(width: 8),
+            Text(AppLocalizations.of(ctx).suggestAlternativeTime,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
           ]),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  "The patient will be notified and can confirm or decline.",
-                  style: TextStyle(fontSize: 13),
+                Text(
+                  AppLocalizations.of(ctx).patientWillBeNotifiedSuggest,
+                  style: const TextStyle(fontSize: 13),
                 ),
                 const SizedBox(height: 14),
 
@@ -595,7 +601,7 @@ class _RequestCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           date == null
-                              ? "Select date"
+                              ? AppLocalizations.of(ctx).selectDate
                               : "${date!.year}-${date!.month.toString().padLeft(2, '0')}-${date!.day.toString().padLeft(2, '0')}",
                           style: TextStyle(
                             fontSize: 14,
@@ -639,7 +645,7 @@ class _RequestCard extends StatelessWidget {
                                 : AppColors.lightTextSecondary),
                         const SizedBox(width: 8),
                         Text(
-                          time == null ? "Select time" : time!.format(ctx),
+                          time == null ? AppLocalizations.of(ctx).selectTime : time!.format(ctx),
                           style: TextStyle(
                             fontSize: 14,
                             color: time != null ? null : AppColors.lightTextSecondary,
@@ -656,7 +662,7 @@ class _RequestCard extends StatelessWidget {
                   controller: noteCtrl,
                   maxLines: 2,
                   decoration: InputDecoration(
-                    hintText: "Note for patient (optional)",
+                    hintText: AppLocalizations.of(ctx).noteForPatientOptional,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
                     contentPadding: const EdgeInsets.all(10),
@@ -668,7 +674,7 @@ class _RequestCard extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text("Cancel"),
+              child: Text(AppLocalizations.of(ctx).cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -679,8 +685,8 @@ class _RequestCard extends StatelessWidget {
               ),
               onPressed: () {
                 if (date == null || time == null) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-                    content: Text("Please select both date and time"),
+                  ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                    content: Text(AppLocalizations.of(ctx).pleaseSelectBothDateTime),
                     backgroundColor: AppColors.error,
                   ));
                   return;
@@ -696,7 +702,7 @@ class _RequestCard extends StatelessWidget {
                   noteCtrl.text.trim(),
                 );
               },
-              child: const Text("Send Suggestion 📅"),
+              child: Text("${AppLocalizations.of(ctx).sendSuggestion} 📅"),
             ),
           ],
         ),
@@ -711,22 +717,23 @@ class _RequestCard extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(children: [
-          Icon(Icons.cancel_outlined, color: AppColors.error),
-          SizedBox(width: 8),
-          Text("Reject Request", style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Row(children: [
+          const Icon(Icons.cancel_outlined, color: AppColors.error),
+          const SizedBox(width: 8),
+          Text(AppLocalizations.of(context).rejectRequest,
+              style: const TextStyle(fontWeight: FontWeight.w700)),
         ]),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("The patient will be notified of the rejection.",
-                style: TextStyle(fontSize: 13)),
+            Text(AppLocalizations.of(context).patientNotifiedRejection,
+                style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 12),
             TextField(
               controller: noteCtrl,
               maxLines: 2,
               decoration: InputDecoration(
-                hintText: "Reason for rejection (optional)",
+                hintText: AppLocalizations.of(context).reasonForRejectionOptional,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.all(10),
@@ -737,7 +744,7 @@ class _RequestCard extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -753,7 +760,7 @@ class _RequestCard extends StatelessWidget {
                 doctorNote: noteCtrl.text.trim(),
               );
             },
-            child: const Text("Reject ❌"),
+            child: Text("${AppLocalizations.of(context).reject} ❌"),
           ),
         ],
       ),

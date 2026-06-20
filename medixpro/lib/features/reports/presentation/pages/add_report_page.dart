@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/report.dart';
 import '../cubit/reports_cubit.dart';
@@ -84,14 +85,15 @@ class _AddReportPageState extends State<AddReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
-        title: const Text("New Medical Report",
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(l10n.newMedicalReport,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -120,8 +122,8 @@ class _AddReportPageState extends State<AddReportPage> {
                   }
                   return DropdownButtonFormField<int>(
                     value: _patientId,
-                    hint: const Text("Select Patient"),
-                    decoration: _decor("Patient", Icons.person_outline),
+                    hint: Text(l10n.selectPatient),
+                    decoration: _decor(l10n.patientLabel, Icons.person_outline),
                     items: state.patients
                         .map((p) => DropdownMenuItem(
                               value: p.id, child: Text(p.name)))
@@ -140,7 +142,7 @@ class _AddReportPageState extends State<AddReportPage> {
                       }
                     },
                     validator: (v) =>
-                        v == null ? "Please select a patient" : null,
+                        v == null ? l10n.pleaseSelectPatient : null,
                   );
                 },
               ),
@@ -151,7 +153,7 @@ class _AddReportPageState extends State<AddReportPage> {
             // ─── Basic Info ───────────────────────────────────────────
             _card(isDark: isDark,
               child: Column(children: [
-                _field(_titleCtrl, "Report Title",
+                _field(_titleCtrl, l10n.reportTitle,
                     icon: Icons.title, required: true),
                 const SizedBox(height: 12),
                 _statusDropdown(),
@@ -168,24 +170,24 @@ class _AddReportPageState extends State<AddReportPage> {
                       state.appointments.isEmpty) {
                     return DropdownButtonFormField<int>(
                       value: null,
-                      decoration: _decor("Linked Appointment (optional)",
+                      decoration: _decor(l10n.linkedAppointmentOptional,
                           Icons.calendar_month_outlined),
                       items: const [],
                       onChanged: null,
                       hint: Text(_patientId == null
-                          ? "Select patient first"
-                          : "No appointments found"),
+                          ? l10n.selectPatientFirst
+                          : l10n.noAppointmentsFound),
                     );
                   }
                   return DropdownButtonFormField<int>(
                     value: _appointmentId,
                     decoration: _decor(
-                        "Linked Appointment (optional)",
+                        l10n.linkedAppointmentOptional,
                         Icons.calendar_month_outlined),
-                    hint: const Text("Select appointment"),
+                    hint: Text(l10n.selectAppointment),
                     items: [
-                      const DropdownMenuItem(
-                          value: null, child: Text("None")),
+                      DropdownMenuItem(
+                          value: null, child: Text(l10n.none)),
                       ...state.appointments.map((a) => DropdownMenuItem(
                             value: a.id,
                             child: Text(a.title,
@@ -205,8 +207,8 @@ class _AddReportPageState extends State<AddReportPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Prescribed Medications",
-                      style: TextStyle(
+                  Text(l10n.prescribedMedications,
+                      style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary)),
@@ -217,8 +219,8 @@ class _AddReportPageState extends State<AddReportPage> {
                           state.medications.isEmpty) {
                         return Text(
                           _patientId == null
-                              ? "Select patient first"
-                              : "No medications for this patient",
+                              ? l10n.selectPatientFirst
+                              : l10n.noMedicationsForPatient,
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark
@@ -264,30 +266,30 @@ class _AddReportPageState extends State<AddReportPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Clinical Details",
-                      style: TextStyle(
+                  Text(l10n.clinicalDetails,
+                      style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary)),
                   const SizedBox(height: 12),
-                  _field(_chiefComplaintCtrl, "Chief Complaint",
+                  _field(_chiefComplaintCtrl, l10n.chiefComplaint,
                       icon: Icons.help_outline, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_historyCtrl, "Medical History",
+                  _field(_historyCtrl, l10n.medicalHistory,
                       icon: Icons.history, maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_examinationCtrl, "Physical Examination",
+                  _field(_examinationCtrl, l10n.physicalExamination,
                       icon: Icons.search, maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_diagnosisCtrl, "Diagnosis",
+                  _field(_diagnosisCtrl, l10n.diagnosis,
                       icon: Icons.medical_information_outlined,
                       required: true,
                       maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_treatmentCtrl, "Treatment Plan",
+                  _field(_treatmentCtrl, l10n.treatmentPlan,
                       icon: Icons.healing_outlined, maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_notesCtrl, "Doctor Notes",
+                  _field(_notesCtrl, l10n.doctorNotes,
                       icon: Icons.note_outlined, maxLines: 3),
                   const SizedBox(height: 12),
                   _followUpPicker(isDark),
@@ -306,8 +308,8 @@ class _AddReportPageState extends State<AddReportPage> {
                         width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white))
-                    : const Text("Save Report",
-                        style: TextStyle(fontSize: 16)),
+                    : Text(l10n.saveReport,
+                        style: const TextStyle(fontSize: 16)),
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -347,18 +349,21 @@ class _AddReportPageState extends State<AddReportPage> {
       maxLines: maxLines,
       decoration: _decor(label, icon),
       validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+          ? (v) => (v == null || v.trim().isEmpty)
+              ? AppLocalizations.of(context).requiredField
+              : null
           : null,
     );
   }
 
   Widget _statusDropdown() {
+    final l10n = AppLocalizations.of(context);
     return DropdownButtonFormField<String>(
       value: _status,
-      decoration: _decor("Status", Icons.flag_outlined),
-      items: const [
-        DropdownMenuItem(value: "draft", child: Text("Draft")),
-        DropdownMenuItem(value: "final", child: Text("Final")),
+      decoration: _decor(l10n.status, Icons.flag_outlined),
+      items: [
+        DropdownMenuItem(value: "draft", child: Text(l10n.statusDraft)),
+        DropdownMenuItem(value: "final", child: Text(l10n.statusFinal)),
       ],
       onChanged: (v) => setState(() => _status = v!),
     );
@@ -377,10 +382,10 @@ class _AddReportPageState extends State<AddReportPage> {
       },
       child: InputDecorator(
         decoration: _decor(
-            "Follow-up Date (optional)", Icons.event_repeat_outlined),
+            AppLocalizations.of(context).followUpDateOptional, Icons.event_repeat_outlined),
         child: Text(
           _followUpDate == null
-              ? "Not set"
+              ? AppLocalizations.of(context).notSet
               : _followUpDate!.toIso8601String().split("T")[0],
           style: TextStyle(
               color: _followUpDate == null ? Colors.grey : null,

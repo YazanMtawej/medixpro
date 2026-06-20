@@ -5,6 +5,8 @@ import 'package:medixpro/core/theme/app_colors.dart';
 import 'package:medixpro/core/theme/theme_cubit.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
 import 'package:medixpro/core/widgets/skeleton.dart';
+import 'package:medixpro/core/widgets/app_drawer.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
 
@@ -89,6 +91,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Scaffold(
       extendBody: true,
+      drawer: const AppDrawer(),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 250),
         switchInCurve: Curves.easeIn,
@@ -123,6 +126,32 @@ class _BottomNav extends StatelessWidget {
     required this.items,
     required this.onTap,
   });
+
+  /// Maps the English nav key from [_doctorNavItems]/[_patientNavItems]
+  /// to a localized label.
+  String _navLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context);
+    switch (key) {
+      case "Home":
+        return l10n.navHome;
+      case "Patients":
+        return l10n.navPatients;
+      case "Reports":
+        return l10n.navReports;
+      case "Meds":
+        return l10n.navMeds;
+      case "Schedule":
+        return l10n.navSchedule;
+      case "Requests":
+        return l10n.navRequests;
+      case "Settings":
+        return l10n.navSettings;
+      case "My Appts":
+        return l10n.navMyAppointments;
+      default:
+        return key;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +218,7 @@ class _BottomNav extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          item.$3,
+                          _navLabel(context, item.$3),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: selected
@@ -237,6 +266,12 @@ class _DashboardHome extends StatelessWidget {
               ),
               backgroundColor: AppColors.primary,
               elevation: 0,
+              leading: Builder(
+                builder: (context) => IconButton(
+                  icon: const Icon(Icons.menu_rounded, color: Colors.white),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              ),
               actions: [
                 BlocBuilder<ThemeCubit, ThemeMode>(
                   builder: (context, mode) => Container(
@@ -288,7 +323,7 @@ class _DashboardHome extends StatelessWidget {
                         onPressed: () =>
                             context.read<DashboardCubit>().loadDashboard(),
                         icon: const Icon(Icons.refresh),
-                        label: const Text("Retry"),
+                        label: Text(AppLocalizations.of(context).retry),
                       ),
                     ],
                   ),
@@ -502,7 +537,7 @@ class _StatsGrid extends StatelessWidget {
 
           children: [
             _StatCard(
-              label: "Total Patients",
+              label: AppLocalizations.of(context).totalPatients,
               value: "${stats.totalPatients}",
               icon: Icons.people_rounded,
               color: AppColors.primary,
@@ -513,7 +548,7 @@ class _StatsGrid extends StatelessWidget {
               ),
             ),
             _StatCard(
-              label: "Today's Appointments",
+              label: AppLocalizations.of(context).todaysAppointments,
               value: "${stats.appointmentsToday}",
               icon: Icons.calendar_month_rounded,
               color: AppColors.success,
@@ -524,7 +559,7 @@ class _StatsGrid extends StatelessWidget {
               ),
             ),
             _StatCard(
-              label: "Medical Reports",
+              label: AppLocalizations.of(context).medicalReports,
               value: "${stats.totalReports}",
               icon: Icons.description_rounded,
               color: AppColors.warning,
@@ -535,7 +570,7 @@ class _StatsGrid extends StatelessWidget {
               ),
             ),
             _StatCard(
-              label: "Prescriptions",
+              label: AppLocalizations.of(context).prescriptions,
               value: "${stats.totalMedications}",
               icon: Icons.medication_rounded,
               color: Colors.purple,
@@ -701,12 +736,12 @@ class _PatientBreakdown extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle("Patient Demographics", isDark),
+          _SectionTitle(AppLocalizations.of(context).patientDemographics, isDark),
           const SizedBox(height: 16),
           Row(
             children: [
               _DemoBar(
-                label: "Male",
+                label: AppLocalizations.of(context).male,
                 count: stats.malePatients,
                 total: stats.totalPatients,
                 color: AppColors.primary,
@@ -714,7 +749,7 @@ class _PatientBreakdown extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               _DemoBar(
-                label: "Female",
+                label: AppLocalizations.of(context).female,
                 count: stats.femalePatients,
                 total: stats.totalPatients,
                 color: Colors.pink,
@@ -813,13 +848,13 @@ class _ReportBreakdown extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle("Today's Appointments", isDark),
+          _SectionTitle(AppLocalizations.of(context).todaysAppointments, isDark),
           const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
                 child: _MiniStat(
-                  label: "Scheduled",
+                  label: AppLocalizations.of(context).statusScheduled,
                   value: "${stats.scheduledToday}",
                   color: AppColors.primary,
                   isDark: isDark,
@@ -828,7 +863,7 @@ class _ReportBreakdown extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _MiniStat(
-                  label: "Completed",
+                  label: AppLocalizations.of(context).statusCompleted,
                   value: "${stats.completedToday}",
                   color: AppColors.success,
                   isDark: isDark,
@@ -837,7 +872,7 @@ class _ReportBreakdown extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _MiniStat(
-                  label: "Final Reports",
+                  label: AppLocalizations.of(context).finalReports,
                   value: "${stats.finalReports}",
                   color: AppColors.warning,
                   isDark: isDark,
@@ -846,7 +881,7 @@ class _ReportBreakdown extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _MiniStat(
-                  label: "Drafts",
+                  label: AppLocalizations.of(context).drafts,
                   value: "${stats.draftReports}",
                   color: AppColors.lightTextSecondary,
                   isDark: isDark,
@@ -956,15 +991,15 @@ class _TodaySchedule extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _SectionTitle("Today's Schedule", isDark),
+              _SectionTitle(AppLocalizations.of(context).todaysSchedule, isDark),
               TextButton(
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const AppointmentsPage()),
                 ),
-                child: const Text(
-                  "View all",
-                  style: TextStyle(fontSize: 12, color: AppColors.primary),
+                child: Text(
+                  AppLocalizations.of(context).viewAll,
+                  style: const TextStyle(fontSize: 12, color: AppColors.primary),
                 ),
               ),
             ],
@@ -985,7 +1020,7 @@ class _TodaySchedule extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "No appointments today",
+                      AppLocalizations.of(context).noAppointmentsToday,
                       style: TextStyle(
                         color: isDark
                             ? AppColors.darkTextSecondary

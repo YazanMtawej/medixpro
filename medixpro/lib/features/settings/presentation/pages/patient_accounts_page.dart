@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/errors/app_error_handler.dart';
 import '../../domain/repositories/settings_repository.dart';
@@ -34,14 +35,15 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
   }
 
   Future<void> _delete(Map<String, dynamic> account) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(children: [
-          Icon(Icons.warning_amber_rounded, color: AppColors.error),
-          SizedBox(width: 8),
-          Text("Delete Account", style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Row(children: [
+          const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+          const SizedBox(width: 8),
+          Text(l10n.deleteAccount, style: const TextStyle(fontWeight: FontWeight.w700)),
         ]),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -51,19 +53,12 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
               text: TextSpan(
                 style: const TextStyle(fontSize: 14, color: Colors.black87),
                 children: [
-                  const TextSpan(text: "This will permanently delete "),
+                  TextSpan(text: l10n.deleteAccountWarningPrefix),
                   TextSpan(
                     text: account["username"],
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  const TextSpan(
-                    text: "'s account and ALL associated data:\n\n"
-                        "• Medical records\n"
-                        "• Appointments\n"
-                        "• Reports\n"
-                        "• Prescriptions\n\n"
-                        "This action cannot be undone.",
-                  ),
+                  TextSpan(text: l10n.deleteAccountWarningSuffix),
                 ],
               ),
             ),
@@ -72,7 +67,7 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -82,7 +77,7 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
                   borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete Permanently"),
+            child: Text(l10n.deletePermanently),
           ),
         ],
       ),
@@ -95,7 +90,7 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
       await repo.deletePatientAccount(account["user_id"] as int);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("${account["username"]} deleted successfully"),
+          content: Text(l10n.deletedSuccessfully(account["username"] as String? ?? "")),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -116,6 +111,7 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -140,8 +136,8 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
                   ),
                 ),
               ),
-              title: const Text("Patient Accounts",
-                  style: TextStyle(
+              title: Text(l10n.patientAccounts,
+                  style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
               centerTitle: true,
             ),
@@ -177,7 +173,7 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
                     ElevatedButton.icon(
                       onPressed: _load,
                       icon: const Icon(Icons.refresh),
-                      label: const Text("Retry"),
+                      label: Text(l10n.retry),
                     ),
                   ],
                 ),
@@ -199,7 +195,7 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
                           size: 48, color: AppColors.primary),
                     ),
                     const SizedBox(height: 16),
-                    Text("No patient accounts",
+                    Text(l10n.noPatientAccounts,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -208,7 +204,7 @@ class _PatientAccountsPageState extends State<PatientAccountsPage> {
                               : AppColors.lightTextSecondary,
                         )),
                     const SizedBox(height: 8),
-                    Text("Patients who register appear here",
+                    Text(l10n.patientsAppearHere,
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark
@@ -252,6 +248,7 @@ class _AccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final username  = account["username"]  as String? ?? "";
     final name      = account["name"]      as String? ?? "";
     final email     = account["email"]     as String? ?? "";
@@ -328,7 +325,7 @@ class _AccountCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        isActive ? "Active" : "Inactive",
+                        isActive ? l10n.active : l10n.inactive,
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
@@ -362,7 +359,7 @@ class _AccountCard extends StatelessWidget {
                             : AppColors.lightTextSecondary,
                       )),
                 if (joined.isNotEmpty)
-                  Text("Joined: $joined",
+                  Text(l10n.joinedLabel(joined),
                       style: TextStyle(
                         fontSize: 10,
                         color: isDark

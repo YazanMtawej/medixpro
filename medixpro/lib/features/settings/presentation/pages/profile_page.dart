@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/settings_cubit.dart';
 import '../cubit/settings_state.dart';
@@ -20,6 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -118,12 +120,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     delegate: SliverChildListDelegate([
                       _InfoCard(
                         isDark: isDark,
-                        title: "Account Information",
+                        title: l10n.accountInformation,
                         icon: Icons.person_outline,
                         items: [
-                          _InfoRow("Username", state.profile.username, isDark),
-                          _InfoRow("Email",    state.profile.email,    isDark),
-                          _InfoRow("Role",     state.profile.role,     isDark),
+                          _InfoRow(l10n.username, state.profile.username, isDark),
+                          _InfoRow(l10n.email,    state.profile.email,    isDark),
+                          _InfoRow(l10n.role,     state.profile.role,     isDark),
                         ],
                       ),
                       if (state.profile.fullName.isNotEmpty ||
@@ -132,15 +134,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 14),
                         _InfoCard(
                           isDark: isDark,
-                          title: "Clinic Information",
+                          title: l10n.clinicInformation,
                           icon: Icons.local_hospital_outlined,
                           items: [
                             if (state.profile.fullName.isNotEmpty)
-                              _InfoRow("Full Name",   state.profile.fullName,   isDark),
+                              _InfoRow(l10n.fullName,   state.profile.fullName,   isDark),
                             if (state.profile.clinicName.isNotEmpty)
-                              _InfoRow("Clinic Name", state.profile.clinicName, isDark),
+                              _InfoRow(l10n.clinicName, state.profile.clinicName, isDark),
                             if (state.profile.address.isNotEmpty)
-                              _InfoRow("Address",     state.profile.address,    isDark),
+                              _InfoRow(l10n.address,     state.profile.address,    isDark),
                           ],
                         ),
                       ],

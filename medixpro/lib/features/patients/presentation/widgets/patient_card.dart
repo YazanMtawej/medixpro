@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../domain/entities/patient.dart';
 
 class PatientCard extends StatelessWidget {
@@ -26,7 +27,7 @@ class PatientCard extends StatelessWidget {
         title: Text(patient.name),
 
         subtitle: Text(
-          "Age: ${patient.age} | ${patient.phone}",
+          AppLocalizations.of(context).agePhoneLabel(patient.age, patient.phone),
         ),
       ),
     );

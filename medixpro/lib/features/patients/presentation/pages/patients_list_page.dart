@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/core/widgets/skeleton.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../cubit/patients_cubit.dart';
 import '../cubit/patients_state.dart';
 import '../../domain/entities/patient.dart';
@@ -35,6 +36,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cs = Theme.of(context).colorScheme;
 
@@ -58,9 +60,9 @@ class _PatientsListPageState extends State<PatientsListPage> {
                   ),
                 ),
               ),
-              title: const Text(
-                "Patients",
-                style: TextStyle(
+              title: Text(
+                l10n.navPatients,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
@@ -94,7 +96,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
                   onChanged: (v) => setState(() => _search = v.toLowerCase()),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: "Search by name or phone...",
+                    hintText: l10n.searchByNameOrPhone,
                     hintStyle: TextStyle(
                       color: Colors.white.withOpacity(0.65),
                       fontSize: 13,
@@ -140,7 +142,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
                   child: Row(
                     children: [
                       _StatCard(
-                        label: "Total",
+                        label: l10n.total,
                         value: "${state.patients.length}",
                         icon: Icons.people_outline,
                         color: cs.primary,
@@ -148,7 +150,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
-                        label: "Male",
+                        label: l10n.male,
                         value:
                             "${state.patients.where((p) => p.gender.toLowerCase() == "male").length}",
                         icon: Icons.male_rounded,
@@ -157,7 +159,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
-                        label: "Female",
+                        label: l10n.female,
                         value:
                             "${state.patients.where((p) => p.gender.toLowerCase() == "female").length}",
                         icon: Icons.female_rounded,
@@ -204,7 +206,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
                           onPressed: () =>
                               context.read<PatientsCubit>().loadPatients(),
                           icon: const Icon(Icons.refresh),
-                          label: const Text("Retry"),
+                          label: Text(l10n.retry),
                         ),
                       ],
                     ),
@@ -241,8 +243,8 @@ class _PatientsListPageState extends State<PatientsListPage> {
                           const SizedBox(height: 16),
                           Text(
                             _search.isEmpty
-                                ? "No patients yet"
-                                : "No results for \"$_search\"",
+                                ? l10n.noPatientsYet
+                                : l10n.noResultsFor(_search),
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -302,9 +304,9 @@ class _PatientsListPageState extends State<PatientsListPage> {
         foregroundColor: Colors.white,
         elevation: 2,
         icon: const Icon(Icons.person_add),
-        label: const Text(
-          "Add Patient",
-          style: TextStyle(fontWeight: FontWeight.w600),
+        label: Text(
+          l10n.addPatient,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         onPressed: () async {
           await Navigator.push(
@@ -319,21 +321,22 @@ class _PatientsListPageState extends State<PatientsListPage> {
   }
 
   void _confirmDelete(BuildContext context, int id) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text(
-          "Delete Patient",
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Text(
+          l10n.deletePatient,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        content: const Text(
-          "This will permanently delete the patient and all related records.",
+        content: Text(
+          l10n.deletePatientWarning,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -347,7 +350,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
               Navigator.pop(context);
               context.read<PatientsCubit>().deletePatient(id);
             },
-            child: const Text("Delete"),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -444,6 +447,7 @@ class _PatientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isFemale = patient.gender.toLowerCase() == "female";
     final avatarColor = isFemale ? Colors.pink : AppColors.primary;
 
@@ -518,7 +522,7 @@ class _PatientCard extends StatelessWidget {
                       Row(
                         children: [
                           _MiniChip(
-                            "${patient.age} yrs",
+                            l10n.yrsLabel(patient.age),
                             isDark ? AppColors.borderDark : AppColors.chipBlue,
                             isDark
                                 ? AppColors.darkTextSecondary

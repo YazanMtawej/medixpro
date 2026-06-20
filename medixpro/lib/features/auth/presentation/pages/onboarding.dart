@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import 'login_page.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -13,28 +14,29 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
-  static const _items = [
-  _OnboardingItem(
-    title: "Book Appointments Instantly",
-    subtitle:
-        "Find the right doctor and schedule appointments in seconds — no waiting, no calls.",
-    animation: "assets/animations/Doctor welcoming pacient.json",
-    sizeFactor: 0.88, 
-  ),
-  _OnboardingItem(
-    title: "Smart Medical Records",
-    subtitle:
-        "Access your health history, prescriptions, and reports anytime in one secure place.",
-    animation: "assets/animations/Islamic business woman with gestures up.json",
-    sizeFactor: 0.88, 
-  ),
-  _OnboardingItem(
-    title: "Doctor-Patient Communication",
-    subtitle:
-        "Stay connected with your doctor, receive updates, and manage your care easily.",
-    animation: "assets/animations/DOCTOR.json",
-    sizeFactor: 0.88,)
-];
+  List<_OnboardingItem> get _items {
+    final l10n = AppLocalizations.of(context);
+    return [
+      _OnboardingItem(
+        title: l10n.onboardTitle1,
+        subtitle: l10n.onboardSubtitle1,
+        animation: "assets/animations/Doctor welcoming pacient.json",
+        sizeFactor: 0.88,
+      ),
+      _OnboardingItem(
+        title: l10n.onboardTitle2,
+        subtitle: l10n.onboardSubtitle2,
+        animation: "assets/animations/Islamic business woman with gestures up.json",
+        sizeFactor: 0.88,
+      ),
+      _OnboardingItem(
+        title: l10n.onboardTitle3,
+        subtitle: l10n.onboardSubtitle3,
+        animation: "assets/animations/DOCTOR.json",
+        sizeFactor: 0.88,
+      ),
+    ];
+  }
 
   void _onNext() {
     if (_currentPage < _items.length - 1) {
@@ -64,6 +66,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF0A4EDC);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -128,8 +131,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     duration: const Duration(milliseconds: 250),
                     child: Text(
                       _currentPage == _items.length - 1
-                          ? "Start Your Journey"
-                          : "Continue",
+                          ? l10n.startYourJourney
+                          : l10n.continueLabel2,
                       key: ValueKey(_currentPage),
                       style: const TextStyle(
                         fontSize: 16,
@@ -146,7 +149,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
             /// Footer
             Text(
-              "PRECISION HEALTHCARE · 2026",
+              l10n.precisionHealthcare,
               style: TextStyle(
                 fontSize: 10,
                 color: Colors.grey.shade400,

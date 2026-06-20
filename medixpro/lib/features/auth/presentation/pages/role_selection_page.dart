@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import 'register_page.dart';
 
@@ -9,11 +10,12 @@ class RoleSelectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: const Text("Role Selection"),centerTitle: true,backgroundColor: AppColors.primaryLight,),
+        appBar: AppBar(title: Text(l10n.roleSelection),centerTitle: true,backgroundColor: AppColors.primaryLight,),
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -34,9 +36,9 @@ class RoleSelectionPage extends StatelessWidget {
                     color: Colors.white,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    "Who are you?",
-                    style: TextStyle(
+                  Text(
+                    l10n.whoAreYou,
+                    style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -44,15 +46,15 @@ class RoleSelectionPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Select your role to get started",
+                    l10n.selectYourRole,
                     style: TextStyle(color: Colors.white.withOpacity(0.8)),
                   ),
                   const SizedBox(height: 48),
       
                   _RoleCard(
                     icon: Icons.person_rounded,
-                    title: "Patient",
-                    subtitle: "Book appointments & view your records",
+                    title: l10n.patient,
+                    subtitle: l10n.patientRoleSubtitle,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -65,8 +67,8 @@ class RoleSelectionPage extends StatelessWidget {
       
                   _RoleCard(
                     icon: Icons.medical_services_rounded,
-                    title: "Doctor",
-                    subtitle: "Manage patients & clinic operations",
+                    title: l10n.doctor,
+                    subtitle: l10n.doctorRoleSubtitle,
                     onTap: () => _showDoctorKeyDialog(context),
                   ),
                 ],
@@ -79,6 +81,7 @@ class RoleSelectionPage extends StatelessWidget {
   }
 
   void _showDoctorKeyDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final ctrl = TextEditingController();
     bool obscure = true;
     String? errorText;
@@ -91,13 +94,13 @@ class RoleSelectionPage extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.lock_outlined, color: AppColors.primary, size: 22),
-              SizedBox(width: 8),
+              const Icon(Icons.lock_outlined, color: AppColors.primary, size: 22),
+              const SizedBox(width: 8),
               Text(
-                "Doctor Verification",
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                l10n.doctorVerification,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
             ],
           ),
@@ -105,9 +108,9 @@ class RoleSelectionPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Enter the verification code provided by your clinic administrator.",
-                style: TextStyle(fontSize: 13),
+              Text(
+                l10n.doctorVerificationPrompt,
+                style: const TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -120,8 +123,8 @@ class RoleSelectionPage extends StatelessWidget {
                   }
                 },
                 decoration: InputDecoration(
-                  labelText: "Verification Code",
-                  hintText: "Enter code...",
+                  labelText: l10n.verificationCode,
+                  hintText: l10n.enterCode,
                   errorText: errorText,
                   prefixIcon: const Icon(Icons.vpn_key_outlined, size: 18),
                   suffixIcon: IconButton(
@@ -144,7 +147,7 @@ class RoleSelectionPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                "Don't have a code? Contact your administrator.",
+                l10n.dontHaveCode,
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
               ),
             ],
@@ -153,7 +156,7 @@ class RoleSelectionPage extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: Text(
-                "Cancel",
+                l10n.cancel,
                 style: TextStyle(color: Colors.grey.shade600),
               ),
             ),
@@ -174,7 +177,7 @@ class RoleSelectionPage extends StatelessWidget {
 
                 if (code.isEmpty) {
                   setStateDialog(() {
-                    errorText = "Please enter the code";
+                    errorText = l10n.pleaseEnterCode;
                   });
                   return;
                 }
@@ -189,7 +192,7 @@ class RoleSelectionPage extends StatelessWidget {
 
                 if (!valid) {
                   setStateDialog(() {
-                    errorText = "Invalid verification code";
+                    errorText = l10n.invalidVerificationCode;
                   });
                   return;
                 }
@@ -204,9 +207,9 @@ class RoleSelectionPage extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text(
-                "Continue",
-                style: TextStyle(fontWeight: FontWeight.w700),
+              child: Text(
+                l10n.continueLabel,
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
           ],

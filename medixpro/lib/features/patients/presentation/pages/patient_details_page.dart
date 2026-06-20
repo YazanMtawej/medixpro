@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../domain/entities/patient.dart';
 import '../cubit/patients_cubit.dart';
 import 'edit_patient_page.dart';
@@ -10,6 +11,7 @@ class PatientDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(patient.name),
@@ -71,7 +73,7 @@ class PatientDetailsPage extends StatelessWidget {
                                   fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
                           Text(
-                            "${patient.age} years · ${patient.gender}",
+                            l10n.ageYearsGender(patient.age, patient.gender),
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                           const SizedBox(height: 6),
@@ -85,7 +87,7 @@ class PatientDetailsPage extends StatelessWidget {
                                   Border.all(color: Colors.red.shade200),
                             ),
                             child: Text(
-                              "Blood: ${patient.bloodType}",
+                              l10n.bloodLabel(patient.bloodType),
                               style: TextStyle(
                                   color: Colors.red.shade700,
                                   fontWeight: FontWeight.w600,
@@ -102,43 +104,43 @@ class PatientDetailsPage extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            _InfoSection(title: "Contact Information", items: [
-              _InfoItem(Icons.phone, "Phone", patient.phone),
+            _InfoSection(title: l10n.contactInformation, items: [
+              _InfoItem(Icons.phone, l10n.phone, patient.phone),
               if (patient.email?.isNotEmpty == true)
-                _InfoItem(Icons.email, "Email", patient.email!),
+                _InfoItem(Icons.email, l10n.email, patient.email!),
               if (patient.address?.isNotEmpty == true)
-                _InfoItem(Icons.location_on, "Address", patient.address!),
+                _InfoItem(Icons.location_on, l10n.address, patient.address!),
               if (patient.nationalId?.isNotEmpty == true)
-                _InfoItem(Icons.badge, "National ID", patient.nationalId!),
+                _InfoItem(Icons.badge, l10n.nationalId, patient.nationalId!),
               if (patient.birthDate?.isNotEmpty == true)
-                _InfoItem(Icons.cake, "Birth Date", patient.birthDate!),
+                _InfoItem(Icons.cake, l10n.birthDate, patient.birthDate!),
             ]),
 
             if (patient.emergencyContactName?.isNotEmpty == true ||
                 patient.emergencyContactPhone?.isNotEmpty == true)
-              _InfoSection(title: "Emergency Contact", items: [
+              _InfoSection(title: l10n.emergencyContact, items: [
                 if (patient.emergencyContactName?.isNotEmpty == true)
-                  _InfoItem(Icons.contact_phone, "Name",
+                  _InfoItem(Icons.contact_phone, l10n.name,
                       patient.emergencyContactName!),
                 if (patient.emergencyContactPhone?.isNotEmpty == true)
-                  _InfoItem(Icons.phone_forwarded, "Phone",
+                  _InfoItem(Icons.phone_forwarded, l10n.phone,
                       patient.emergencyContactPhone!),
               ]),
 
-            _InfoSection(title: "Medical Information", items: [
+            _InfoSection(title: l10n.medicalInformation, items: [
               if (patient.allergies?.isNotEmpty == true)
-                _InfoItem(Icons.warning_amber, "Allergies", patient.allergies!),
+                _InfoItem(Icons.warning_amber, l10n.allergies, patient.allergies!),
               if (patient.chronicDiseases?.isNotEmpty == true)
-                _InfoItem(Icons.medical_information, "Chronic Diseases",
+                _InfoItem(Icons.medical_information, l10n.chronicDiseases,
                     patient.chronicDiseases!),
               if (patient.previousSurgeries?.isNotEmpty == true)
-                _InfoItem(Icons.history, "Previous Surgeries",
+                _InfoItem(Icons.history, l10n.previousSurgeries,
                     patient.previousSurgeries!),
               if (patient.currentMedications?.isNotEmpty == true)
-                _InfoItem(Icons.medication, "Current Medications",
+                _InfoItem(Icons.medication, l10n.currentMedications,
                     patient.currentMedications!),
               if (patient.notes?.isNotEmpty == true)
-                _InfoItem(Icons.note, "Notes", patient.notes!),
+                _InfoItem(Icons.note, l10n.notes, patient.notes!),
             ]),
 
             const SizedBox(height: 32),

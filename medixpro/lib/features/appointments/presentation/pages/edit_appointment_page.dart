@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/appointment.dart';
+import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
 import '../../../patients/presentation/cubit/patients_cubit.dart';
 import '../../../patients/presentation/cubit/patients_state.dart';
@@ -31,23 +33,23 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
   DateTime?     _followUpDate;
   bool          _isLoading = false;
 
-  static const _types = {
-    "general":      "General Checkup",
-    "follow_up":    "Follow Up",
-    "consultation": "Consultation",
-    "emergency":    "Emergency",
-    "lab_results":  "Lab Results Review",
-    "procedure":    "Procedure",
-    "vaccination":  "Vaccination",
-  };
+  static const _typeKeys = [
+    "general",
+    "follow_up",
+    "consultation",
+    "emergency",
+    "lab_results",
+    "procedure",
+    "vaccination",
+  ];
 
-  static const _statuses = {
-    "scheduled":   "Scheduled",
-    "completed":   "Completed",
-    "cancelled":   "Cancelled",
-    "no_show":     "No Show",
-    "rescheduled": "Rescheduled",
-  };
+  static const _statusKeys = [
+    "scheduled",
+    "completed",
+    "cancelled",
+    "no_show",
+    "rescheduled",
+  ];
 
   @override
   void initState() {
@@ -61,8 +63,8 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
     _durationController =
         TextEditingController(text: a.durationMinutes.toString());
     _selectedPatientId  = a.patientId;
-    _type   = _types.containsKey(a.type) ? a.type : "general";
-    _status = _statuses.containsKey(a.status) ? a.status : "scheduled";
+    _type   = _typeKeys.contains(a.type) ? a.type : "general";
+    _status = _statusKeys.contains(a.status) ? a.status : "scheduled";
     _date   = a.dateTime.toLocal();
     _time   = TimeOfDay.fromDateTime(a.dateTime.toLocal());
     if (a.followUpDate != null && a.followUpDate!.isNotEmpty) {
@@ -112,13 +114,14 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
-        title: const Text("Edit Appointment",
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(l10n.editAppointment,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -146,7 +149,7 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
                   }
                   return DropdownButtonFormField<int>(
                     value: _selectedPatientId,
-                    decoration: _decor("Patient", Icons.person_outline),
+                    decoration: _decor(l10n.patientLabel, Icons.person_outline),
                     items: state.patients
                         .map((p) => DropdownMenuItem(
                               value: p.id, child: Text(p.name)))
@@ -154,7 +157,7 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
                     onChanged: (v) =>
                         setState(() => _selectedPatientId = v!),
                     validator: (v) =>
-                        v == null ? "Please select a patient" : null,
+                        v == null ? l10n.pleaseSelectPatient : null,
                   );
                 },
               ),
@@ -164,14 +167,16 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
 
             _card(isDark: isDark,
               child: Column(children: [
-                _field(_titleController, "Appointment Title",
+                _field(_titleController, l10n.appointmentTitle,
                     icon: Icons.title, required: true),
                 const SizedBox(height: 12),
-                _dropdown("Type", Icons.category_outlined, _type,
-                    _types, (v) => setState(() => _type = v!)),
+                _dropdown(l10n.typeLabel, Icons.category_outlined, _type,
+                    _typeKeys, (k) => appointmentTypeLabel(context, k),
+                    (v) => setState(() => _type = v!)),
                 const SizedBox(height: 12),
-                _dropdown("Status", Icons.flag_outlined, _status,
-                    _statuses, (v) => setState(() => _status = v!)),
+                _dropdown(l10n.status, Icons.flag_outlined, _status,
+                    _statusKeys, (k) => appointmentStatusLabel(context, k),
+                    (v) => setState(() => _status = v!)),
               ]),
             ),
 
@@ -181,7 +186,7 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
               child: Column(children: [
                 Row(children: [
                   Expanded(child: _datePicker(
-                    "Date", Icons.calendar_today_outlined, _date,
+                    l10n.dateLabel, Icons.calendar_today_outlined, _date,
                     firstDate: DateTime(2020),
                     lastDate: DateTime(2030),
                     onPicked: (d) => setState(() => _date = d),
@@ -191,11 +196,11 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
                     _time, (t) => setState(() => _time = t))),
                 ]),
                 const SizedBox(height: 12),
-                _field(_durationController, "Duration (minutes)",
+                _field(_durationController, l10n.durationMinutesLabel,
                     icon: Icons.timelapse_outlined, numeric: true),
                 const SizedBox(height: 12),
                 _datePicker(
-                  "Follow-up Date (optional)",
+                  l10n.followUpDateOptional,
                   Icons.event_repeat_outlined,
                   _followUpDate,
                   firstDate: DateTime.now(),
@@ -211,22 +216,22 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
             _card(isDark: isDark,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Clinical Information",
-                      style: TextStyle(
+                  Text(l10n.clinicalInformation,
+                      style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary)),
                   const SizedBox(height: 12),
-                  _field(_reasonController, "Reason for Visit",
+                  _field(_reasonController, l10n.reasonForVisit,
                       icon: Icons.help_outline, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_symptomsController, "Symptoms",
+                  _field(_symptomsController, l10n.symptoms,
                       icon: Icons.sick_outlined, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_diagnosisController, "Diagnosis",
+                  _field(_diagnosisController, l10n.diagnosis,
                       icon: Icons.medical_information_outlined, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_notesController, "Doctor Notes",
+                  _field(_notesController, l10n.doctorNotes,
                       icon: Icons.note_outlined, maxLines: 3),
                 ],
               ),
@@ -242,8 +247,8 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
                     ? const SizedBox(width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white))
-                    : const Text("Update Appointment",
-                        style: TextStyle(fontSize: 16)),
+                    : Text(l10n.updateAppointment,
+                        style: const TextStyle(fontSize: 16)),
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -285,18 +290,21 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
       keyboardType: numeric ? TextInputType.number : TextInputType.text,
       decoration: _decor(label, icon),
       validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+          ? (v) => (v == null || v.trim().isEmpty)
+              ? AppLocalizations.of(context).requiredField
+              : null
           : null,
     );
   }
 
   Widget _dropdown(String label, IconData icon, String value,
-      Map<String, String> items, void Function(String?) onChanged) {
+      List<String> keys, String Function(String) labelOf,
+      void Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: _decor(label, icon),
-      items: items.entries
-          .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+      items: keys
+          .map((k) => DropdownMenuItem(value: k, child: Text(labelOf(k))))
           .toList(),
       onChanged: onChanged,
     );
@@ -319,7 +327,9 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
         decoration: _decor(label, icon),
         child: Text(
           date == null
-              ? (optional ? "Not set" : "Select")
+              ? (optional
+                  ? AppLocalizations.of(context).notSet
+                  : AppLocalizations.of(context).selectShort)
               : date.toIso8601String().split("T")[0],
           style: TextStyle(
               color: date == null ? Colors.grey : null, fontSize: 14),
@@ -336,7 +346,7 @@ class _EditAppointmentPageState extends State<EditAppointmentPage> {
         if (p != null) onPicked(p);
       },
       child: InputDecorator(
-        decoration: _decor("Time", Icons.access_time_outlined),
+        decoration: _decor(AppLocalizations.of(context).timeLabel, Icons.access_time_outlined),
         child: Text(time.format(context),
             style: const TextStyle(fontSize: 14)),
       ),

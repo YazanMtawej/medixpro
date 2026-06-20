@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/appointment.dart';
+import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
 import '../../../patients/presentation/cubit/patients_cubit.dart';
 import '../../../patients/presentation/cubit/patients_state.dart';
@@ -30,23 +32,23 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
   DateTime?  _followUpDate;
   bool       _isLoading = false;
 
-  static const _types = {
-    "general":      "General Checkup",
-    "follow_up":    "Follow Up",
-    "consultation": "Consultation",
-    "emergency":    "Emergency",
-    "lab_results":  "Lab Results Review",
-    "procedure":    "Procedure",
-    "vaccination":  "Vaccination",
-  };
+  static const _typeKeys = [
+    "general",
+    "follow_up",
+    "consultation",
+    "emergency",
+    "lab_results",
+    "procedure",
+    "vaccination",
+  ];
 
-  static const _statuses = {
-    "scheduled":   "Scheduled",
-    "completed":   "Completed",
-    "cancelled":   "Cancelled",
-    "no_show":     "No Show",
-    "rescheduled": "Rescheduled",
-  };
+  static const _statusKeys = [
+    "scheduled",
+    "completed",
+    "cancelled",
+    "no_show",
+    "rescheduled",
+  ];
 
   @override
   void initState() {
@@ -69,8 +71,8 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
     if (!_formKey.currentState!.validate()) return;
     if (_date == null || _time == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please select date and time"),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).pleaseSelectDateAndTime),
           backgroundColor: AppColors.error,
         ),
       );
@@ -109,13 +111,14 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
-        title: const Text("New Appointment",
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(l10n.newAppointment,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -146,9 +149,9 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
                   }
                   return DropdownButtonFormField<int>(
                     value: _selectedPatientId,
-                    hint: const Text("Select Patient"),
+                    hint: Text(l10n.selectPatient),
                     decoration:
-                        _decor("Patient", Icons.person_outline),
+                        _decor(l10n.patientLabel, Icons.person_outline),
                     items: state.patients
                         .map((p) => DropdownMenuItem(
                               value: p.id,
@@ -158,7 +161,7 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
                     onChanged: (v) =>
                         setState(() => _selectedPatientId = v),
                     validator: (v) =>
-                        v == null ? "Please select a patient" : null,
+                        v == null ? l10n.pleaseSelectPatient : null,
                   );
                 },
               ),
@@ -171,14 +174,16 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
               isDark: isDark,
               child: Column(
                 children: [
-                  _field(_titleController, "Appointment Title",
+                  _field(_titleController, l10n.appointmentTitle,
                       icon: Icons.title, required: true),
                   const SizedBox(height: 12),
-                  _dropdown("Type", Icons.category_outlined, _type,
-                      _types, (v) => setState(() => _type = v!)),
+                  _dropdown(l10n.typeLabel, Icons.category_outlined, _type,
+                      _typeKeys, (k) => appointmentTypeLabel(context, k),
+                      (v) => setState(() => _type = v!)),
                   const SizedBox(height: 12),
-                  _dropdown("Status", Icons.flag_outlined, _status,
-                      _statuses, (v) => setState(() => _status = v!)),
+                  _dropdown(l10n.status, Icons.flag_outlined, _status,
+                      _statusKeys, (k) => appointmentStatusLabel(context, k),
+                      (v) => setState(() => _status = v!)),
                 ],
               ),
             ),
@@ -194,7 +199,7 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
                     children: [
                       Expanded(
                         child: _datePicker(
-                          "Date",
+                          l10n.dateLabel,
                           Icons.calendar_today_outlined,
                           _date,
                           firstDate: DateTime.now()
@@ -213,11 +218,11 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _field(_durationController, "Duration (minutes)",
+                  _field(_durationController, l10n.durationMinutesLabel,
                       icon: Icons.timelapse_outlined, numeric: true),
                   const SizedBox(height: 12),
                   _datePicker(
-                    "Follow-up Date (optional)",
+                    l10n.followUpDateOptional,
                     Icons.event_repeat_outlined,
                     _followUpDate,
                     firstDate: DateTime.now(),
@@ -237,15 +242,15 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionLabel("Clinical Information"),
+                  _sectionLabel(l10n.clinicalInformation),
                   const SizedBox(height: 12),
-                  _field(_reasonController, "Reason for Visit",
+                  _field(_reasonController, l10n.reasonForVisit,
                       icon: Icons.help_outline, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_symptomsController, "Symptoms",
+                  _field(_symptomsController, l10n.symptoms,
                       icon: Icons.sick_outlined, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_notesController, "Doctor Notes",
+                  _field(_notesController, l10n.doctorNotes,
                       icon: Icons.note_outlined, maxLines: 3),
                 ],
               ),
@@ -262,8 +267,8 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
                         width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white))
-                    : const Text("Save Appointment",
-                        style: TextStyle(fontSize: 16)),
+                    : Text(l10n.saveAppointment,
+                        style: const TextStyle(fontSize: 16)),
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -325,7 +330,9 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
       keyboardType: numeric ? TextInputType.number : TextInputType.text,
       decoration: _decor(label, icon),
       validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+          ? (v) => (v == null || v.trim().isEmpty)
+              ? AppLocalizations.of(context).requiredField
+              : null
           : null,
     );
   }
@@ -334,14 +341,15 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
     String label,
     IconData icon,
     String value,
-    Map<String, String> items,
+    List<String> keys,
+    String Function(String) labelOf,
     void Function(String?) onChanged,
   ) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: _decor(label, icon),
-      items: items.entries
-          .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+      items: keys
+          .map((k) => DropdownMenuItem(value: k, child: Text(labelOf(k))))
           .toList(),
       onChanged: onChanged,
     );
@@ -370,7 +378,9 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
         decoration: _decor(label, icon),
         child: Text(
           date == null
-              ? (optional ? "Not set" : "Select")
+              ? (optional
+                  ? AppLocalizations.of(context).notSet
+                  : AppLocalizations.of(context).selectShort)
               : date.toIso8601String().split("T")[0],
           style: TextStyle(
             color: date == null ? Colors.grey : null,
@@ -392,9 +402,9 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
         if (picked != null) onPicked(picked);
       },
       child: InputDecorator(
-        decoration: _decor("Time", Icons.access_time_outlined),
+        decoration: _decor(AppLocalizations.of(context).timeLabel, Icons.access_time_outlined),
         child: Text(
-          time == null ? "Select" : time.format(context),
+          time == null ? AppLocalizations.of(context).selectShort : time.format(context),
           style: TextStyle(color: time == null ? Colors.grey : null,
               fontSize: 14),
         ),

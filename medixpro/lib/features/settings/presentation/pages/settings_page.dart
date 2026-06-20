@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:medixpro/features/settings/presentation/pages/patient_accounts_page.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_cubit.dart';
 import '../cubit/settings_cubit.dart';
@@ -13,6 +14,7 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final authState = context.watch<AuthCubit>().state;
     final isDoctor = authState is AuthAuthenticated && authState.user.isDoctor;
@@ -56,9 +58,9 @@ class SettingsPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  title: const Text(
-                    "Settings",
-                    style: TextStyle(
+                  title: Text(
+                    l10n.settings,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
@@ -78,12 +80,12 @@ class SettingsPage extends StatelessWidget {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       // ─── Account ────────────────────────────────
-                      _SectionLabel("Account", isDark),
+                      _SectionLabel(l10n.sectionAccount, isDark),
                       const SizedBox(height: 8),
                       _SettingsTile(
                         icon: Icons.person_outline,
-                        title: "Profile",
-                        subtitle: "View and edit your profile",
+                        title: l10n.profile,
+                        subtitle: l10n.profileSubtitle,
                         isDark: isDark,
                         onTap: () => Navigator.pushNamed(context, "/profile"),
                       ),
@@ -93,8 +95,8 @@ class SettingsPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         _SettingsTile(
                           icon: Icons.manage_accounts_outlined,
-                          title: "Patient Accounts",
-                          subtitle: "Manage and delete patient accounts",
+                          title: l10n.patientAccounts,
+                          subtitle: l10n.patientAccountsSubtitle,
                           isDark: isDark,
                           onTap: () => Navigator.push(
                             context,
@@ -106,12 +108,12 @@ class SettingsPage extends StatelessWidget {
                       ],
                       const SizedBox(height: 20),
                       // ─── Notifications ───────────────────────────
-                      _SectionLabel("Notifications", isDark),
+                      _SectionLabel(l10n.sectionNotifications, isDark),
                       const SizedBox(height: 8),
                       _SettingsTile(
                         icon: Icons.notifications_outlined,
-                        title: "Notifications",
-                        subtitle: "View all alerts and updates",
+                        title: l10n.notifications,
+                        subtitle: l10n.notificationsSubtitle,
                         isDark: isDark,
                         onTap: () =>
                             Navigator.pushNamed(context, "/notifications"),
@@ -121,7 +123,7 @@ class SettingsPage extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // ─── Appearance ──────────────────────────────
-                      _SectionLabel("Appearance", isDark),
+                      _SectionLabel(l10n.sectionAppearance, isDark),
                       const SizedBox(height: 8),
                       BlocBuilder<ThemeCubit, ThemeMode>(
                         builder: (context, mode) {
@@ -130,8 +132,8 @@ class SettingsPage extends StatelessWidget {
                             icon: isDarkMode
                                 ? Icons.light_mode_outlined
                                 : Icons.dark_mode_outlined,
-                            title: isDarkMode ? "Light Mode" : "Dark Mode",
-                            subtitle: "Switch app appearance",
+                            title: isDarkMode ? l10n.lightMode : l10n.darkMode,
+                            subtitle: l10n.appearanceSubtitle,
                             isDark: isDark,
                             onTap: () =>
                                 context.read<ThemeCubit>().toggleTheme(),
@@ -153,9 +155,9 @@ class SettingsPage extends StatelessWidget {
                         height: 52,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.logout_rounded),
-                          label: const Text(
-                            "Logout",
-                            style: TextStyle(fontSize: 15),
+                          label: Text(
+                            l10n.logout,
+                            style: const TextStyle(fontSize: 15),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.error,
@@ -180,19 +182,20 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _confirmLogout(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text(
-          "Logout",
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Text(
+          l10n.logout,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        content: const Text("Are you sure you want to logout?"),
+        content: Text(l10n.logoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -206,7 +209,7 @@ class SettingsPage extends StatelessWidget {
               Navigator.pop(context);
               context.read<SettingsCubit>().logout();
             },
-            child: const Text("Logout"),
+            child: Text(l10n.logout),
           ),
         ],
       ),

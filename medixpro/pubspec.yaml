@@ -35,6 +35,9 @@ dependencies:
   fl_chart: ^1.1.1
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   flutter_bloc: ^9.1.1
   flutter_secure_storage: ^10.0.0
   get_it: ^9.2.1
@@ -52,6 +55,9 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter packages.
 flutter:
+
+  # Generate localization (AppLocalizations) from the ARB files in lib/l10n.
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/skeleton.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
 import '../cubit/appointments_state.dart';
 import '../../domain/entities/appointment.dart';
@@ -21,14 +23,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   final _searchController = TextEditingController();
   String _selectedStatus = "all";
 
-  static const _statuses = {
-    "all": "All",
-    "scheduled": "Scheduled",
-    "completed": "Completed",
-    "cancelled": "Cancelled",
-    "no_show": "No Show",
-    "rescheduled": "Rescheduled",
-  };
+  static const _statusKeys = [
+    "all",
+    "scheduled",
+    "completed",
+    "cancelled",
+    "no_show",
+    "rescheduled",
+  ];
+
+  String _statusFilterLabel(BuildContext context, String key) {
+    if (key == "all") return AppLocalizations.of(context).statusAll;
+    return appointmentStatusLabel(context, key);
+  }
 
   @override
   void initState() {
@@ -89,9 +96,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   ),
                 ),
               ),
-              title: const Text(
-                "Appointments",
-                style: TextStyle(
+              title: Text(
+                AppLocalizations.of(context).appointmentsTitle,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
@@ -128,7 +135,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   onChanged: _onSearch,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: "Search appointment or patient...",
+                    hintText: AppLocalizations.of(context).searchAppointmentOrPatient,
                     hintStyle: TextStyle(
                       color: Colors.white.withOpacity(0.65),
                       fontSize: 13,
@@ -158,12 +165,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 scrollDirection: Axis.horizontal,
-                children: _statuses.entries.map((e) {
-                  final selected = _selectedStatus == e.key;
+                children: _statusKeys.map((key) {
+                  final selected = _selectedStatus == key;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
-                      onTap: () => _onFilterStatus(e.key),
+                      onTap: () => _onFilterStatus(key),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(
@@ -187,7 +194,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           ),
                         ),
                         child: Text(
-                          e.value,
+                          _statusFilterLabel(context, key),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -241,7 +248,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                               .read<AppointmentsCubit>()
                               .fetchAppointments(),
                           icon: const Icon(Icons.refresh),
-                          label: const Text("Retry"),
+                          label: Text(AppLocalizations.of(context).retry),
                         ),
                       ],
                     ),
@@ -272,7 +279,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "No appointments found",
+                            AppLocalizations.of(context).noAppointmentsFound,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -338,9 +345,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         foregroundColor: Colors.white,
         elevation: 2,
         icon: const Icon(Icons.add),
-        label: const Text(
-          "New Appointment",
-          style: TextStyle(fontWeight: FontWeight.w600),
+        label: Text(
+          AppLocalizations.of(context).newAppointment,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         onPressed: () async {
           await Navigator.push(
@@ -361,15 +368,15 @@ floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text(
-          "Delete Appointment",
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Text(
+          AppLocalizations.of(context).deleteAppointment,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        content: const Text("This appointment will be permanently deleted."),
+        content: Text(AppLocalizations.of(context).appointmentDeleteWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -383,7 +390,7 @@ floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
               Navigator.pop(context);
               context.read<AppointmentsCubit>().deleteAppointment(id);
             },
-            child: const Text("Delete"),
+            child: Text(AppLocalizations.of(context).delete),
           ),
         ],
       ),
@@ -420,30 +427,6 @@ class _AppointmentCard extends StatelessWidget {
       default:
         return AppColors.primary;
     }
-  }
-
-  String _statusLabel() {
-    const m = {
-      "scheduled": "Scheduled",
-      "completed": "Completed",
-      "cancelled": "Cancelled",
-      "no_show": "No Show",
-      "rescheduled": "Rescheduled",
-    };
-    return m[appointment.status] ?? appointment.status;
-  }
-
-  String _typeLabel() {
-    const m = {
-      "general": "General",
-      "follow_up": "Follow Up",
-      "consultation": "Consultation",
-      "emergency": "Emergency",
-      "lab_results": "Lab Results",
-      "procedure": "Procedure",
-      "vaccination": "Vaccination",
-    };
-    return m[appointment.type] ?? appointment.type;
   }
 
   IconData _typeIcon() {
@@ -560,9 +543,9 @@ class _AppointmentCard extends StatelessWidget {
                                               6,
                                             ),
                                           ),
-                                          child: const Text(
-                                            "Today",
-                                            style: TextStyle(
+                                          child: Text(
+                                            AppLocalizations.of(context).today,
+                                            style: const TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.w700,
                                               color: AppColors.warning,
@@ -650,7 +633,8 @@ class _AppointmentCard extends StatelessWidget {
                                 ),
                               ),
                               child: Text(
-                                _statusLabel(),
+                                appointmentStatusLabel(
+                                    context, appointment.status),
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,

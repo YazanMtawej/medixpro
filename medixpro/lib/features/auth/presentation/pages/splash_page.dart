@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:medixpro/features/auth/presentation/pages/onboarding.dart';
@@ -59,7 +60,7 @@ class _SplashPageState extends State<SplashPage>
     if (_authState is AuthAuthenticated) {
       _goTo(const DashboardPage());
     } else if (_authState is AuthLoggedOut) {
-      _goTo(const OnboardingPage());
+      _goTo(const DashboardPage());
     }
   }
 
@@ -205,7 +206,9 @@ class _SplashPageState extends State<SplashPage>
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    "Initializing systems...",
+                                    AppLocalizations.of(
+                                      context,
+                                    ).initializingSystems,
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.9),
                                       fontSize: 12,
@@ -253,7 +256,7 @@ class _SplashPageState extends State<SplashPage>
                     FadeTransition(
                       opacity: _fade,
                       child: Text(
-                        "VERSION 2.4.0 · ENTERPRISE EDITION",
+                        AppLocalizations.of(context).versionEdition,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.6),
                           fontSize: 10,

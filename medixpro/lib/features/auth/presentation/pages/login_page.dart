@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/auth_cubit.dart';
 import 'role_selection_page.dart';
@@ -35,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
 
@@ -101,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "Smart Clinic Management",
+                    l10n.smartClinicManagement,
                     style: TextStyle(
                         color: Colors.white.withOpacity(0.8), fontSize: 13),
                   ),
@@ -161,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Welcome back",
+                                  l10n.welcomeBack,
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
@@ -172,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  "Sign in to your account",
+                                  l10n.signInToYourAccount,
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: isDark
@@ -185,9 +187,9 @@ class _LoginPageState extends State<LoginPage> {
                                 // Username
                                 TextFormField(
                                   controller: _usernameController,
-                                  decoration: const InputDecoration(
-                                    labelText: "Username",
-                                    prefixIcon: Icon(Icons.person_outline),
+                                  decoration: InputDecoration(
+                                    labelText: l10n.username,
+                                    prefixIcon: const Icon(Icons.person_outline),
                                   ),
                                 ),
                                 const SizedBox(height: 14),
@@ -197,7 +199,7 @@ class _LoginPageState extends State<LoginPage> {
                                   controller: _passwordController,
                                   obscureText: _obscure,
                                   decoration: InputDecoration(
-                                    labelText: "Password",
+                                    labelText: l10n.password,
                                     prefixIcon:
                                         const Icon(Icons.lock_outline),
                                     suffixIcon: IconButton(
@@ -218,8 +220,8 @@ class _LoginPageState extends State<LoginPage> {
                                   height: 50,
                                   child: ElevatedButton(
                                     onPressed: isLoading ? null : _onLogin,
-                                    child: const Text("Sign In",
-                                        style: TextStyle(fontSize: 15)),
+                                    child: Text(l10n.signIn,
+                                        style: const TextStyle(fontSize: 15)),
                                   ),
                                 ),
 
@@ -237,16 +239,16 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                     child: RichText(
                                       text: TextSpan(
-                                        text: "Don't have an account? ",
+                                        text: l10n.dontHaveAccount,
                                         style: TextStyle(
                                           color: isDark
                                               ? AppColors.darkTextSecondary
                                               : AppColors.lightTextSecondary,
                                           fontSize: 13,
                                         ),
-                                        children: const [
+                                        children: [
                                           TextSpan(
-                                            text: "Register",
+                                            text: l10n.register,
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.w700,
@@ -268,8 +270,8 @@ class _LoginPageState extends State<LoginPage> {
                                     color: Colors.black.withOpacity(0.35),
                                     borderRadius: BorderRadius.circular(24),
                                   ),
-                                  child: const MedicalLoading(
-                                    text: "Checking credentials...",
+                                  child: MedicalLoading(
+                                    text: l10n.checkingCredentials,
                                     size: 160,
                                     showText: true,
                                   ),
@@ -283,7 +285,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 32),
                   Text(
-                    "© 2026 MedixPro · All rights reserved",
+                    l10n.allRightsReserved,
                     style: TextStyle(
                       fontSize: 11,
                       color: isDark

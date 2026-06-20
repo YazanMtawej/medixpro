@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_cubit.dart';
 import '../cubit/appointments_cubit.dart';
@@ -88,14 +89,15 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Welcome back 👋",
+                                  AppLocalizations.of(context).welcomeBackEmoji,
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.7),
                                     fontSize: 12,
                                   ),
                                 ),
                                 Text(
-                                  user?.username ?? "Patient",
+                                  user?.username ??
+                                      AppLocalizations.of(context).patient,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 20,
@@ -142,16 +144,16 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Row(
-                            children: const [
-                              Icon(
+                            children: [
+                              const Icon(
                                 Icons.health_and_safety,
                                 color: Colors.white,
                                 size: 18,
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
-                                "Your health, simplified",
-                                style: TextStyle(color: Colors.white),
+                                AppLocalizations.of(context).yourHealthSimplified,
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ],
                           ),
@@ -189,19 +191,19 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
                   child: Row(
                     children: [
                       _ModernStatCard(
-                        "Upcoming",
+                        AppLocalizations.of(context).upcoming,
                         upcoming.toString(),
                         AppColors.primary,
                       ),
                       const SizedBox(width: 10),
                       _ModernStatCard(
-                        "Completed",
+                        AppLocalizations.of(context).statusCompleted,
                         completed.toString(),
                         AppColors.success,
                       ),
                       const SizedBox(width: 10),
                       _ModernStatCard(
-                        "Total",
+                        AppLocalizations.of(context).total,
                         appointments.length.toString(),
                         AppColors.warning,
                       ),
@@ -239,9 +241,9 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       /// TITLE
-                      const Text(
-                        "Upcoming Appointments",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context).upcomingAppointments,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                         ),
@@ -373,9 +375,9 @@ class _AppointmentCard extends StatelessWidget {
               color: Colors.green.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text(
-              "Scheduled",
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context).statusScheduled,
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: Colors.green,
@@ -405,14 +407,14 @@ class _EmptyState extends StatelessWidget {
         children: [
           const Icon(Icons.event_busy, size: 42),
           const SizedBox(height: 10),
-          const Text(
-            "No appointments yet",
-            style: TextStyle(fontWeight: FontWeight.w800),
+          Text(
+            AppLocalizations.of(context).noAppointmentsYet,
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
-          const Text(
-            "Start by booking your first appointment",
-            style: TextStyle(fontSize: 12),
+          Text(
+            AppLocalizations.of(context).startByBooking,
+            style: const TextStyle(fontSize: 12),
           ),
         ],
       ),

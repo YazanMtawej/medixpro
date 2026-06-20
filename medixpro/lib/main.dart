@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import 'package:medixpro/core/connectivity/connectivity_service.dart';
 import 'package:medixpro/core/widgets/connectivity_wrapper.dart';
 import 'package:medixpro/features/settings/domain/repositories/settings_repository.dart';
@@ -11,6 +13,7 @@ import 'core/notifications/notification_service.dart';
 import 'core/storage/token_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
+import 'core/localization/locale_cubit.dart';
 
 // ================= AUTH =================
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
@@ -139,7 +142,9 @@ Future<void> main() async {
   final addMedication = AddMedicationUseCase(medicationsRepository);
   final updateMedication = UpdateMedicationUseCase(medicationsRepository);
   final deleteMedication = DeleteMedicationUseCase(medicationsRepository);
-  final getCommonMedications = GetCommonMedicationsUseCase(medicationsRepository);
+  final getCommonMedications = GetCommonMedicationsUseCase(
+    medicationsRepository,
+  );
   // ─── Cubits ───────────────────────────────────────────────────────────────
 
   final authCubit = AuthCubit(
@@ -211,6 +216,7 @@ Future<void> main() async {
           BlocProvider.value(value: medicationsCubit),
           BlocProvider.value(value: appointmentsCubit),
           BlocProvider(create: (_) => ThemeCubit()),
+          BlocProvider(create: (_) => LocaleCubit()),
         ],
         child: const MedixProApp(),
       ),
@@ -225,12 +231,21 @@ class MedixProApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeMode>(
       builder: (context, themeMode) {
+        final locale = context.watch<LocaleCubit>().state;
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: "MedixPro",
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
           themeMode: themeMode,
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: const SplashPage(),
           builder: (context, child) => ConnectivityWrapper(child: child!),
           routes: {

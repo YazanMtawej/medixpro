@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/features/reports/presentation/pages/add_report_page.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/reports_cubit.dart';
 import '../cubit/reports_state.dart';
@@ -21,7 +22,8 @@ class _ReportsPageState extends State<ReportsPage> {
   final _searchController = TextEditingController();
   String _selectedStatus = "all";
 
-  static const _statuses = {"all": "All", "draft": "Draft", "final": "Final"};
+  Map<String, String> _statusLabels(AppLocalizations l10n) =>
+      {"all": l10n.statusAll, "draft": l10n.statusDraft, "final": l10n.statusFinal};
 
   @override
   void initState() {
@@ -54,6 +56,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cs = Theme.of(context).colorScheme;
 
@@ -77,9 +80,9 @@ class _ReportsPageState extends State<ReportsPage> {
                   ),
                 ),
               ),
-              title: const Text(
-                "Medical Reports",
-                style: TextStyle(
+              title: Text(
+                l10n.medicalReports,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
@@ -108,7 +111,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   onChanged: _onSearch,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: "Search by report title or patient...",
+                    hintText: l10n.searchByReportTitle,
                     hintStyle: TextStyle(
                       color: Colors.white.withOpacity(0.65),
                       fontSize: 13,
@@ -138,7 +141,7 @@ class _ReportsPageState extends State<ReportsPage> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 scrollDirection: Axis.horizontal,
-                children: _statuses.entries.map((e) {
+                children: _statusLabels(l10n).entries.map((e) {
                   final selected = _selectedStatus == e.key;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
@@ -213,7 +216,7 @@ class _ReportsPageState extends State<ReportsPage> {
                           onPressed: () =>
                               context.read<ReportsCubit>().fetchReports(),
                           icon: const Icon(Icons.refresh),
-                          label: const Text("Retry"),
+                          label: Text(l10n.retry),
                         ),
                       ],
                     ),
@@ -244,7 +247,7 @@ class _ReportsPageState extends State<ReportsPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "No reports found",
+                            l10n.noReportsFound,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -312,9 +315,9 @@ class _ReportsPageState extends State<ReportsPage> {
         foregroundColor: Colors.white,
         elevation: 2,
         icon: const Icon(Icons.note_add_outlined),
-        label: const Text(
-          "New Report",
-          style: TextStyle(fontWeight: FontWeight.w600),
+        label: Text(
+          l10n.newReport,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         onPressed: () async {
           await Navigator.push(
@@ -329,19 +332,20 @@ class _ReportsPageState extends State<ReportsPage> {
   }
 
   void _confirmDelete(BuildContext context, int id) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text(
-          "Delete Report",
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Text(
+          l10n.deleteReport,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        content: const Text("This medical report will be permanently deleted."),
+        content: Text(l10n.deleteReportWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -355,7 +359,7 @@ class _ReportsPageState extends State<ReportsPage> {
               Navigator.pop(context);
               context.read<ReportsCubit>().removeReport(id);
             },
-            child: const Text("Delete"),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -395,14 +399,15 @@ class _ReportCard extends StatelessWidget {
         "${dt.day.toString().padLeft(2, '0')}";
   }
 
-  String get _safeTitle =>
-      report.title.isNotEmpty ? report.title : "Untitled Report";
-  String get _safePatient =>
-      report.patientName.isNotEmpty ? report.patientName : "Unknown Patient";
+  String _safeTitleOf(AppLocalizations l10n) =>
+      report.title.isNotEmpty ? report.title : l10n.untitledReport;
+  String _safePatientOf(AppLocalizations l10n) =>
+      report.patientName.isNotEmpty ? report.patientName : l10n.unknownPatient;
   String get _safeDiagnosis => report.diagnosis.trim();
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final color = _statusColor;
 
     return Container(
@@ -448,7 +453,7 @@ class _ReportCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _safeTitle,
+                            _safeTitleOf(l10n),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -467,7 +472,7 @@ class _ReportCard extends StatelessWidget {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  _safePatient,
+                                  _safePatientOf(l10n),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -546,8 +551,7 @@ class _ReportCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        "${report.medicationsDetail.length} medication"
-                        "${report.medicationsDetail.length > 1 ? "s" : ""}",
+                        l10n.medicationsCount(report.medicationsDetail.length),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

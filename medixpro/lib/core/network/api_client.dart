@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medixpro/core/notifications/notification_service.dart';
 import '../storage/token_storage.dart';
 
@@ -34,9 +35,25 @@ class ApiClient {
     dio = Dio(opts);
     _refreshDio = Dio(opts.copyWith());
 
+    _addLocaleInterceptor();
     _addTokenInterceptor();
     _addLogInterceptor();
     _addRefreshInterceptor();
+  }
+
+  /// Sends the user's selected language to the backend so server-driven
+  /// messages can be returned in Arabic or English.
+  void _addLocaleInterceptor() {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final prefs = await SharedPreferences.getInstance();
+          final lang = prefs.getString("app_locale") ?? "en";
+          options.headers["Accept-Language"] = lang;
+          handler.next(options);
+        },
+      ),
+    );
   }
 
   void _addTokenInterceptor() {

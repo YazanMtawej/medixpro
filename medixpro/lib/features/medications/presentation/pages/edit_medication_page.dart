@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../domain/entities/medication.dart';
 import '../cubit/medications_cubit.dart';
 import '../../../patients/presentation/cubit/patients_cubit.dart';
@@ -30,26 +31,36 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
   DateTime? _endDate;
   bool _isLoading = false;
 
-  static const _frequencies = {
-    "once_daily": "Once Daily",
-    "twice_daily": "Twice Daily",
-    "three_times_daily": "Three Times Daily",
-    "four_times_daily": "Four Times Daily",
-    "every_8_hours": "Every 8 Hours",
-    "every_12_hours": "Every 12 Hours",
-    "as_needed": "As Needed",
-    "weekly": "Weekly",
+  static const _frequencyKeys = [
+    "once_daily", "twice_daily", "three_times_daily", "four_times_daily",
+    "every_8_hours", "every_12_hours", "as_needed", "weekly",
+  ];
+
+  static const _routeKeys = [
+    "oral", "injection", "topical", "inhalation",
+    "sublingual", "iv", "eye_drops", "ear_drops",
+  ];
+
+  Map<String, String> _frequencies(AppLocalizations l10n) => {
+    "once_daily": l10n.freqOnceDaily,
+    "twice_daily": l10n.freqTwiceDaily,
+    "three_times_daily": l10n.freqThreeTimesDaily,
+    "four_times_daily": l10n.freqFourTimesDaily,
+    "every_8_hours": l10n.freqEvery8Hours,
+    "every_12_hours": l10n.freqEvery12Hours,
+    "as_needed": l10n.freqAsNeeded,
+    "weekly": l10n.freqWeekly,
   };
 
-  static const _routes = {
-    "oral": "Oral",
-    "injection": "Injection",
-    "topical": "Topical",
-    "inhalation": "Inhalation",
-    "sublingual": "Sublingual",
-    "iv": "Intravenous (IV)",
-    "eye_drops": "Eye Drops",
-    "ear_drops": "Ear Drops",
+  Map<String, String> _routes(AppLocalizations l10n) => {
+    "oral": l10n.routeOral,
+    "injection": l10n.routeInjection,
+    "topical": l10n.routeTopical,
+    "inhalation": l10n.routeInhalation,
+    "sublingual": l10n.routeSublingual,
+    "iv": l10n.routeIv,
+    "eye_drops": l10n.routeEyeDrops,
+    "ear_drops": l10n.routeEarDrops,
   };
 
   @override
@@ -67,11 +78,11 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
     _notesController = TextEditingController(text: m.notes);
 
     _selectedPatientId = m.patientId;
-    _frequency = _frequencies.containsKey(m.frequency)
+    _frequency = _frequencyKeys.contains(m.frequency)
         ? m.frequency
         : "once_daily";
     _route =
-        _routes.containsKey(m.route) ? m.route : "oral";
+        _routeKeys.contains(m.route) ? m.route : "oral";
 
     if (m.startDate != null && m.startDate!.isNotEmpty) {
       _startDate = DateTime.tryParse(m.startDate!);
@@ -122,11 +133,12 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Edit Prescription"),
+        title: Text(l10n.editPrescription),
       ),
       body: Form(
         key: _formKey,
@@ -144,7 +156,7 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
 
                   return DropdownButtonFormField<int>(
                     value: _selectedPatientId,
-                    decoration: _decor("Patient", Icons.person),
+                    decoration: _decor(l10n.patientLabel, Icons.person),
                     items: state.patients
                         .map((p) => DropdownMenuItem(
                               value: p.id,
@@ -154,7 +166,7 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
                     onChanged: (v) =>
                         setState(() => _selectedPatientId = v!),
                     validator: (v) =>
-                        v == null ? "Please select a patient" : null,
+                        v == null ? l10n.pleaseSelectPatient : null,
                   );
                 },
               ),
@@ -166,25 +178,25 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
             _card(
               child: Column(
                 children: [
-                  _field(_nameController, "Medication Name",
+                  _field(_nameController, l10n.medicationName,
                       icon: Icons.medication, required: true),
                   const SizedBox(height: 12),
-                  _field(_dosageController, "Dosage",
+                  _field(_dosageController, l10n.dosage,
                       icon: Icons.science_outlined, required: true),
                   const SizedBox(height: 12),
                   _dropdown(
-                    "Frequency",
+                    l10n.frequency,
                     Icons.schedule,
                     _frequency,
-                    _frequencies,
+                    _frequencies(l10n),
                     (v) => setState(() => _frequency = v!),
                   ),
                   const SizedBox(height: 12),
                   _dropdown(
-                    "Route",
+                    l10n.routeLabel,
                     Icons.route_outlined,
                     _route,
-                    _routes,
+                    _routes(l10n),
                     (v) => setState(() => _route = v!),
                   ),
                 ],
@@ -197,14 +209,14 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
             _card(
               child: Column(
                 children: [
-                  _field(_durationController, "Duration (days)",
+                  _field(_durationController, l10n.durationDays,
                       icon: Icons.timelapse_outlined, numeric: true),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: _datePicker(
-                          "Start Date",
+                          l10n.startDate,
                           _startDate,
                           (d) => setState(() => _startDate = d),
                         ),
@@ -212,7 +224,7 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _datePicker(
-                          "End Date",
+                          l10n.endDate,
                           _endDate,
                           (d) => setState(() => _endDate = d),
                         ),
@@ -229,10 +241,10 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
             _card(
               child: Column(
                 children: [
-                  _field(_instructionsController, "Instructions",
+                  _field(_instructionsController, l10n.instructions,
                       icon: Icons.info_outline, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_notesController, "Notes",
+                  _field(_notesController, l10n.notes,
                       icon: Icons.note_outlined, maxLines: 2),
                 ],
               ),
@@ -252,7 +264,7 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text("Update Prescription"),
+                    : Text(l10n.updatePrescription),
                 onPressed: _isLoading ? null : _submit,
               ),
             ),
@@ -303,7 +315,7 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
       decoration: _decor(label, icon),
       validator: required
           ? (v) => (v == null || v.trim().isEmpty)
-              ? "Required"
+              ? AppLocalizations.of(context).requiredField
               : null
           : null,
     );
@@ -345,7 +357,7 @@ class _EditMedicationPageState extends State<EditMedicationPage> {
         decoration: _decor(label, Icons.calendar_today_outlined),
         child: Text(
           date == null
-              ? "Select"
+              ? AppLocalizations.of(context).selectShort
               : date.toIso8601String().split("T")[0],
           style: TextStyle(
             color: date == null

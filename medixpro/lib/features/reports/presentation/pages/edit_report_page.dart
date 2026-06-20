@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/report.dart';
 import '../cubit/reports_cubit.dart';
@@ -93,14 +94,15 @@ class _EditReportPageState extends State<EditReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
-        title: const Text("Edit Report",
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(l10n.editReport,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -128,7 +130,7 @@ class _EditReportPageState extends State<EditReportPage> {
                   }
                   return DropdownButtonFormField<int>(
                     value: _patientId,
-                    decoration: _decor("Patient", Icons.person_outline),
+                    decoration: _decor(l10n.patientLabel, Icons.person_outline),
                     items: state.patients
                         .map((p) => DropdownMenuItem(
                               value: p.id, child: Text(p.name)))
@@ -146,7 +148,7 @@ class _EditReportPageState extends State<EditReportPage> {
                           .fetchMedications(patientId: v);
                     },
                     validator: (v) =>
-                        v == null ? "Please select a patient" : null,
+                        v == null ? l10n.pleaseSelectPatient : null,
                   );
                 },
               ),
@@ -156,15 +158,15 @@ class _EditReportPageState extends State<EditReportPage> {
 
             _card(isDark: isDark,
               child: Column(children: [
-                _field(_titleCtrl, "Report Title",
+                _field(_titleCtrl, l10n.reportTitle,
                     icon: Icons.title, required: true),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _status,
-                  decoration: _decor("Status", Icons.flag_outlined),
-                  items: const [
-                    DropdownMenuItem(value: "draft", child: Text("Draft")),
-                    DropdownMenuItem(value: "final", child: Text("Final")),
+                  decoration: _decor(l10n.status, Icons.flag_outlined),
+                  items: [
+                    DropdownMenuItem(value: "draft", child: Text(l10n.statusDraft)),
+                    DropdownMenuItem(value: "final", child: Text(l10n.statusFinal)),
                   ],
                   onChanged: (v) => setState(() => _status = v!),
                 ),
@@ -194,14 +196,14 @@ class _EditReportPageState extends State<EditReportPage> {
                   return DropdownButtonFormField<int?>(
                     value: safeValue,
                     decoration: _decor(
-                      "Linked Appointment (optional)",
+                      l10n.linkedAppointmentOptional,
                       Icons.calendar_month_outlined,
                     ),
-                    hint: const Text("Select appointment"),
+                    hint: Text(l10n.selectAppointment),
                     items: [
-                      const DropdownMenuItem<int?>(
+                      DropdownMenuItem<int?>(
                         value: null,
-                        child: Text("None"),
+                        child: Text(l10n.none),
                       ),
                       ...uniqueItems.map((a) => DropdownMenuItem<int>(
                             value: a.id,
@@ -224,8 +226,8 @@ class _EditReportPageState extends State<EditReportPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Prescribed Medications",
-                      style: TextStyle(
+                  Text(l10n.prescribedMedications,
+                      style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary)),
@@ -234,7 +236,7 @@ class _EditReportPageState extends State<EditReportPage> {
                     builder: (context, state) {
                       if (state is! MedicationsLoaded ||
                           state.medications.isEmpty) {
-                        return Text("No medications for this patient",
+                        return Text(l10n.noMedicationsForPatient,
                             style: TextStyle(
                               fontSize: 13,
                               color: isDark
@@ -278,30 +280,30 @@ class _EditReportPageState extends State<EditReportPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Clinical Details",
-                      style: TextStyle(
+                  Text(l10n.clinicalDetails,
+                      style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary)),
                   const SizedBox(height: 12),
-                  _field(_chiefComplaintCtrl, "Chief Complaint",
+                  _field(_chiefComplaintCtrl, l10n.chiefComplaint,
                       icon: Icons.help_outline, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_historyCtrl, "Medical History",
+                  _field(_historyCtrl, l10n.medicalHistory,
                       icon: Icons.history, maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_examinationCtrl, "Physical Examination",
+                  _field(_examinationCtrl, l10n.physicalExamination,
                       icon: Icons.search, maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_diagnosisCtrl, "Diagnosis",
+                  _field(_diagnosisCtrl, l10n.diagnosis,
                       icon: Icons.medical_information_outlined,
                       required: true,
                       maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_treatmentCtrl, "Treatment Plan",
+                  _field(_treatmentCtrl, l10n.treatmentPlan,
                       icon: Icons.healing_outlined, maxLines: 3),
                   const SizedBox(height: 12),
-                  _field(_notesCtrl, "Doctor Notes",
+                  _field(_notesCtrl, l10n.doctorNotes,
                       icon: Icons.note_outlined, maxLines: 3),
                   const SizedBox(height: 12),
                   InkWell(
@@ -318,11 +320,11 @@ class _EditReportPageState extends State<EditReportPage> {
                       }
                     },
                     child: InputDecorator(
-                      decoration: _decor("Follow-up Date (optional)",
+                      decoration: _decor(l10n.followUpDateOptional,
                           Icons.event_repeat_outlined),
                       child: Text(
                         _followUpDate == null
-                            ? "Not set"
+                            ? l10n.notSet
                             : _followUpDate!
                                 .toIso8601String()
                                 .split("T")[0],
@@ -348,8 +350,8 @@ class _EditReportPageState extends State<EditReportPage> {
                         width: 20, height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white))
-                    : const Text("Update Report",
-                        style: TextStyle(fontSize: 16)),
+                    : Text(l10n.updateReport,
+                        style: const TextStyle(fontSize: 16)),
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -389,7 +391,9 @@ class _EditReportPageState extends State<EditReportPage> {
       maxLines: maxLines,
       decoration: _decor(label, icon),
       validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+          ? (v) => (v == null || v.trim().isEmpty)
+              ? AppLocalizations.of(context).requiredField
+              : null
           : null,
     );
   }

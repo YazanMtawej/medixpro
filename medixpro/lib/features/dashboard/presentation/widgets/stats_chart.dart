@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:medixpro/core/theme/app_colors.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../data/models/dashboard_stats_model.dart';
 
 ///════════════════════════════════════════════════════════════
@@ -27,12 +28,13 @@ class AppointmentStatusChart extends StatelessWidget {
 
     final completionRate = ((completed / total) * 100).round();
 
+    final l10n = AppLocalizations.of(context);
     return _AnalyticsCard(
       isDark: isDark,
-      title: "Appointments Performance",
-      subtitle: "Live overview for today's schedule",
+      title: l10n.appointmentsPerformance,
+      subtitle: l10n.liveOverviewToday,
       trailing: _StatusChip(
-        text: "$completionRate% Success",
+        text: l10n.successRate(completionRate),
         color: AppColors.success,
       ),
       child: Column(
@@ -84,25 +86,25 @@ class AppointmentStatusChart extends StatelessWidget {
                     _MetricTile(
                       isDark: isDark,
                       color: AppColors.primary,
-                      title: "Scheduled",
+                      title: l10n.statusScheduled,
                       value: "$scheduled",
-                      subtitle: "Pending visits",
+                      subtitle: l10n.pendingVisits,
                     ),
                     const SizedBox(height: 10),
                     _MetricTile(
                       isDark: isDark,
                       color: AppColors.success,
-                      title: "Completed",
+                      title: l10n.statusCompleted,
                       value: "$completed",
-                      subtitle: "Finished today",
+                      subtitle: l10n.finishedToday,
                     ),
                     const SizedBox(height: 10),
                     _MetricTile(
                       isDark: isDark,
                       color: AppColors.warning,
-                      title: "Total",
+                      title: l10n.total,
                       value: "$total",
-                      subtitle: "All appointments",
+                      subtitle: l10n.allAppointments,
                     ),
                   ],
                 ),
@@ -114,8 +116,8 @@ class AppointmentStatusChart extends StatelessWidget {
             isDark: isDark,
             icon: Icons.insights_rounded,
             text: completionRate >= 70
-                ? "Clinic performance looks strong today."
-                : "There is room to improve completion rate.",
+                ? l10n.clinicStrongToday
+                : l10n.roomToImprove,
           ),
         ],
       ),
@@ -148,12 +150,13 @@ class PatientGenderChart extends StatelessWidget {
     final maleRate = ((male / total) * 100).round();
     final femaleRate = ((female / total) * 100).round();
 
+    final l10n = AppLocalizations.of(context);
     return _AnalyticsCard(
       isDark: isDark,
-      title: "Patient Demographics",
-      subtitle: "Population distribution overview",
+      title: l10n.patientDemographics,
+      subtitle: l10n.populationDistribution,
       trailing: _StatusChip(
-        text: "$total Patients",
+        text: l10n.patientsCount(total),
         color: AppColors.primary,
       ),
       child: Column(
@@ -190,7 +193,7 @@ class PatientGenderChart extends StatelessWidget {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                        const labels = ["Male", "Female", "Total"];
+                        final labels = [l10n.male, l10n.female, l10n.total];
                         return Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
@@ -222,7 +225,7 @@ class PatientGenderChart extends StatelessWidget {
               Expanded(
                 child: _SmallInfoCard(
                   isDark: isDark,
-                  title: "Male Ratio",
+                  title: l10n.maleRatio,
                   value: "$maleRate%",
                   color: AppColors.primary,
                 ),
@@ -231,7 +234,7 @@ class PatientGenderChart extends StatelessWidget {
               Expanded(
                 child: _SmallInfoCard(
                   isDark: isDark,
-                  title: "Female Ratio",
+                  title: l10n.femaleRatio,
                   value: "$femaleRate%",
                   color: Colors.pink,
                 ),
@@ -243,8 +246,8 @@ class PatientGenderChart extends StatelessWidget {
             isDark: isDark,
             icon: Icons.groups_rounded,
             text: female > male
-                ? "Female patients represent the larger segment."
-                : "Male patients represent the larger segment.",
+                ? l10n.femaleLargerSegment
+                : l10n.maleLargerSegment,
           ),
         ],
       ),

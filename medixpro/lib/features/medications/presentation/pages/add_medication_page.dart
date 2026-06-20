@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../domain/entities/medication.dart';
 import '../cubit/medications_cubit.dart';
 import '../../../patients/presentation/cubit/patients_cubit.dart';
@@ -31,26 +32,26 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
   bool _loadingCommon = false;
   String _commonSearch = "";
 
-  static const _frequencies = {
-    "once_daily": "Once Daily",
-    "twice_daily": "Twice Daily",
-    "three_times_daily": "Three Times Daily",
-    "four_times_daily": "Four Times Daily",
-    "every_8_hours": "Every 8 Hours",
-    "every_12_hours": "Every 12 Hours",
-    "as_needed": "As Needed",
-    "weekly": "Weekly",
+  Map<String, String> _frequencies(AppLocalizations l10n) => {
+    "once_daily": l10n.freqOnceDaily,
+    "twice_daily": l10n.freqTwiceDaily,
+    "three_times_daily": l10n.freqThreeTimesDaily,
+    "four_times_daily": l10n.freqFourTimesDaily,
+    "every_8_hours": l10n.freqEvery8Hours,
+    "every_12_hours": l10n.freqEvery12Hours,
+    "as_needed": l10n.freqAsNeeded,
+    "weekly": l10n.freqWeekly,
   };
 
-  static const _routes = {
-    "oral": "Oral",
-    "injection": "Injection",
-    "topical": "Topical",
-    "inhalation": "Inhalation",
-    "sublingual": "Sublingual",
-    "iv": "Intravenous (IV)",
-    "eye_drops": "Eye Drops",
-    "ear_drops": "Ear Drops",
+  Map<String, String> _routes(AppLocalizations l10n) => {
+    "oral": l10n.routeOral,
+    "injection": l10n.routeInjection,
+    "topical": l10n.routeTopical,
+    "inhalation": l10n.routeInhalation,
+    "sublingual": l10n.routeSublingual,
+    "iv": l10n.routeIv,
+    "eye_drops": l10n.routeEyeDrops,
+    "ear_drops": l10n.routeEarDrops,
   };
 
   @override
@@ -108,11 +109,12 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("New Prescription"),
+        title: Text(l10n.newPrescription),
       ),
       body: Form(
         key: _formKey,
@@ -127,8 +129,8 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                   }
                   return DropdownButtonFormField<int>(
                     value: _selectedPatientId,
-                    hint: const Text("Select Patient"),
-                    decoration: _decor("Patient", Icons.person),
+                    hint: Text(l10n.selectPatient),
+                    decoration: _decor(l10n.patientLabel, Icons.person),
                     items: state.patients
                         .map((p) => DropdownMenuItem(
                               value: p.id,
@@ -137,7 +139,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                         .toList(),
                     onChanged: (v) => setState(() => _selectedPatientId = v),
                     validator: (v) =>
-                        v == null ? "Please select a patient" : null,
+                        v == null ? l10n.pleaseSelectPatient : null,
                   );
                 },
               ),
@@ -149,13 +151,13 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Common Medications",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  Text(l10n.commonMedications,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 13)),
                   const SizedBox(height: 8),
                   TextField(
                     decoration: InputDecoration(
-                      hintText: "Search common medications...",
+                      hintText: l10n.searchCommonMedications,
                       prefixIcon: const Icon(Icons.search, size: 18),
                       isDense: true,
                     ),
@@ -195,25 +197,25 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             _card(
               child: Column(
                 children: [
-                  _field(_nameController, "Medication Name",
+                  _field(_nameController, l10n.medicationName,
                       icon: Icons.medication, required: true),
                   const SizedBox(height: 12),
-                  _field(_dosageController, "Dosage (e.g. 500mg)",
+                  _field(_dosageController, l10n.dosageHint,
                       icon: Icons.science_outlined, required: true),
                   const SizedBox(height: 12),
                   _dropdown(
-                    "Frequency",
+                    l10n.frequency,
                     Icons.schedule,
                     _frequency,
-                    _frequencies,
+                    _frequencies(l10n),
                     (v) => setState(() => _frequency = v!),
                   ),
                   const SizedBox(height: 12),
                   _dropdown(
-                    "Route",
+                    l10n.routeLabel,
                     Icons.route_outlined,
                     _route,
-                    _routes,
+                    _routes(l10n),
                     (v) => setState(() => _route = v!),
                   ),
                 ],
@@ -225,15 +227,15 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
             _card(
               child: Column(
                 children: [
-                  _field(_durationController, "Duration (days)",
+                  _field(_durationController, l10n.durationDays,
                       icon: Icons.timelapse_outlined, numeric: true),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _datePicker("Start Date", _startDate,
+                      Expanded(child: _datePicker(l10n.startDate, _startDate,
                           (d) => setState(() => _startDate = d))),
                       const SizedBox(width: 12),
-                      Expanded(child: _datePicker("End Date", _endDate,
+                      Expanded(child: _datePicker(l10n.endDate, _endDate,
                           (d) => setState(() => _endDate = d))),
                     ],
                   ),
@@ -247,10 +249,10 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
               child: Column(
                 children: [
                   _field(_instructionsController,
-                      "Instructions (e.g. Take after meals)",
+                      l10n.instructionsHint,
                       icon: Icons.info_outline, maxLines: 2),
                   const SizedBox(height: 12),
-                  _field(_notesController, "Additional Notes",
+                  _field(_notesController, l10n.additionalNotes,
                       icon: Icons.note_outlined, maxLines: 2),
                 ],
               ),
@@ -267,8 +269,8 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text("Save Prescription",
-                        style: TextStyle(fontSize: 16)),
+                    : Text(l10n.savePrescription,
+                        style: const TextStyle(fontSize: 16)),
                 onPressed: _isLoading ? null : _submit,
               ),
             ),
@@ -311,7 +313,9 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
       keyboardType: numeric ? TextInputType.number : TextInputType.text,
       decoration: _decor(label, icon),
       validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+          ? (v) => (v == null || v.trim().isEmpty)
+              ? AppLocalizations.of(context).requiredField
+              : null
           : null,
     );
   }
@@ -348,7 +352,7 @@ class _AddMedicationPageState extends State<AddMedicationPage> {
       child: InputDecorator(
         decoration: _decor(label, Icons.calendar_today_outlined),
         child: Text(
-          date == null ? "Select" : date.toIso8601String().split("T")[0],
+          date == null ? AppLocalizations.of(context).selectShort : date.toIso8601String().split("T")[0],
           style: TextStyle(
               color: date == null ? Theme.of(context).hintColor : null,
               fontSize: 14),

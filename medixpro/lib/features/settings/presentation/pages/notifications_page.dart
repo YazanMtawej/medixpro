@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/notification_item.dart';
 import '../cubit/settings_cubit.dart';
@@ -45,18 +46,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   String _timeAgo(String createdAt) {
+    final l10n = AppLocalizations.of(context);
     if (createdAt.isEmpty) return "";
     final dt = DateTime.tryParse(createdAt)?.toLocal();
     if (dt == null) return "";
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1)  return "Just now";
-    if (diff.inMinutes < 60) return "${diff.inMinutes}m ago";
-    if (diff.inHours < 24)   return "${diff.inHours}h ago";
-    return "${diff.inDays}d ago";
+    if (diff.inMinutes < 1)  return l10n.justNow;
+    if (diff.inMinutes < 60) return l10n.minutesAgo(diff.inMinutes);
+    if (diff.inHours < 24)   return l10n.hoursAgo(diff.inHours);
+    return l10n.daysAgo(diff.inDays);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -79,9 +82,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   ),
                 ),
               ),
-              title: const Text(
-                "Notifications",
-                style: TextStyle(
+              title: Text(
+                l10n.notifications,
+                style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700),
               ),
               centerTitle: true,
@@ -99,20 +102,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   }
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: "mark_all",
                     child: Row(children: [
-                      Icon(Icons.done_all, size: 18),
-                      SizedBox(width: 8),
-                      Text("Mark all as read"),
+                      const Icon(Icons.done_all, size: 18),
+                      const SizedBox(width: 8),
+                      Text(l10n.markAllAsRead),
                     ]),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: "clear_all",
                     child: Row(children: [
-                      Icon(Icons.delete_sweep_outlined, size: 18),
-                      SizedBox(width: 8),
-                      Text("Clear all"),
+                      const Icon(Icons.delete_sweep_outlined, size: 18),
+                      const SizedBox(width: 8),
+                      Text(l10n.clearAll),
                     ]),
                   ),
                 ],
@@ -149,7 +152,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "No notifications",
+                            l10n.noNotifications,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/auth_cubit.dart';
 
@@ -60,6 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocListener<AuthCubit, AuthState>(
@@ -101,7 +103,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 title: Text(
-                  _isPatient ? "Patient Registration" : "Doctor Registration",
+                  _isPatient ? l10n.patientRegistration : l10n.doctorRegistration,
                   style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700),
                 ),
@@ -117,34 +119,34 @@ class _RegisterPageState extends State<RegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ─── Account Information ───────────────────────────
-                      _label("Account Information"),
+                      _label(l10n.accountInformation),
                       const SizedBox(height: 12),
                       _field(
                         ctrl:  _usernameCtrl,
-                        label: "Username",
+                        label: l10n.username,
                         icon:  Icons.person_outline,
                         isDark: isDark,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty)
-                            return "Username is required";
+                            return l10n.usernameRequired;
                           if (v.trim().length < 3)
-                            return "At least 3 characters";
+                            return l10n.atLeast3Chars;
                           return null;
                         },
                       ),
                       const SizedBox(height: 12),
                       _field(
                         ctrl:      _emailCtrl,
-                        label:     "Email",
+                        label:     l10n.email,
                         icon:      Icons.email_outlined,
                         isDark:    isDark,
                         inputType: TextInputType.emailAddress,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty)
-                            return "Email is required";
+                            return l10n.emailRequired;
                           if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
                               .hasMatch(v.trim()))
-                            return "Enter a valid email";
+                            return l10n.enterValidEmail;
                           return null;
                         },
                       ),
@@ -153,7 +155,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         controller:  _passwordCtrl,
                         obscureText: _obscure,
                         decoration: _decor(
-                          "Password",
+                          l10n.password,
                           Icons.lock_outline,
                           isDark,
                           suffix: IconButton(
@@ -169,9 +171,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         validator: (v) {
                           if (v == null || v.isEmpty)
-                            return "Password is required";
+                            return l10n.passwordRequired;
                           if (v.length < 8)
-                            return "At least 8 characters";
+                            return l10n.atLeast8Chars;
                           return null;
                         },
                       ),
@@ -179,18 +181,18 @@ class _RegisterPageState extends State<RegisterPage> {
                       // ─── Patient Profile Fields ────────────────────────
                       if (_isPatient) ...[
                         const SizedBox(height: 28),
-                        _label("Personal Information"),
+                        _label(l10n.personalInformation),
                         const SizedBox(height: 12),
 
                         // Full Name
                         _field(
                           ctrl:  _fullNameCtrl,
-                          label: "Full Name",
+                          label: l10n.fullName,
                           icon:  Icons.badge_outlined,
                           isDark: isDark,
                           validator: (v) =>
                               (v == null || v.trim().isEmpty)
-                                  ? "Full name is required"
+                                  ? l10n.fullNameRequired
                                   : null,
                         ),
                         const SizedBox(height: 12),
@@ -204,13 +206,13 @@ class _RegisterPageState extends State<RegisterPage> {
                             LengthLimitingTextInputFormatter(3),
                           ],
                           decoration:
-                              _decor("Age", Icons.cake_outlined, isDark),
+                              _decor(l10n.age, Icons.cake_outlined, isDark),
                           validator: (v) {
                             if (v == null || v.trim().isEmpty)
-                              return "Age is required";
+                              return l10n.ageRequired;
                             final age = int.tryParse(v);
                             if (age == null || age <= 0 || age > 150)
-                              return "Enter a valid age (1–150)";
+                              return l10n.enterValidAge;
                             return null;
                           },
                         ),
@@ -226,21 +228,21 @@ class _RegisterPageState extends State<RegisterPage> {
                             LengthLimitingTextInputFormatter(15),
                           ],
                           decoration: _decor(
-                              "Phone Number", Icons.phone_outlined, isDark),
+                              l10n.phoneNumber, Icons.phone_outlined, isDark),
                           validator: (v) {
                             if (v == null || v.trim().isEmpty)
-                              return "Phone number is required";
+                              return l10n.phoneRequired;
                             final digits =
                                 v.replaceAll(RegExp(r'\D'), '');
                             if (digits.length < 7)
-                              return "Enter a valid phone number";
+                              return l10n.enterValidPhone;
                             return null;
                           },
                         ),
                         const SizedBox(height: 12),
 
                         // Gender selector
-                        Text("Gender",
+                        Text(l10n.gender,
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -276,9 +278,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                       child: CircularProgressIndicator(
                                           strokeWidth: 2.5,
                                           color: Colors.white))
-                                  : const Text(
-                                      "Create Account",
-                                      style: TextStyle(
+                                  : Text(
+                                      l10n.createAccount,
+                                      style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w700),
                                     ),
@@ -352,13 +354,16 @@ class _RegisterPageState extends State<RegisterPage> {
             : AppColors.lightBackground,
       );
 
-  Widget _genderSelector(bool isDark) => Row(
+  Widget _genderSelector(bool isDark) {
+    final l10n = AppLocalizations.of(context);
+    return Row(
         children: [
-          _genderOption("male",   Icons.male_rounded,   "Male",   Colors.blue,  isDark),
+          _genderOption("male",   Icons.male_rounded,   l10n.male,   Colors.blue,  isDark),
           const SizedBox(width: 12),
-          _genderOption("female", Icons.female_rounded, "Female", Colors.pink,  isDark),
+          _genderOption("female", Icons.female_rounded, l10n.female, Colors.pink,  isDark),
         ],
       );
+  }
 
   Widget _genderOption(String value, IconData icon, String label,
       Color color, bool isDark) =>

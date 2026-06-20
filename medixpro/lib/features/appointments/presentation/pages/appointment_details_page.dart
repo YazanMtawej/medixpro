@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/appointment.dart';
+import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
 import 'edit_appointment_page.dart';
 
@@ -21,6 +23,7 @@ class AppointmentDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n        = AppLocalizations.of(context);
     final isDark      = Theme.of(context).brightness == Brightness.dark;
     final statusColor = _statusColor();
     final dt          = appointment.dateTime.toLocal();
@@ -61,7 +64,8 @@ class AppointmentDetailsPage extends StatelessWidget {
                                 color: statusColor.withOpacity(0.4)),
                           ),
                           child: Text(
-                            appointment.status.toUpperCase(),
+                            appointmentStatusLabel(context, appointment.status)
+                                .toUpperCase(),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -113,15 +117,15 @@ class AppointmentDetailsPage extends StatelessWidget {
                 // ─── Patient Card ────────────────────────────────────
                 _InfoCard(
                   isDark: isDark,
-                  title: "Patient",
+                  title: l10n.patientLabel,
                   icon: Icons.person_outline,
                   children: [
-                    _Row("Name",  appointment.patientName, isDark),
-                    _Row("Phone", appointment.patientPhone.isNotEmpty
+                    _Row(l10n.name,  appointment.patientName, isDark),
+                    _Row(l10n.phone, appointment.patientPhone.isNotEmpty
                         ? appointment.patientPhone
                         : "—", isDark),
-                    _Row("Age",   appointment.patientAge > 0
-                        ? "${appointment.patientAge} years"
+                    _Row(l10n.age,   appointment.patientAge > 0
+                        ? l10n.ageYears(appointment.patientAge.toString())
                         : "—", isDark),
                   ],
                 ),
@@ -131,19 +135,19 @@ class AppointmentDetailsPage extends StatelessWidget {
                 // ─── Appointment Details ─────────────────────────────
                 _InfoCard(
                   isDark: isDark,
-                  title: "Appointment Details",
+                  title: l10n.appointmentDetails,
                   icon: Icons.calendar_month_outlined,
                   children: [
-                    _Row("Date", "${dt.year}-${dt.month.toString().padLeft(2,'0')}-${dt.day.toString().padLeft(2,'0')}",
+                    _Row(l10n.dateLabel, "${dt.year}-${dt.month.toString().padLeft(2,'0')}-${dt.day.toString().padLeft(2,'0')}",
                         isDark),
-                    _Row("Time", "${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}",
+                    _Row(l10n.timeLabel, "${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}",
                         isDark),
-                    _Row("Duration", "${appointment.durationMinutes} minutes", isDark),
-                    _Row("Type",   appointment.type.replaceAll("_", " "), isDark),
-                    _Row("Status", appointment.status, isDark),
+                    _Row(l10n.duration, l10n.minutesValue(appointment.durationMinutes), isDark),
+                    _Row(l10n.typeLabel,   appointmentTypeLabel(context, appointment.type), isDark),
+                    _Row(l10n.status, appointmentStatusLabel(context, appointment.status), isDark),
                     if (appointment.followUpDate != null &&
                         appointment.followUpDate!.isNotEmpty)
-                      _Row("Follow-up", appointment.followUpDate!, isDark),
+                      _Row(l10n.followUp, appointment.followUpDate!, isDark),
                   ],
                 ),
 
@@ -156,20 +160,20 @@ class AppointmentDetailsPage extends StatelessWidget {
                     appointment.notes.isNotEmpty)
                   _InfoCard(
                     isDark: isDark,
-                    title: "Clinical Information",
+                    title: l10n.clinicalInformation,
                     icon: Icons.medical_information_outlined,
                     children: [
                       if (appointment.reason.isNotEmpty)
                         _TextBlock(
-                            "Reason for Visit", appointment.reason, isDark),
+                            l10n.reasonForVisit, appointment.reason, isDark),
                       if (appointment.symptoms.isNotEmpty)
-                        _TextBlock("Symptoms", appointment.symptoms, isDark),
+                        _TextBlock(l10n.symptoms, appointment.symptoms, isDark),
                       if (appointment.diagnosis.isNotEmpty)
                         _TextBlock(
-                            "Diagnosis", appointment.diagnosis, isDark),
+                            l10n.diagnosis, appointment.diagnosis, isDark),
                       if (appointment.notes.isNotEmpty)
                         _TextBlock(
-                            "Doctor Notes", appointment.notes, isDark),
+                            l10n.doctorNotes, appointment.notes, isDark),
                     ],
                   ),
 

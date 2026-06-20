@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../cubit/medications_cubit.dart';
 import '../../domain/entities/medication.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -38,6 +39,7 @@ class _MedicationsPageState extends State<MedicationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cs = Theme.of(context).colorScheme;
 
@@ -61,9 +63,9 @@ class _MedicationsPageState extends State<MedicationsPage> {
                   ),
                 ),
               ),
-              title: const Text(
-                "Medications",
-                style: TextStyle(
+              title: Text(
+                l10n.medicationsTitle,
+                style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700),
               ),
               centerTitle: true,
@@ -94,7 +96,7 @@ class _MedicationsPageState extends State<MedicationsPage> {
                   onChanged: _onSearch,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: "Search medication or patient...",
+                    hintText: l10n.searchMedicationOrPatient,
                     hintStyle: TextStyle(
                         color: Colors.white.withOpacity(0.65),
                         fontSize: 13),
@@ -191,8 +193,8 @@ class _MedicationsPageState extends State<MedicationsPage> {
         foregroundColor: Colors.white,
         elevation: 2,
         icon: const Icon(Icons.add),
-        label: const Text("New Prescription",
-            style: TextStyle(fontWeight: FontWeight.w600)),
+        label: Text(l10n.newPrescription,
+            style: const TextStyle(fontWeight: FontWeight.w600)),
         onPressed: () async {
           await Navigator.push(
             context,
@@ -208,19 +210,20 @@ class _MedicationsPageState extends State<MedicationsPage> {
   }
 
   void _confirmDelete(BuildContext context, int id) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text("Delete Prescription",
-            style: TextStyle(fontWeight: FontWeight.w700)),
-        content: const Text(
-            "This prescription will be permanently removed."),
+        title: Text(l10n.deletePrescription,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
+        content: Text(
+            l10n.deletePrescriptionWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -234,7 +237,7 @@ class _MedicationsPageState extends State<MedicationsPage> {
                   .read<MedicationsCubit>()
                   .deleteExistingMedication(id);
             },
-            child: const Text("Delete"),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -248,6 +251,7 @@ class _EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
@@ -265,7 +269,7 @@ class _EmptyView extends StatelessWidget {
                 size: 52, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
-          Text("No prescriptions yet",
+          Text(l10n.noPrescriptionsYet,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -274,7 +278,7 @@ class _EmptyView extends StatelessWidget {
                     : AppColors.lightTextSecondary,
               )),
           const SizedBox(height: 6),
-          Text("Tap + to add a new prescription",
+          Text(l10n.tapToAddPrescription,
               style: TextStyle(
                 fontSize: 13,
                 color: isDark
@@ -308,7 +312,7 @@ class _ErrorView extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),
-            label: const Text("Retry"),
+            label: Text(AppLocalizations.of(context).retry),
           ),
         ],
       ),
@@ -342,36 +346,37 @@ class _MedicationCard extends StatelessWidget {
     }
   }
 
-  String _frequencyLabel() {
-    const map = {
-      "once_daily": "Once Daily",
-      "twice_daily": "Twice Daily",
-      "three_times_daily": "3× Daily",
-      "four_times_daily": "4× Daily",
-      "every_8_hours": "Every 8h",
-      "every_12_hours": "Every 12h",
-      "as_needed": "As Needed",
-      "weekly": "Weekly",
+  String _frequencyLabel(AppLocalizations l10n) {
+    final map = {
+      "once_daily": l10n.freqOnceDaily,
+      "twice_daily": l10n.freqTwiceDaily,
+      "three_times_daily": l10n.freqThreeTimesDaily,
+      "four_times_daily": l10n.freqFourTimesDaily,
+      "every_8_hours": l10n.freqEvery8Hours,
+      "every_12_hours": l10n.freqEvery12Hours,
+      "as_needed": l10n.freqAsNeeded,
+      "weekly": l10n.freqWeekly,
     };
     return map[medication.frequency] ?? medication.frequency;
   }
 
-  String _routeLabel() {
-    const map = {
-      "oral": "Oral",
-      "injection": "Injection",
-      "topical": "Topical",
-      "inhalation": "Inhalation",
-      "sublingual": "Sublingual",
-      "iv": "IV",
-      "eye_drops": "Eye Drops",
-      "ear_drops": "Ear Drops",
+  String _routeLabel(AppLocalizations l10n) {
+    final map = {
+      "oral": l10n.routeOral,
+      "injection": l10n.routeInjection,
+      "topical": l10n.routeTopical,
+      "inhalation": l10n.routeInhalation,
+      "sublingual": l10n.routeSublingual,
+      "iv": l10n.routeIv,
+      "eye_drops": l10n.routeEyeDrops,
+      "ear_drops": l10n.routeEarDrops,
     };
     return map[medication.route] ?? medication.route;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? AppColors.darkCard : AppColors.lightCard;
     final borderColor =
@@ -490,16 +495,16 @@ class _MedicationCard extends StatelessWidget {
                         color: AppColors.warning),
                     _InfoChip(
                         icon: Icons.schedule_outlined,
-                        label: _frequencyLabel(),
+                        label: _frequencyLabel(l10n),
                         color: AppColors.success),
                     _InfoChip(
                         icon: Icons.route_outlined,
-                        label: _routeLabel(),
+                        label: _routeLabel(l10n),
                         color: color),
                     if (medication.durationDays != null)
                       _InfoChip(
                           icon: Icons.calendar_today_outlined,
-                          label: "${medication.durationDays}d",
+                          label: l10n.durationDaysShort(medication.durationDays!),
                           color: Colors.purple),
                   ],
                 ),

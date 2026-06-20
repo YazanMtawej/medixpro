@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/appointment_request.dart';
+import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
 import '../cubit/appointments_state.dart';
 
@@ -69,8 +71,8 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
                   titlePadding: const EdgeInsets.only(bottom: 52),
-                  title: const Text("Appointments",
-                      style: TextStyle(
+                  title: Text(AppLocalizations.of(context).appointmentsTitle,
+                      style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 17)),
@@ -96,9 +98,9 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
                     unselectedLabelColor:  Colors.white54,
                     labelStyle: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 13),
-                    tabs: const [
-                      Tab(text: "My Requests"),
-                      Tab(text: "New Request"),
+                    tabs: [
+                      Tab(text: AppLocalizations.of(context).myRequests),
+                      Tab(text: AppLocalizations.of(context).newRequest),
                     ],
                   ),
                 ),
@@ -179,12 +181,12 @@ class _MyRequestsTab extends StatelessWidget {
                                 border: Border.all(
                                     color: AppColors.error.withOpacity(0.3)),
                               ),
-                              child: const Row(children: [
-                                Icon(Icons.delete_sweep_outlined,
+                              child: Row(children: [
+                                const Icon(Icons.delete_sweep_outlined,
                                     size: 15, color: AppColors.error),
-                                SizedBox(width: 5),
-                                Text("Clear Completed",
-                                    style: TextStyle(
+                                const SizedBox(width: 5),
+                                Text(AppLocalizations.of(context).clearCompleted,
+                                    style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         color: AppColors.error)),
@@ -231,14 +233,13 @@ class _MyRequestsTab extends StatelessWidget {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)),
-        title: const Text("Clear Completed",
-            style: TextStyle(fontWeight: FontWeight.w700)),
-        content: const Text(
-            "Remove all accepted and rejected requests from your list?"),
+        title: Text(AppLocalizations.of(context).clearCompleted,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
+        content: Text(AppLocalizations.of(context).clearCompletedConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -251,7 +252,7 @@ class _MyRequestsTab extends StatelessWidget {
               Navigator.pop(context);
               context.read<AppointmentsCubit>().clearCompletedRequests();
             },
-            child: const Text("Clear"),
+            child: Text(AppLocalizations.of(context).clear),
           ),
         ],
       ),
@@ -265,25 +266,25 @@ class _MyRequestsTab extends StatelessWidget {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)),
-        title: const Row(children: [
-          Icon(Icons.cancel_outlined, color: AppColors.error),
-          SizedBox(width: 8),
-          Text("Decline Suggestion",
-              style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Row(children: [
+          const Icon(Icons.cancel_outlined, color: AppColors.error),
+          const SizedBox(width: 8),
+          Text(AppLocalizations.of(context).declineSuggestion,
+              style: const TextStyle(fontWeight: FontWeight.w700)),
         ]),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-                "The doctor will be notified that you declined the suggested time.",
-                style: TextStyle(fontSize: 13)),
+            Text(
+                AppLocalizations.of(context).doctorNotifiedDecline,
+                style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 12),
             TextField(
               controller: noteCtrl,
               maxLines:   2,
               decoration: InputDecoration(
-                hintText: "Reason (optional)",
+                hintText: AppLocalizations.of(context).reasonOptional,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.all(10),
@@ -294,7 +295,7 @@ class _MyRequestsTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -310,7 +311,7 @@ class _MyRequestsTab extends StatelessWidget {
                 patientNote: noteCtrl.text.trim(),
               );
             },
-            child: const Text("Decline ❌"),
+            child: Text("${AppLocalizations.of(context).decline} ❌"),
           ),
         ],
       ),
@@ -338,16 +339,6 @@ class _RequestCard extends StatelessWidget {
       case "rejected":  return AppColors.error;
       case "suggested": return AppColors.warning;
       default:          return AppColors.primary;
-    }
-  }
-
-  String get _statusLabel {
-    switch (request.status) {
-      case "pending":   return "⏳  Awaiting review";
-      case "accepted":  return "✅  Confirmed";
-      case "rejected":  return "❌  Not approved";
-      case "suggested": return "📅  New time proposed";
-      default:          return request.status;
     }
   }
 
@@ -397,7 +388,7 @@ class _RequestCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      request.type.replaceAll("_", " "),
+                      appointmentTypeLabel(context, request.type),
                       style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -417,7 +408,7 @@ class _RequestCard extends StatelessWidget {
                   color: _accent.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(_statusLabel,
+                child: Text(patientRequestStatusLabel(context, request.status),
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -428,7 +419,8 @@ class _RequestCard extends StatelessWidget {
 
               _InfoRow(
                 icon:   Icons.calendar_today_outlined,
-                text:   "Preferred: ${_fmt(request.preferredDate)}",
+                text:   AppLocalizations.of(context)
+                    .preferredLabel(_fmt(request.preferredDate)),
                 isDark: isDark,
               ),
               if (request.reason.isNotEmpty) ...[
@@ -442,7 +434,7 @@ class _RequestCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 _InfoRow(
                     icon: Icons.medical_services_outlined,
-                    text: "Dr. ${request.doctorName}",
+                    text: AppLocalizations.of(context).drName(request.doctorName),
                     isDark: isDark),
               ],
 
@@ -461,12 +453,12 @@ class _RequestCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(children: [
-                        Icon(Icons.swap_horiz_rounded,
+                      Row(children: [
+                        const Icon(Icons.swap_horiz_rounded,
                             size: 15, color: AppColors.warning),
-                        SizedBox(width: 6),
-                        Text("Doctor proposed a new time",
-                            style: TextStyle(
+                        const SizedBox(width: 6),
+                        Text(AppLocalizations.of(context).doctorProposedNewTime,
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: AppColors.warning,
@@ -484,7 +476,7 @@ class _RequestCard extends StatelessWidget {
                       ),
                       if (request.doctorNote.isNotEmpty) ...[
                         const SizedBox(height: 4),
-                        Text("Note: ${request.doctorNote}",
+                        Text(AppLocalizations.of(context).noteWithText(request.doctorNote),
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark
@@ -503,7 +495,7 @@ class _RequestCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         icon: const Icon(
                             Icons.check_circle_outline_rounded, size: 16),
-                        label: const Text("Confirm"),
+                        label: Text(AppLocalizations.of(context).confirm),
                         onPressed: onConfirm,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.success,
@@ -519,7 +511,7 @@ class _RequestCard extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.cancel_outlined, size: 16),
-                        label: const Text("Decline"),
+                        label: Text(AppLocalizations.of(context).decline),
                         onPressed: onDecline,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.error,
@@ -553,7 +545,7 @@ class _RequestCard extends StatelessWidget {
                           size: 14, color: AppColors.error),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text("Note: ${request.doctorNote}",
+                        child: Text(AppLocalizations.of(context).noteWithText(request.doctorNote),
                             style: const TextStyle(
                                 fontSize: 12, color: AppColors.error)),
                       ),
@@ -565,7 +557,7 @@ class _RequestCard extends StatelessWidget {
               // ── Time ago ──────────────────────────────────────────────
               if (request.createdAt != null) ...[
                 const SizedBox(height: 8),
-                Text("Sent ${_ago(request.createdAt!)}",
+                Text(AppLocalizations.of(context).sentAgo(_ago(context, request.createdAt!)),
                     style: TextStyle(
                       fontSize: 11,
                       color: isDark
@@ -606,14 +598,15 @@ class _RequestCard extends StatelessWidget {
     } catch (_) { return raw; }
   }
 
-  String _ago(String raw) {
+  String _ago(BuildContext context, String raw) {
+    final l10n = AppLocalizations.of(context);
     try {
       final d = DateTime.now()
           .difference(DateTime.parse(raw).toLocal());
-      if (d.inMinutes < 1)  return "just now";
-      if (d.inMinutes < 60) return "${d.inMinutes}m ago";
-      if (d.inHours < 24)   return "${d.inHours}h ago";
-      return "${d.inDays}d ago";
+      if (d.inMinutes < 1)  return l10n.justNow;
+      if (d.inMinutes < 60) return l10n.minutesAgo(d.inMinutes);
+      if (d.inHours < 24)   return l10n.hoursAgo(d.inHours);
+      return l10n.daysAgo(d.inDays);
     } catch (_) { return ""; }
   }
 }
@@ -671,7 +664,7 @@ class _EmptyState extends StatelessWidget {
                   size: 52, color: AppColors.primary),
             ),
             const SizedBox(height: 18),
-            Text("No requests yet",
+            Text(AppLocalizations.of(context).noRequestsYet,
                 style: TextStyle(
                   fontSize: 17, fontWeight: FontWeight.w700,
                   color: isDark
@@ -679,7 +672,7 @@ class _EmptyState extends StatelessWidget {
                       : AppColors.lightTextPrimary,
                 )),
             const SizedBox(height: 8),
-            Text("Tap \"New Request\" to book your first appointment",
+            Text(AppLocalizations.of(context).tapNewRequestToBook,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
@@ -715,12 +708,12 @@ class _NewRequestTabState extends State<_NewRequestTab> {
   bool       _loading = false;
 
   static const _types = [
-    ("general",      Icons.health_and_safety_outlined, "General Checkup"),
-    ("follow_up",    Icons.refresh_rounded,             "Follow Up"),
-    ("consultation", Icons.chat_bubble_outline_rounded, "Consultation"),
-    ("emergency",    Icons.emergency_outlined,           "Emergency"),
-    ("lab_results",  Icons.science_outlined,             "Lab Results"),
-    ("vaccination",  Icons.vaccines_outlined,            "Vaccination"),
+    ("general",      Icons.health_and_safety_outlined),
+    ("follow_up",    Icons.refresh_rounded),
+    ("consultation", Icons.chat_bubble_outline_rounded),
+    ("emergency",    Icons.emergency_outlined),
+    ("lab_results",  Icons.science_outlined),
+    ("vaccination",  Icons.vaccines_outlined),
   ];
 
   @override
@@ -744,8 +737,8 @@ class _NewRequestTabState extends State<_NewRequestTab> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    if (_date == null) { _showErr("Please select a date"); return; }
-    if (_time == null) { _showErr("Please select a time"); return; }
+    if (_date == null) { _showErr(AppLocalizations.of(context).pleaseSelectDate); return; }
+    if (_time == null) { _showErr(AppLocalizations.of(context).pleaseSelectTime); return; }
 
     setState(() => _loading = true);
 
@@ -798,11 +791,11 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                   children: [
                     _Section(
                       isDark: widget.isDark,
-                      title:  "Request Details",
+                      title:  AppLocalizations.of(ctx).requestDetails,
                       icon:   Icons.edit_note_rounded,
                       child: Column(children: [
-                        _field(_titleCtrl, "What do you need?",
-                            "e.g. Routine checkup, back pain...",
+                        _field(_titleCtrl, AppLocalizations.of(ctx).whatDoYouNeed,
+                            AppLocalizations.of(ctx).whatDoYouNeedHint,
                             Icons.title_rounded, required: true),
                         const SizedBox(height: 14),
                         _typeGrid(),
@@ -811,7 +804,7 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                     const SizedBox(height: 14),
                     _Section(
                       isDark: widget.isDark,
-                      title:  "Preferred Date & Time",
+                      title:  AppLocalizations.of(ctx).preferredDateTime,
                       icon:   Icons.schedule_rounded,
                       child: Column(children: [
                         _datePicker(),
@@ -822,15 +815,15 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                     const SizedBox(height: 14),
                     _Section(
                       isDark: widget.isDark,
-                      title:  "Additional Info (optional)",
+                      title:  AppLocalizations.of(ctx).additionalInfoOptional,
                       icon:   Icons.description_outlined,
                       child: Column(children: [
-                        _field(_reasonCtrl, "Reason for visit",
-                            "Why do you need this appointment?",
+                        _field(_reasonCtrl, AppLocalizations.of(ctx).reasonForVisit,
+                            AppLocalizations.of(ctx).reasonForVisitHint,
                             Icons.help_outline_rounded, maxLines: 3),
                         const SizedBox(height: 12),
-                        _field(_symptomsCtrl, "Symptoms",
-                            "Describe your symptoms...",
+                        _field(_symptomsCtrl, AppLocalizations.of(ctx).symptoms,
+                            AppLocalizations.of(ctx).symptomsHint,
                             Icons.sick_outlined, maxLines: 3),
                       ]),
                     ),
@@ -850,14 +843,14 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                                 width: 22, height: 22,
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2.5, color: Colors.white))
-                            : const Row(
+                            : Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.send_rounded, size: 18),
-                                  SizedBox(width: 8),
-                                  Text("Send Request",
-                                      style: TextStyle(
+                                  const Icon(Icons.send_rounded, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(AppLocalizations.of(ctx).sendRequest,
+                                      style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w700)),
                                 ],
@@ -881,7 +874,9 @@ class _NewRequestTabState extends State<_NewRequestTab> {
         controller:  c,
         maxLines:    maxLines,
         validator:   required
-            ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+            ? (v) => (v == null || v.trim().isEmpty)
+                ? AppLocalizations.of(context).requiredField
+                : null
             : null,
         decoration: InputDecoration(
           labelText:  label,
@@ -947,7 +942,7 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                               ? AppColors.darkTextSecondary
                               : AppColors.lightTextSecondary)),
                   const SizedBox(width: 5),
-                  Text(t.$3,
+                  Text(appointmentTypeLabel(context, t.$1),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: sel
@@ -980,7 +975,7 @@ class _NewRequestTabState extends State<_NewRequestTab> {
       },
       child: _pickerBox(
         icon:     Icons.calendar_month_rounded,
-        text:     has ? _fmtDate(_date!) : "Select preferred date",
+        text:     has ? _fmtDate(_date!) : AppLocalizations.of(context).selectPreferredDate,
         hasValue: has,
       ),
     );
@@ -998,7 +993,7 @@ class _NewRequestTabState extends State<_NewRequestTab> {
       },
       child: _pickerBox(
         icon:     Icons.access_time_rounded,
-        text:     has ? _time!.format(context) : "Select preferred time",
+        text:     has ? _time!.format(context) : AppLocalizations.of(context).selectPreferredTime,
         hasValue: has,
       ),
     );

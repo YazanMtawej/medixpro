@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/report.dart';
 import '../cubit/reports_cubit.dart';
@@ -11,6 +12,7 @@ class ReportDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFinal = report.status == "final";
 
@@ -133,15 +135,15 @@ class ReportDetailPage extends StatelessWidget {
                 // ─── Patient Info ───────────────────────────────────
                 _Section(
                   isDark: isDark,
-                  title: "Patient Information",
+                  title: l10n.patientInformation,
                   icon: Icons.person_outline,
                   children: [
-                    _Row("Name",       report.patientName,       isDark),
-                    _Row("Age",        report.patientAge.isNotEmpty ? "${report.patientAge} years" : "—", isDark),
-                    _Row("Phone",      report.patientPhone.isNotEmpty ? report.patientPhone : "—", isDark),
-                    _Row("Blood Type", report.patientBloodType.isNotEmpty ? report.patientBloodType : "—", isDark),
+                    _Row(l10n.name,       report.patientName,       isDark),
+                    _Row(l10n.age,        report.patientAge.isNotEmpty ? l10n.ageYears(report.patientAge) : "—", isDark),
+                    _Row(l10n.phone,      report.patientPhone.isNotEmpty ? report.patientPhone : "—", isDark),
+                    _Row(l10n.bloodType, report.patientBloodType.isNotEmpty ? report.patientBloodType : "—", isDark),
                     if (report.patientAllergies.isNotEmpty)
-                      _HighlightRow("Allergies", report.patientAllergies,
+                      _HighlightRow(l10n.allergies, report.patientAllergies,
                           AppColors.error, isDark),
                   ],
                 ),
@@ -152,12 +154,12 @@ class ReportDetailPage extends StatelessWidget {
                 if (report.appointmentDetail != null)
                   _Section(
                     isDark: isDark,
-                    title: "Linked Appointment",
+                    title: l10n.linkedAppointment,
                     icon: Icons.calendar_month_outlined,
                     children: [
-                      _Row("Title",  report.appointmentDetail!.title,  isDark),
-                      _Row("Type",   report.appointmentDetail!.type.replaceAll("_", " "), isDark),
-                      _Row("Status", report.appointmentDetail!.status, isDark),
+                      _Row(l10n.titleLabel,  report.appointmentDetail!.title,  isDark),
+                      _Row(l10n.typeLabel,   report.appointmentDetail!.type.replaceAll("_", " "), isDark),
+                      _Row(l10n.status, report.appointmentDetail!.status, isDark),
                     ],
                   ),
 
@@ -166,27 +168,27 @@ class ReportDetailPage extends StatelessWidget {
                 // ─── Clinical ───────────────────────────────────────
                 _Section(
                   isDark: isDark,
-                  title: "Clinical Information",
+                  title: l10n.clinicalInformation,
                   icon: Icons.medical_information_outlined,
                   children: [
                     if (report.chiefComplaint.isNotEmpty)
-                      _TextBlock("Chief Complaint",
+                      _TextBlock(l10n.chiefComplaint,
                           report.chiefComplaint, isDark),
                     if (report.history.isNotEmpty)
-                      _TextBlock("Medical History", report.history, isDark),
+                      _TextBlock(l10n.medicalHistory, report.history, isDark),
                     if (report.examination.isNotEmpty)
-                      _TextBlock("Physical Examination",
+                      _TextBlock(l10n.physicalExamination,
                           report.examination, isDark),
-                    _TextBlock("Diagnosis", report.diagnosis, isDark,
+                    _TextBlock(l10n.diagnosis, report.diagnosis, isDark,
                         highlight: true),
                     if (report.treatmentPlan.isNotEmpty)
-                      _TextBlock("Treatment Plan",
+                      _TextBlock(l10n.treatmentPlan,
                           report.treatmentPlan, isDark),
                     if (report.notes.isNotEmpty)
-                      _TextBlock("Doctor Notes", report.notes, isDark),
+                      _TextBlock(l10n.doctorNotes, report.notes, isDark),
                     if (report.followUpDate != null &&
                         report.followUpDate!.isNotEmpty)
-                      _Row("Follow-up Date", report.followUpDate!, isDark),
+                      _Row(l10n.followUpDate, report.followUpDate!, isDark),
                   ],
                 ),
 
@@ -195,7 +197,7 @@ class ReportDetailPage extends StatelessWidget {
                   const SizedBox(height: 14),
                   _Section(
                     isDark: isDark,
-                    title: "Prescribed Medications",
+                    title: l10n.prescribedMedications,
                     icon: Icons.medication_outlined,
                     children: report.medicationsDetail
                         .map((m) => _MedCard(med: m, isDark: isDark))

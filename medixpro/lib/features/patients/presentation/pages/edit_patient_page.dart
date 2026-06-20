@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/l10n/app_localizations.dart';
 import '../../domain/entities/patient.dart';
 import '../cubit/patients_cubit.dart';
 
@@ -110,39 +111,40 @@ class _EditPatientPageState extends State<EditPatientPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Patient")),
+      appBar: AppBar(title: Text(l10n.editPatient)),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _section("Basic Information"),
-            _field(_name, "Full Name", required: true, icon: Icons.person),
-            _field(_age, "Age", required: true, icon: Icons.cake, numeric: true),
-            _field(_nationalId, "National ID", icon: Icons.badge),
+            _section(l10n.basicInformation),
+            _field(_name, l10n.fullName, required: true, icon: Icons.person),
+            _field(_age, l10n.age, required: true, icon: Icons.cake, numeric: true),
+            _field(_nationalId, l10n.nationalId, icon: Icons.badge),
             _dateField(),
             _genderDropdown(),
             _bloodTypeDropdown(),
 
-            _section("Contact Information"),
-            _field(_phone, "Phone", required: true, icon: Icons.phone, numeric: true),
-            _field(_email, "Email", icon: Icons.email),
-            _field(_address, "Address", icon: Icons.location_on, maxLines: 2),
+            _section(l10n.contactInformation),
+            _field(_phone, l10n.phone, required: true, icon: Icons.phone, numeric: true),
+            _field(_email, l10n.email, icon: Icons.email),
+            _field(_address, l10n.address, icon: Icons.location_on, maxLines: 2),
 
-            _section("Emergency Contact"),
-            _field(_emergencyName, "Contact Name", icon: Icons.contact_phone),
-            _field(_emergencyPhone, "Contact Phone", icon: Icons.phone_forwarded),
+            _section(l10n.emergencyContact),
+            _field(_emergencyName, l10n.contactName, icon: Icons.contact_phone),
+            _field(_emergencyPhone, l10n.contactPhone, icon: Icons.phone_forwarded),
 
-            _section("Medical Information"),
-            _field(_allergies, "Allergies", icon: Icons.warning_amber, maxLines: 2),
-            _field(_chronicDiseases, "Chronic Diseases",
+            _section(l10n.medicalInformation),
+            _field(_allergies, l10n.allergies, icon: Icons.warning_amber, maxLines: 2),
+            _field(_chronicDiseases, l10n.chronicDiseases,
                 icon: Icons.medical_information, maxLines: 2),
-            _field(_previousSurgeries, "Previous Surgeries",
+            _field(_previousSurgeries, l10n.previousSurgeries,
                 icon: Icons.history, maxLines: 2),
-            _field(_currentMedications, "Current Medications",
+            _field(_currentMedications, l10n.currentMedications,
                 icon: Icons.medication, maxLines: 2),
-            _field(_notes, "Notes", icon: Icons.note, maxLines: 3),
+            _field(_notes, l10n.notes, icon: Icons.note, maxLines: 3),
 
             const SizedBox(height: 24),
             SizedBox(
@@ -158,8 +160,8 @@ class _EditPatientPageState extends State<EditPatientPage> {
                         width: 20, height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text("Save Changes",
-                        style: TextStyle(fontSize: 16)),
+                    : Text(l10n.saveChanges,
+                        style: const TextStyle(fontSize: 16)),
               ),
             ),
             const SizedBox(height: 32),
@@ -202,7 +204,9 @@ class _EditPatientPageState extends State<EditPatientPage> {
               const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         ),
         validator: required
-            ? (v) => (v == null || v.trim().isEmpty) ? "Required" : null
+            ? (v) => (v == null || v.trim().isEmpty)
+                ? AppLocalizations.of(context).requiredField
+                : null
             : null,
       ),
     );
@@ -222,14 +226,14 @@ class _EditPatientPageState extends State<EditPatientPage> {
           },
           child: InputDecorator(
             decoration: InputDecoration(
-              labelText: "Birth Date",
+              labelText: AppLocalizations.of(context).birthDate,
               prefixIcon: const Icon(Icons.calendar_today),
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
             child: Text(
               _birthDate == null
-                  ? "Select date"
+                  ? AppLocalizations.of(context).selectDate
                   : _birthDate!.toIso8601String().split("T")[0],
               style:
                   TextStyle(color: _birthDate == null ? Colors.grey : null),
@@ -243,14 +247,14 @@ class _EditPatientPageState extends State<EditPatientPage> {
         child: DropdownButtonFormField<String>(
           value: _gender,
           decoration: InputDecoration(
-            labelText: "Gender",
+            labelText: AppLocalizations.of(context).gender,
             prefixIcon: const Icon(Icons.wc),
             border:
                 OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          items: const [
-            DropdownMenuItem(value: "male", child: Text("Male")),
-            DropdownMenuItem(value: "female", child: Text("Female")),
+          items: [
+            DropdownMenuItem(value: "male", child: Text(AppLocalizations.of(context).male)),
+            DropdownMenuItem(value: "female", child: Text(AppLocalizations.of(context).female)),
           ],
           onChanged: (v) => setState(() => _gender = v!),
         ),
@@ -261,7 +265,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
         child: DropdownButtonFormField<String>(
           value: _bloodType,
           decoration: InputDecoration(
-            labelText: "Blood Type",
+            labelText: AppLocalizations.of(context).bloodType,
             prefixIcon: const Icon(Icons.bloodtype),
             border:
                 OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
