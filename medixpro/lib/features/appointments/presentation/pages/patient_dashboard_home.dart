@@ -7,6 +7,7 @@ import '../../../../../core/theme/theme_cubit.dart';
 import '../cubit/appointments_cubit.dart';
 import '../cubit/appointments_state.dart';
 import '../../../clinic_map/presentation/clinic_location_fab.dart';
+import '../../../../core/widgets/app_drawer.dart';
 
 class PatientDashboardHome extends StatefulWidget {
   const PatientDashboardHome({super.key});
@@ -34,6 +35,7 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
+      drawer: const AppDrawer(),
       floatingActionButton: const ClinicLocationFab(),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -44,6 +46,12 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
             pinned: true,
             elevation: 0,
             backgroundColor: Colors.transparent,
+            leading: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu_rounded, color: Colors.white),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(

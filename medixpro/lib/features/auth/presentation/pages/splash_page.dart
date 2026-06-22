@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
+import 'package:medixpro/features/auth/presentation/pages/login_page.dart';
 import 'package:medixpro/l10n/app_localizations.dart';
 
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
@@ -60,7 +61,7 @@ class _SplashPageState extends State<SplashPage>
     if (_authState is AuthAuthenticated) {
       _goTo(const DashboardPage());
     } else if (_authState is AuthLoggedOut) {
-      _goTo(const DashboardPage());
+      _goTo(const LoginPage());
     }
   }
 

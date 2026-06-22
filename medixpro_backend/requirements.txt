@@ -1,0 +1,7 @@
+Django>=5.0,<5.2
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+Pillow
+celery
+redis
