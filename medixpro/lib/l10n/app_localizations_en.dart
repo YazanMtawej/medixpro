@@ -1130,4 +1130,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseSelectTime => 'Please select a time';
+
+  @override
+  String get clinicLocation => 'Clinic Location';
+
+  @override
+  String get setClinicLocation => 'Set Clinic Location';
+
+  @override
+  String get saveLocation => 'Save Location';
+
+  @override
+  String get locationSaved => 'Clinic location saved';
+
+  @override
+  String get locationSaveFailed => 'Could not save location. Please try again.';
+
+  @override
+  String get tapToSetLocation => 'Tap on the map to set your clinic location';
+
+  @override
+  String get noClinicLocation => 'No clinic location set yet';
+
+  @override
+  String get viewClinicLocation => 'View clinic location';
 }

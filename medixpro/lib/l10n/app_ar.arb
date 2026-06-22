@@ -396,5 +396,13 @@
   "reasonForVisitHint": "لماذا تحتاج هذا الموعد؟",
   "symptomsHint": "صِف أعراضك...",
   "pleaseSelectDate": "يرجى اختيار تاريخ",
-  "pleaseSelectTime": "يرجى اختيار وقت"
+  "pleaseSelectTime": "يرجى اختيار وقت",
+  "clinicLocation": "موقع العيادة",
+  "setClinicLocation": "تحديد موقع العيادة",
+  "saveLocation": "حفظ الموقع",
+  "locationSaved": "تم حفظ موقع العيادة",
+  "locationSaveFailed": "تعذّر حفظ الموقع. حاول مرة أخرى.",
+  "tapToSetLocation": "اضغط على الخريطة لتحديد موقع عيادتك",
+  "noClinicLocation": "لم يتم تحديد موقع العيادة بعد",
+  "viewClinicLocation": "عرض موقع العيادة"
 }

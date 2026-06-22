@@ -30,6 +30,8 @@ class Profile(models.Model):
     full_name = models.CharField(max_length=120, blank=True)
     clinic_name = models.CharField(max_length=120, blank=True)
     address = models.TextField(blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
 
     def __str__(self) -> str:

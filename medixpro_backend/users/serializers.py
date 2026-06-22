@@ -16,5 +16,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "full_name",
             "clinic_name",
             "address",
+            "latitude",
+            "longitude",
             "avatar",
         ]

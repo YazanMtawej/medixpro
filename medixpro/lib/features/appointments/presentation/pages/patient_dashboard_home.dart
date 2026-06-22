@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_cubit.dart';
 import '../cubit/appointments_cubit.dart';
 import '../cubit/appointments_state.dart';
+import '../../../clinic_map/presentation/clinic_location_fab.dart';
 
 class PatientDashboardHome extends StatefulWidget {
   const PatientDashboardHome({super.key});
@@ -33,6 +34,7 @@ class _PatientDashboardHomeState extends State<PatientDashboardHome> {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
+      floatingActionButton: const ClinicLocationFab(),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [

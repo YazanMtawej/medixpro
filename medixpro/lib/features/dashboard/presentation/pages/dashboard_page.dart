@@ -9,6 +9,7 @@ import 'package:medixpro/core/widgets/app_drawer.dart';
 import 'package:medixpro/l10n/app_localizations.dart';
 
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:medixpro/features/clinic_map/presentation/clinic_location_fab.dart';
 
 import 'package:medixpro/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:medixpro/features/dashboard/presentation/cubit/dashboard_state.dart';
@@ -92,6 +93,9 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       extendBody: true,
       drawer: const AppDrawer(),
+      floatingActionButton: (isDoctor && safeIndex == 0)
+          ? const ClinicLocationFab()
+          : null,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 250),
         switchInCurve: Curves.easeIn,

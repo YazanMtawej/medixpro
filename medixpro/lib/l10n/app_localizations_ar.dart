@@ -1124,4 +1124,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pleaseSelectTime => 'يرجى اختيار وقت';
+
+  @override
+  String get clinicLocation => 'موقع العيادة';
+
+  @override
+  String get setClinicLocation => 'تحديد موقع العيادة';
+
+  @override
+  String get saveLocation => 'حفظ الموقع';
+
+  @override
+  String get locationSaved => 'تم حفظ موقع العيادة';
+
+  @override
+  String get locationSaveFailed => 'تعذّر حفظ الموقع. حاول مرة أخرى.';
+
+  @override
+  String get tapToSetLocation => 'اضغط على الخريطة لتحديد موقع عيادتك';
+
+  @override
+  String get noClinicLocation => 'لم يتم تحديد موقع العيادة بعد';
+
+  @override
+  String get viewClinicLocation => 'عرض موقع العيادة';
 }

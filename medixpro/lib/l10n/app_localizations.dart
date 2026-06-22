@@ -2215,6 +2215,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select a time'**
   String get pleaseSelectTime;
+
+  /// No description provided for @clinicLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Clinic Location'**
+  String get clinicLocation;
+
+  /// No description provided for @setClinicLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Clinic Location'**
+  String get setClinicLocation;
+
+  /// No description provided for @saveLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Location'**
+  String get saveLocation;
+
+  /// No description provided for @locationSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Clinic location saved'**
+  String get locationSaved;
+
+  /// No description provided for @locationSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save location. Please try again.'**
+  String get locationSaveFailed;
+
+  /// No description provided for @tapToSetLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap on the map to set your clinic location'**
+  String get tapToSetLocation;
+
+  /// No description provided for @noClinicLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'No clinic location set yet'**
+  String get noClinicLocation;
+
+  /// No description provided for @viewClinicLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'View clinic location'**
+  String get viewClinicLocation;
 }
 
 class _AppLocalizationsDelegate

@@ -205,6 +205,7 @@ Future<void> main() async {
         RepositoryProvider.value(value: medicationsRepository),
         RepositoryProvider.value(value: appointmentsRepository),
         RepositoryProvider.value(value: tokenStorage),
+        RepositoryProvider.value(value: apiClient),
       ],
       child: MultiBlocProvider(
         providers: [

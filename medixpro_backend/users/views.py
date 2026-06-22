@@ -320,3 +320,36 @@ class VerifyDoctorKeyView(APIView):
             api_response(False, "Invalid verification code"),
             status=403
         )
+
+
+class ClinicLocationView(APIView):
+    """يرجع موقع عيادة الطبيب للمريض ليشاهده على الخريطة."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # أول طبيب لديه إحداثيات محددة
+        profile = (
+            Profile.objects
+            .filter(
+                user__role=User.Role.DOCTOR,
+                latitude__isnull=False,
+                longitude__isnull=False,
+            )
+            .select_related("user")
+            .first()
+        )
+
+        if profile is None:
+            return Response(
+                api_response(False, "No clinic location set yet"),
+                status=404,
+            )
+
+        return Response(
+            api_response(True, "Clinic location fetched", {
+                "clinic_name": profile.clinic_name,
+                "address": profile.address,
+                "latitude": profile.latitude,
+                "longitude": profile.longitude,
+            })
+        )

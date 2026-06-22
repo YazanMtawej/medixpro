@@ -19,6 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from users.views import PatientAccountManagementView
 from users.views import VerifyDoctorKeyView
+from users.views import ClinicLocationView
 
 router = DefaultRouter()
 router.register(r'patients', PatientViewSet, basename='patients')
@@ -36,6 +37,8 @@ urlpatterns = [
     path('api/v1/auth/verify-doctor-key/', VerifyDoctorKeyView.as_view()),
     # 👤 PROFILE
     path('api/v1/profile/', ProfileView.as_view()),
+    # 📍 CLINIC LOCATION
+    path('api/v1/clinic-location/', ClinicLocationView.as_view()),
     # 📊 DASHBOARD
     path('api/v1/dashboard/stats/', DashboardStatsView.as_view()),
     path('api/v1/dashboard/today-appointments/', TodayAppointmentsView.as_view()),
