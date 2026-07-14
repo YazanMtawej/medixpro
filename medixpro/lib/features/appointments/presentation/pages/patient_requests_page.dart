@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/network/api_client.dart';
 import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../clinic_map/data/clinic_location_datasource.dart';
+import '../../../clinic_map/presentation/clinic_map_page.dart';
 import '../../domain/entities/appointment_request.dart';
 import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
@@ -554,6 +557,26 @@ class _RequestCard extends StatelessWidget {
                 ),
               ],
 
+              // ── View clinic location (accepted requests) ──────────────
+              if (request.isAccepted && request.hasDoctorLocation) ...[
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.location_on_outlined, size: 16),
+                    label: Text(AppLocalizations.of(context).viewClinicLocation),
+                    onPressed: () => _openClinicMap(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+
               // ── Time ago ──────────────────────────────────────────────
               if (request.createdAt != null) ...[
                 const SizedBox(height: 8),
@@ -584,6 +607,26 @@ class _RequestCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _openClinicMap(BuildContext context) {
+    final dataSource = ClinicLocationDataSource(context.read<ApiClient>());
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ClinicMapPage(
+          dataSource: dataSource,
+          editable: false,
+          location: ClinicLocation(
+            latitude: request.doctorLatitude!,
+            longitude: request.doctorLongitude!,
+            clinicName: request.doctorClinicName.isNotEmpty
+                ? request.doctorClinicName
+                : (request.doctorName.isNotEmpty ? request.doctorName : ""),
+            address: request.doctorAddress,
+          ),
+        ),
+      ),
     );
   }
 

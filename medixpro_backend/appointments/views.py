@@ -239,6 +239,17 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
                 api_response(False, f"Request is already {req.status}."), status=400
             )
 
+        # 📍 لا يمكن قبول الطلب إن لم يحدّد الطبيب موقع عيادته على الخريطة
+        profile = getattr(request.user, "profile", None)
+        if profile is None or profile.latitude is None or profile.longitude is None:
+            return Response(
+                api_response(
+                    False,
+                    "Please set your clinic location on the map before accepting requests.",
+                ),
+                status=400,
+            )
+
         try:
             appointment = Appointment.objects.create(
                 patient          = req.patient,

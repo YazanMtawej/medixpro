@@ -404,5 +404,9 @@
   "locationSaveFailed": "تعذّر حفظ الموقع. حاول مرة أخرى.",
   "tapToSetLocation": "اضغط على الخريطة لتحديد موقع عيادتك",
   "noClinicLocation": "لم يتم تحديد موقع العيادة بعد",
-  "viewClinicLocation": "عرض موقع العيادة"
+  "viewClinicLocation": "عرض موقع العيادة",
+  "clinicLocationRequired": "موقع العيادة مطلوب",
+  "setLocationBeforeAccept": "يجب تحديد موقع عيادتك على الخريطة قبل أن تتمكن من قبول طلبات المواعيد.",
+  "getDirections": "احصل على الاتجاهات",
+  "couldNotOpenMaps": "تعذّر فتح تطبيق الخرائط."
 }

@@ -4,6 +4,10 @@ class AppointmentRequest {
   final String  patientName;
   final int?    doctorId;
   final String  doctorName;
+  final String  doctorClinicName;
+  final String  doctorAddress;
+  final double? doctorLatitude;
+  final double? doctorLongitude;
   final int     requestedById;
   final String  requestedByName;
   final String  title;
@@ -23,6 +27,10 @@ class AppointmentRequest {
     required this.patientName,
     this.doctorId,
     required this.doctorName,
+    this.doctorClinicName = "",
+    this.doctorAddress = "",
+    this.doctorLatitude,
+    this.doctorLongitude,
     required this.requestedById,
     required this.requestedByName,
     required this.title,
@@ -44,6 +52,10 @@ class AppointmentRequest {
       patientName:     json["patient_name"]      ?? "",
       doctorId:        json["doctor"],
       doctorName:      json["doctor_name"]       ?? "",
+      doctorClinicName: json["doctor_clinic_name"] ?? "",
+      doctorAddress:    json["doctor_address"]     ?? "",
+      doctorLatitude:  (json["doctor_latitude"]  as num?)?.toDouble(),
+      doctorLongitude: (json["doctor_longitude"] as num?)?.toDouble(),
       requestedById:   json["requested_by"]      ?? 0,
       requestedByName: json["requested_by_name"] ?? "",
       title:           json["title"]             ?? "",
@@ -67,6 +79,9 @@ class AppointmentRequest {
     "reason":         reason,
     "symptoms":       symptoms,
   };
+
+  bool get hasDoctorLocation =>
+      doctorLatitude != null && doctorLongitude != null;
 
   bool get isPending   => status == "pending";
   bool get isAccepted  => status == "accepted";

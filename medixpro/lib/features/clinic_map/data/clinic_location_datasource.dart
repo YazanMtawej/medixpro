@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:medixpro/core/network/api_client.dart';
 
 /// A clinic position plus its descriptive labels.
@@ -58,11 +59,51 @@ class ClinicLocationDataSource {
     );
   }
 
-  /// Doctor: persist the picked clinic coordinates on the profile.
-  Future<void> saveClinicLocation(double latitude, double longitude) async {
+  /// Doctor: persist the picked clinic coordinates (and optional descriptive
+  /// labels) on the profile.
+  Future<void> saveClinicLocation(
+    double latitude,
+    double longitude, {
+    String? clinicName,
+    String? address,
+  }) async {
     await api.dio.put("profile/", data: {
       "latitude": latitude,
       "longitude": longitude,
+      if (clinicName != null) "clinic_name": clinicName,
+      if (address != null) "address": address,
     });
+  }
+
+  /// Reverse-geocode a point into a human-readable address using the free
+  /// OpenStreetMap Nominatim service (same data source as the map tiles, no
+  /// API key required). Returns null on any failure — callers should treat the
+  /// address as simply unavailable.
+  Future<String?> reverseGeocode(double latitude, double longitude) async {
+    try {
+      final dio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 8),
+        receiveTimeout: const Duration(seconds: 8),
+        headers: {
+          // Nominatim's usage policy requires a descriptive User-Agent.
+          "User-Agent": "com.medixpro.app",
+        },
+      ));
+      final res = await dio.get(
+        "https://nominatim.openstreetmap.org/reverse",
+        queryParameters: {
+          "lat": latitude,
+          "lon": longitude,
+          "format": "jsonv2",
+          "zoom": 18,
+          "addressdetails": 0,
+        },
+      );
+      final name = res.data is Map ? res.data["display_name"] : null;
+      if (name is String && name.trim().isNotEmpty) return name.trim();
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 }

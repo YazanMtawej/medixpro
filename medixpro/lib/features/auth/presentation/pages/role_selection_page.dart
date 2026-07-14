@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/language_toggle_button.dart';
 import 'package:medixpro/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -15,7 +16,17 @@ class RoleSelectionPage extends StatelessWidget {
 
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Text(l10n.roleSelection),centerTitle: true,backgroundColor: AppColors.primaryLight,),
+        appBar: AppBar(
+          title: Text(l10n.roleSelection),
+          centerTitle: true,
+          backgroundColor: AppColors.primaryLight,
+          actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Center(child: LanguageToggleButton()),
+            ),
+          ],
+        ),
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

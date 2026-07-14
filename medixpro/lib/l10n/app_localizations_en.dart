@@ -1154,4 +1154,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewClinicLocation => 'View clinic location';
+
+  @override
+  String get clinicLocationRequired => 'Clinic location required';
+
+  @override
+  String get setLocationBeforeAccept =>
+      'You must set your clinic location on the map before you can accept appointment requests.';
+
+  @override
+  String get getDirections => 'Get directions';
+
+  @override
+  String get couldNotOpenMaps => 'Could not open the maps app.';
 }

@@ -404,5 +404,9 @@
   "locationSaveFailed": "Could not save location. Please try again.",
   "tapToSetLocation": "Tap on the map to set your clinic location",
   "noClinicLocation": "No clinic location set yet",
-  "viewClinicLocation": "View clinic location"
+  "viewClinicLocation": "View clinic location",
+  "clinicLocationRequired": "Clinic location required",
+  "setLocationBeforeAccept": "You must set your clinic location on the map before you can accept appointment requests.",
+  "getDirections": "Get directions",
+  "couldNotOpenMaps": "Could not open the maps app."
 }

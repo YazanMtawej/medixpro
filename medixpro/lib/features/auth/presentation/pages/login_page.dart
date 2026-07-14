@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/language_toggle_button.dart';
 import 'package:medixpro/core/widgets/medical_animation.dart';
 import 'package:medixpro/core/widgets/medical_loading.dart';
 import 'package:medixpro/l10n/app_localizations.dart';
@@ -296,6 +297,18 @@ class _LoginPageState extends State<LoginPage> {
                   // space for bottom animation
                   const SizedBox(height: 100),
                 ],
+              ),
+            ),
+          ),
+
+          // ─── Language Switch (top-right) ──────────────────────────────
+          Positioned(
+            top: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, right: 16),
+                child: const LanguageToggleButton(),
               ),
             ),
           ),

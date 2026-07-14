@@ -1148,4 +1148,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get viewClinicLocation => 'عرض موقع العيادة';
+
+  @override
+  String get clinicLocationRequired => 'موقع العيادة مطلوب';
+
+  @override
+  String get setLocationBeforeAccept =>
+      'يجب تحديد موقع عيادتك على الخريطة قبل أن تتمكن من قبول طلبات المواعيد.';
+
+  @override
+  String get getDirections => 'احصل على الاتجاهات';
+
+  @override
+  String get couldNotOpenMaps => 'تعذّر فتح تطبيق الخرائط.';
 }

@@ -572,3 +572,12 @@
 [WARNING] 2026-06-22 09:26:40,405 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
 [WARNING] 2026-06-22 09:26:53,501 log: Unauthorized: /api/v1/dashboard/stats/
 [WARNING] 2026-06-22 09:26:53,501 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-14 06:08:54,072 log: Not Found: /api/v1/clinic-location/
+[WARNING] 2026-07-14 06:08:54,073 basehttp: "GET /api/v1/clinic-location/ HTTP/1.1" 404 68
+[ERROR] 2026-07-14 06:10:26,963 views: Notify error (non-critical): 'str' object has no attribute 'utcoffset'
+[WARNING] 2026-07-14 06:11:29,142 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-14 06:11:29,142 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-14 09:59:24,976 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-14 09:59:24,977 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-14 10:00:55,022 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-14 10:00:55,022 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87

@@ -2263,6 +2263,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View clinic location'**
   String get viewClinicLocation;
+
+  /// No description provided for @clinicLocationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Clinic location required'**
+  String get clinicLocationRequired;
+
+  /// No description provided for @setLocationBeforeAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'You must set your clinic location on the map before you can accept appointment requests.'**
+  String get setLocationBeforeAccept;
+
+  /// No description provided for @getDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Get directions'**
+  String get getDirections;
+
+  /// No description provided for @couldNotOpenMaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the maps app.'**
+  String get couldNotOpenMaps;
 }
 
 class _AppLocalizationsDelegate

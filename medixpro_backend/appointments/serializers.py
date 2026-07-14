@@ -26,6 +26,12 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
     doctor_name       = serializers.SerializerMethodField()
     requested_by_name = serializers.CharField(source="requested_by.username", read_only=True)
 
+    # 📍 موقع عيادة الطبيب الذي قبل الطلب — يظهر للمريض بعد القبول
+    doctor_clinic_name = serializers.SerializerMethodField()
+    doctor_address     = serializers.SerializerMethodField()
+    doctor_latitude    = serializers.SerializerMethodField()
+    doctor_longitude   = serializers.SerializerMethodField()
+
     class Meta:
         model  = AppointmentRequest
         fields = [
@@ -33,6 +39,8 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
             "patient", "patient_name",
             "requested_by", "requested_by_name",
             "doctor", "doctor_name",
+            "doctor_clinic_name", "doctor_address",
+            "doctor_latitude", "doctor_longitude",
             "title", "type",
             "preferred_date", "reason", "symptoms",
             "status", "suggested_date", "doctor_note",
@@ -44,6 +52,8 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
             "patient", "patient_name",
             "requested_by", "requested_by_name",
             "doctor", "doctor_name",
+            "doctor_clinic_name", "doctor_address",
+            "doctor_latitude", "doctor_longitude",
             "status", "suggested_date", "doctor_note",
             "appointment", "created_at", "updated_at",
         ]
@@ -52,3 +62,24 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
         if not obj.doctor:
             return ""
         return obj.doctor.get_full_name() or obj.doctor.username
+
+    def _doctor_profile(self, obj):
+        if not obj.doctor:
+            return None
+        return getattr(obj.doctor, "profile", None)
+
+    def get_doctor_clinic_name(self, obj):
+        profile = self._doctor_profile(obj)
+        return profile.clinic_name if profile else ""
+
+    def get_doctor_address(self, obj):
+        profile = self._doctor_profile(obj)
+        return profile.address if profile else ""
+
+    def get_doctor_latitude(self, obj):
+        profile = self._doctor_profile(obj)
+        return profile.latitude if profile else None
+
+    def get_doctor_longitude(self, obj):
+        profile = self._doctor_profile(obj)
+        return profile.longitude if profile else None

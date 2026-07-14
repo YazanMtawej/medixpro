@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/widgets/language_toggle_button.dart';
 import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../cubit/auth_cubit.dart';
@@ -90,6 +91,12 @@ class _RegisterPageState extends State<RegisterPage> {
               pinned: true,
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
+              actions: const [
+                Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Center(child: LanguageToggleButton()),
+                ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: BoxDecoration(

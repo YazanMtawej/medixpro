@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medixpro/core/network/api_client.dart';
 import 'package:medixpro/l10n/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../clinic_map/data/clinic_location_datasource.dart';
+import '../../../clinic_map/presentation/clinic_map_page.dart';
 import '../../domain/entities/appointment_request.dart';
 import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
@@ -448,7 +451,7 @@ class _RequestCard extends StatelessWidget {
                               label: AppLocalizations.of(context).accept,
                               icon: Icons.check_circle_outline,
                               color: AppColors.success,
-                              onTap: () => _showAcceptDialog(context, request.id),
+                              onTap: () => _ensureLocationThenAccept(context, request.id),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -479,6 +482,72 @@ class _RequestCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ─── Location guard before accepting ──────────────────────────────────────
+  /// The doctor cannot accept a request until the clinic location is set on
+  /// the map. Check it first; if missing, offer to set it right away.
+  Future<void> _ensureLocationThenAccept(BuildContext context, int id) async {
+    final l10n = AppLocalizations.of(context);
+    final dataSource = ClinicLocationDataSource(context.read<ApiClient>());
+
+    ClinicLocation? myLocation;
+    try {
+      myLocation = await dataSource.fetchMyLocation();
+    } catch (_) {
+      myLocation = null;
+    }
+    if (!context.mounted) return;
+
+    if (myLocation != null) {
+      _showAcceptDialog(context, id);
+      return;
+    }
+
+    // No clinic location yet → prompt the doctor to set it.
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.location_off_outlined, color: AppColors.warning),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(l10n.clinicLocationRequired,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        content: Text(l10n.setLocationBeforeAccept,
+            style: const TextStyle(fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.location_on_outlined, size: 18),
+            label: Text(l10n.setClinicLocation),
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ClinicMapPage(
+                    dataSource: dataSource,
+                    editable: true,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
