@@ -32,11 +32,21 @@ class Appointment(models.Model):
     diagnosis        = models.TextField(blank=True)
     notes            = models.TextField(blank=True)
     follow_up_date   = models.DateField(null=True, blank=True)
+    completed_at     = models.DateTimeField(null=True, blank=True)  # set when status → completed
     created_at       = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at       = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-date_time"]
+
+    def save(self, *args, **kwargs):
+        # Stamp completion time once, when the visit is first marked completed.
+        if self.status == self.Status.COMPLETED and self.completed_at is None:
+            from django.utils import timezone
+            self.completed_at = timezone.now()
+        elif self.status != self.Status.COMPLETED:
+            self.completed_at = None
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title} — {self.patient.name}"
@@ -59,6 +69,9 @@ class AppointmentRequest(models.Model):
     reason         = models.TextField(blank=True)
     symptoms       = models.TextField(blank=True)
     status         = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    # True while a booking-fee payment is still pending; such requests are hidden
+    # from doctors until ShamCash confirms payment (see payments app).
+    awaiting_payment = models.BooleanField(default=False)
     suggested_date = models.DateTimeField(null=True, blank=True)
     doctor_note    = models.TextField(blank=True)
     appointment    = models.OneToOneField(Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name="from_request")

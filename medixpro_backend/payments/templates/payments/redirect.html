@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedixPro — Payment</title>
+  <style>
+    body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:#f4f6fb;
+           display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+    .card { background:#fff; padding:2.5rem 2rem; border-radius:16px; text-align:center;
+            box-shadow:0 10px 30px rgba(20,40,80,.08); max-width:360px; }
+    .badge { font-size:2.5rem; }
+    h1 { font-size:1.25rem; margin:.75rem 0 .25rem; color:#1f2a44; }
+    p { color:#5b6478; margin:.25rem 0 1.25rem; }
+    .status { font-weight:600; text-transform:capitalize; }
+    .paid { color:#137a4a; } .pending { color:#b8860b; } .other { color:#b03a3a; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    {% if status == "paid" %}
+      <div class="badge">✅</div>
+      <h1>Payment successful</h1>
+      <p>Your booking request has been sent to the doctor.</p>
+    {% elif status == "pending" %}
+      <div class="badge">⏳</div>
+      <h1>Payment processing</h1>
+      <p>We're confirming your payment. You can return to the MedixPro app.</p>
+    {% else %}
+      <div class="badge">ℹ️</div>
+      <h1>Payment closed</h1>
+      <p>This payment session has ended. Return to the app to check its status.</p>
+    {% endif %}
+    <p class="status {% if status == 'paid' %}paid{% elif status == 'pending' %}pending{% else %}other{% endif %}">
+      Status: {{ status }}
+    </p>
+    <p>You can now close this window and return to MedixPro.</p>
+  </div>
+</body>
+</html>

@@ -33,6 +33,12 @@ class Profile(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    # Doctor's consultation receipt (full visit price). Patients pay a configured
+    # percentage (PLATFORM_FEE_RATE) of this as a booking fee. Set at doctor
+    # registration, editable later. In SYP.
+    receipt_amount = models.DecimalField(
+        max_digits=18, decimal_places=2, null=True, blank=True
+    )
 
     def __str__(self) -> str:
         return f"{self.user.username} - profile"

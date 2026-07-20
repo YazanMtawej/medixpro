@@ -257,6 +257,37 @@ class AppLocalizationsAr extends AppLocalizations {
   String get doctorRegistration => 'تسجيل طبيب';
 
   @override
+  String get consultationFeeSection => 'أجر الكشفية';
+
+  @override
+  String get consultationFee => 'أجر الكشفية (ل.س)';
+
+  @override
+  String get consultationFeeRequired => 'أجر الكشفية مطلوب';
+
+  @override
+  String get enterValidFee => 'أدخل مبلغاً صحيحاً';
+
+  @override
+  String get consultationFeeHint =>
+      'سعر الزيارة الكامل. يدفع المريض نسبة منه كرسم حجز.';
+
+  @override
+  String get bookAndPay => 'احجز وادفع';
+
+  @override
+  String get selectDoctor => 'اختر الطبيب';
+
+  @override
+  String get selectDoctorRequired => 'الرجاء اختيار طبيب';
+
+  @override
+  String get bookingFeeLabel => 'رسم الحجز';
+
+  @override
+  String get noBookableDoctors => 'لا يوجد أطباء متاحون للحجز بعد.';
+
+  @override
   String get accountInformation => 'معلومات الحساب';
 
   @override

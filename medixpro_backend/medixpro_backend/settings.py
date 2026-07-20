@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "medications",
     "notifications",
     "reports",
+    "payments",
 ]
 
 MIDDLEWARE = [
@@ -141,4 +142,22 @@ LANGUAGE_CODE      = "en-us"
 TIME_ZONE          = "UTC"
 USE_TZ             = True
 STATIC_URL         = "/static/"
+STATIC_ROOT        = BASE_DIR / "staticfiles"
+MEDIA_URL          = "/media/"
+MEDIA_ROOT         = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ─── Sham Cash E-Payment ──────────────────────────────────────────────────────
+# The AES secretKey authorises the whole agent account — keep it server-side only.
+SHAMCASH_BASE_URL    = os.environ.get("SHAMCASH_BASE_URL", "https://dev.shamlogix.tech/services")
+SHAMCASH_AGENT_KEY   = os.environ.get("SHAMCASH_AGENT_KEY", "JKAWASLaflka1351FLPG")
+SHAMCASH_SECRET_KEY  = os.environ.get("SHAMCASH_SECRET_KEY", "fuQMtK4kd7PcpNgWzLjFlogoIXNBw2TG6O4BHgsxt8o=")
+SHAMCASH_CURRENCY_ID = int(os.environ.get("SHAMCASH_CURRENCY_ID", "2"))  # 1=USD, 2=SYP
+
+# Fraction of a doctor's receipt the patient pays as a booking fee (0.20 = 20%).
+PLATFORM_FEE_RATE = os.environ.get("PLATFORM_FEE_RATE", "0.20")
+
+# Publicly reachable base URL ShamCash uses for callbackUrl/redirectUrl.
+# In local dev, expose the backend via a tunnel (e.g. ngrok) and set this env var,
+# otherwise ShamCash cannot deliver the payment webhook.
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://127.0.0.1:8000")

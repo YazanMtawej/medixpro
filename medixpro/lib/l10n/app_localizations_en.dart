@@ -258,6 +258,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get doctorRegistration => 'Doctor Registration';
 
   @override
+  String get consultationFeeSection => 'Consultation Fee';
+
+  @override
+  String get consultationFee => 'Consultation fee (SYP)';
+
+  @override
+  String get consultationFeeRequired => 'Consultation fee is required';
+
+  @override
+  String get enterValidFee => 'Enter a valid amount';
+
+  @override
+  String get consultationFeeHint =>
+      'Full visit price. Patients pay a percentage of this as a booking fee.';
+
+  @override
+  String get bookAndPay => 'Book & Pay';
+
+  @override
+  String get selectDoctor => 'Select doctor';
+
+  @override
+  String get selectDoctorRequired => 'Please select a doctor';
+
+  @override
+  String get bookingFeeLabel => 'Booking fee';
+
+  @override
+  String get noBookableDoctors => 'No doctors are available for booking yet.';
+
+  @override
   String get accountInformation => 'Account Information';
 
   @override

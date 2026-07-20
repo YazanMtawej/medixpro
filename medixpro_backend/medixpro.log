@@ -581,3 +581,53 @@
 [WARNING] 2026-07-14 09:59:24,977 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
 [WARNING] 2026-07-14 10:00:55,022 log: Unauthorized: /api/v1/dashboard/stats/
 [WARNING] 2026-07-14 10:00:55,022 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-15 06:32:52,157 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-15 06:32:52,161 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-15 06:33:55,585 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-07-15 06:33:55,585 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-07-15 06:34:12,029 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-07-15 06:34:12,030 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-07-15 06:36:35,150 log: Not Found: /api/v1/notifications/99/
+[WARNING] 2026-07-15 06:36:35,150 basehttp: "PATCH /api/v1/notifications/99/ HTTP/1.1" 404 59
+[ERROR] 2026-07-15 06:42:49,561 views: Notify error (non-critical): 'str' object has no attribute 'utcoffset'
+[ERROR] 2026-07-15 06:43:12,025 views: Notify error (non-critical): 'str' object has no attribute 'utcoffset'
+[WARNING] 2026-07-15 06:43:54,932 log: Not Found: /api/v1/notifications/104/
+[WARNING] 2026-07-15 06:43:54,932 basehttp: "PATCH /api/v1/notifications/104/ HTTP/1.1" 404 59
+[WARNING] 2026-07-15 06:44:02,323 log: Not Found: /api/v1/notifications/104/
+[WARNING] 2026-07-15 06:44:02,323 basehttp: "DELETE /api/v1/notifications/104/ HTTP/1.1" 404 59
+[WARNING] 2026-07-15 06:44:04,615 log: Not Found: /api/v1/notifications/99/
+[WARNING] 2026-07-15 06:44:04,616 basehttp: "DELETE /api/v1/notifications/99/ HTTP/1.1" 404 59
+[WARNING] 2026-07-20 06:00:30,284 log: Bad Request: /api/v1/payments/webhook/shamcash/
+[WARNING] 2026-07-20 06:00:30,285 basehttp: "POST /api/v1/payments/webhook/shamcash/ HTTP/1.1" 400 57
+[WARNING] 2026-07-20 06:00:30,292 log: Unauthorized: /api/v1/doctors/
+[WARNING] 2026-07-20 06:00:30,293 basehttp: "GET /api/v1/doctors/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 06:09:42,340 log: Bad Request: /api/v1/payments/webhook/shamcash/
+[WARNING] 2026-07-20 06:12:02,526 log: Bad Request: /api/v1/payments/webhook/shamcash/
+[WARNING] 2026-07-20 10:37:16,366 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-07-20 10:37:16,367 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-07-20 10:37:19,862 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-07-20 10:37:19,862 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-07-20 11:38:48,821 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-20 11:38:48,821 log: Unauthorized: /api/v1/appointments/
+[WARNING] 2026-07-20 11:38:48,821 log: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:38:48,821 log: "GET /api/v1/appointments/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:38:49,056 log: Unauthorized: /api/v1/appointments/
+[WARNING] 2026-07-20 11:38:49,056 log: "GET /api/v1/appointments/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:39:25,027 log: Unauthorized: /api/v1/auth/logout/
+[WARNING] 2026-07-20 11:39:25,027 log: "POST /api/v1/auth/logout/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:42:07,222 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-07-20 11:42:07,222 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-07-20 11:42:19,245 log: Unauthorized: /api/v1/auth/login/
+[WARNING] 2026-07-20 11:42:19,245 basehttp: "POST /api/v1/auth/login/ HTTP/1.1" 401 61
+[WARNING] 2026-07-20 11:42:24,592 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-20 11:42:24,592 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:43:09,594 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-20 11:43:09,594 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:43:45,830 log: Bad Request: /api/v1/auth/register/
+[WARNING] 2026-07-20 11:43:45,831 basehttp: "POST /api/v1/auth/register/ HTTP/1.1" 400 65
+[WARNING] 2026-07-20 11:43:54,598 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-20 11:43:54,598 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:44:39,603 log: Unauthorized: /api/v1/dashboard/stats/
+[WARNING] 2026-07-20 11:44:39,603 basehttp: "GET /api/v1/dashboard/stats/ HTTP/1.1" 401 87
+[WARNING] 2026-07-20 11:47:01,693 log: Not Found: /favicon.ico
+[WARNING] 2026-07-20 11:47:01,693 basehttp: "GET /favicon.ico HTTP/1.1" 404 5126

@@ -39,12 +39,27 @@ class RegisterView(APIView):
         if role not in [User.Role.DOCTOR, User.Role.PATIENT]:
             return Response(api_response(False, "Invalid role"), status=400)
 
+        doctor_receipt = None
         if role == User.Role.DOCTOR:
             expected = getattr(django_settings, "DOCTOR_SECRET_KEY", "")
             if not expected or secret_key != expected:
                 return Response(
                     api_response(False, "Invalid doctor verification code"),
                     status=403,
+                )
+
+            # Consultation receipt (full visit price). Patients pay a percentage
+            # of this as the booking fee. Required at doctor registration.
+            from decimal import Decimal, InvalidOperation
+            receipt_raw = request.data.get("receipt_amount", "")
+            try:
+                doctor_receipt = Decimal(str(receipt_raw))
+                if doctor_receipt <= 0:
+                    raise InvalidOperation
+            except (InvalidOperation, ValueError, TypeError):
+                return Response(
+                    api_response(False, "A valid consultation fee (receipt_amount) is required."),
+                    status=400,
                 )
 
         if User.objects.filter(username=username).exists():
@@ -98,7 +113,7 @@ class RegisterView(APIView):
                 username=username, email=email,
                 password=password, role=role,
             )
-            profile = Profile.objects.create(user=user)
+            profile = Profile.objects.create(user=user, receipt_amount=doctor_receipt)
 
             # ✅ إنشاء Patient مع البيانات الكاملة
             if role == User.Role.PATIENT:
@@ -320,6 +335,45 @@ class VerifyDoctorKeyView(APIView):
             api_response(False, "Invalid verification code"),
             status=403
         )
+
+
+class DoctorListView(APIView):
+    """
+    List doctors a patient can book with, including each doctor's receipt and the
+    computed booking fee (the percentage the patient actually pays).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from decimal import Decimal
+        rate = Decimal(str(getattr(django_settings, "PLATFORM_FEE_RATE", "0.20")))
+        currency_id = getattr(django_settings, "SHAMCASH_CURRENCY_ID", 2)
+
+        profiles = (
+            Profile.objects
+            .filter(user__role=User.Role.DOCTOR, user__is_active=True)
+            .select_related("user")
+            .order_by("full_name")
+        )
+        data = []
+        for p in profiles:
+            fee = None
+            if p.receipt_amount is not None:
+                fee = str((p.receipt_amount * rate).quantize(Decimal("0.01")))
+            data.append({
+                "id": p.user.id,
+                "username": p.user.username,
+                "full_name": p.full_name or p.user.get_full_name() or p.user.username,
+                "clinic_name": p.clinic_name,
+                "address": p.address,
+                "latitude": p.latitude,
+                "longitude": p.longitude,
+                "receipt_amount": str(p.receipt_amount) if p.receipt_amount is not None else None,
+                "booking_fee": fee,
+                "currency_id": currency_id,
+                "bookable": p.receipt_amount is not None,
+            })
+        return Response(api_response(True, "Doctors fetched", data))
 
 
 class ClinicLocationView(APIView):

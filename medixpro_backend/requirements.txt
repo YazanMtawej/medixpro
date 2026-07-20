@@ -5,3 +5,5 @@ django-cors-headers
 Pillow
 celery
 redis
+cryptography>=42
+requests>=2.31

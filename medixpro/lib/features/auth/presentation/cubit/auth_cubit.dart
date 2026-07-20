@@ -86,6 +86,8 @@ class AuthCubit extends Cubit<AuthState> {
     String? age,
     String? phone,
     String? gender,
+    // Doctor-only field: consultation receipt (full visit price, SYP)
+    String? receiptAmount,
   }) async {
     emit(AuthLoading());
     try {
@@ -101,6 +103,8 @@ class AuthCubit extends Cubit<AuthState> {
             if (age      != null && age.isNotEmpty)      "age":       age,
             if (phone    != null && phone.isNotEmpty)    "phone":     phone,
             if (gender   != null && gender.isNotEmpty)   "gender":    gender,
+            if (receiptAmount != null && receiptAmount.isNotEmpty)
+              "receipt_amount": receiptAmount,
           },
         ),
       );

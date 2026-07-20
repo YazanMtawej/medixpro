@@ -584,6 +584,66 @@ abstract class AppLocalizations {
   /// **'Doctor Registration'**
   String get doctorRegistration;
 
+  /// No description provided for @consultationFeeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Consultation Fee'**
+  String get consultationFeeSection;
+
+  /// No description provided for @consultationFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Consultation fee (SYP)'**
+  String get consultationFee;
+
+  /// No description provided for @consultationFeeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Consultation fee is required'**
+  String get consultationFeeRequired;
+
+  /// No description provided for @enterValidFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid amount'**
+  String get enterValidFee;
+
+  /// No description provided for @consultationFeeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Full visit price. Patients pay a percentage of this as a booking fee.'**
+  String get consultationFeeHint;
+
+  /// No description provided for @bookAndPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Book & Pay'**
+  String get bookAndPay;
+
+  /// No description provided for @selectDoctor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select doctor'**
+  String get selectDoctor;
+
+  /// No description provided for @selectDoctorRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a doctor'**
+  String get selectDoctorRequired;
+
+  /// No description provided for @bookingFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking fee'**
+  String get bookingFeeLabel;
+
+  /// No description provided for @noBookableDoctors.
+  ///
+  /// In en, this message translates to:
+  /// **'No doctors are available for booking yet.'**
+  String get noBookableDoctors;
+
   /// No description provided for @accountInformation.
   ///
   /// In en, this message translates to:

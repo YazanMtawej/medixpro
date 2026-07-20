@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import models
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 import logging
 
 from .models import Appointment, AppointmentRequest
+from payments import services as payment_services
 from .serializers import AppointmentSerializer, AppointmentRequestSerializer
 from core.utils import api_response
 from notifications.models import Notification
@@ -125,6 +127,71 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             logger.error(f"delete appointment: {e}")
             return Response(api_response(False, "Failed to delete appointment"), status=400)
 
+    def update(self, request, *args, **kwargs):
+        if request.user.is_patient():
+            return Response(api_response(False, "Not allowed."), status=403)
+        try:
+            partial = kwargs.pop("partial", False)
+            appointment = self.get_object()
+            was_cancelled = appointment.status == Appointment.Status.CANCELLED
+            s = self.get_serializer(appointment, data=request.data, partial=partial)
+            s.is_valid(raise_exception=True)
+            s.save()
+            # Doctor cancels a previously non-cancelled appointment → auto-refund.
+            if (not was_cancelled
+                    and s.instance.status == Appointment.Status.CANCELLED):
+                payment_services.refund_for_appointment(
+                    s.instance, "Doctor cancelled the appointment"
+                )
+            return Response(api_response(True, "Appointment updated", s.data))
+        except Exception as e:
+            logger.error(f"update appointment: {e}")
+            return Response(api_response(False, "Failed to update appointment"), status=400)
+
+    @action(detail=True, methods=["post"], url_path="cancel")
+    def cancel(self, request, pk=None):
+        """Doctor cancels an appointment; the patient's booking fee is refunded."""
+        if request.user.is_patient():
+            return Response(api_response(False, "Only doctors can cancel."), status=403)
+        try:
+            appointment = self.get_object()
+        except Exception:
+            return Response(api_response(False, "Appointment not found."), status=404)
+
+        if appointment.status == Appointment.Status.CANCELLED:
+            return Response(api_response(False, "Appointment is already cancelled."), status=400)
+
+        try:
+            appointment.status = Appointment.Status.CANCELLED
+            appointment.notes = (
+                f"{appointment.notes}\n[Cancelled] {request.data.get('reason', '')}".strip()
+            )
+            appointment.save()
+
+            payment_services.refund_for_appointment(
+                appointment, request.data.get("reason", "") or "Doctor cancelled the appointment"
+            )
+
+            # Reflect on the originating request, if any.
+            req = getattr(appointment, "from_request", None)
+            if req is not None:
+                req.status = AppointmentRequest.Status.REJECTED
+                req.doctor_note = "[Appointment cancelled by doctor] " + request.data.get("reason", "")
+                req.save(update_fields=["status", "doctor_note", "updated_at"])
+                _notify(
+                    user=req.requested_by,
+                    title="❌ Appointment Cancelled",
+                    message=f"Your appointment '{appointment.title}' was cancelled. "
+                            f"Your booking fee has been refunded.",
+                )
+            return Response(
+                api_response(True, "Appointment cancelled and fee refunded",
+                             AppointmentSerializer(appointment).data)
+            )
+        except Exception as e:
+            logger.error(f"cancel appointment: {e}")
+            return Response(api_response(False, "Failed to cancel appointment"), status=500)
+
 
 # ─── Appointment Request ViewSet ──────────────────────────────────────────────
 
@@ -135,12 +202,19 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_patient():
+            # Patients see their own requests, including ones awaiting payment.
             return AppointmentRequest.objects.filter(
                 requested_by=user
             ).order_by("-created_at")
-        return AppointmentRequest.objects.select_related(
-            "patient", "requested_by", "doctor"
-        ).order_by("-created_at")
+        # Doctors only see requests addressed to them whose booking fee is paid
+        # (unpaid/awaiting-payment requests stay hidden until ShamCash confirms).
+        return (
+            AppointmentRequest.objects
+            .filter(awaiting_payment=False)
+            .filter(models.Q(doctor=user) | models.Q(doctor__isnull=True))
+            .select_related("patient", "requested_by", "doctor")
+            .order_by("-created_at")
+        )
 
     def list(self, request, *args, **kwargs):
         try:
@@ -151,7 +225,20 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
             return Response(api_response(False, "Failed to load requests"), status=500)
 
     def create(self, request, *args, **kwargs):
-        """المريض يرسل طلب موعد"""
+        """
+        Direct request creation is disabled — booking now requires paying the
+        booking fee first. Patients must use POST /api/v1/payments/book/.
+        """
+        return Response(
+            api_response(
+                False,
+                "Booking requires payment. Please use the booking + payment flow.",
+            ),
+            status=400,
+        )
+
+    def _legacy_create(self, request, *args, **kwargs):
+        """المريض يرسل طلب موعد (kept for reference; not routed)."""
         if request.user.is_doctor():
             return Response(
                 api_response(False, "Doctors cannot send appointment requests."),
@@ -408,6 +495,9 @@ class AppointmentRequestViewSet(viewsets.ModelViewSet):
             req.doctor      = request.user
             req.doctor_note = request.data.get("doctor_note", "")
             req.save()
+
+            # Fair-play: rejecting a paid request auto-refunds the booking fee.
+            payment_services.refund_for_request(req, "Doctor rejected the request")
 
             _notify(
                 user    = req.requested_by,

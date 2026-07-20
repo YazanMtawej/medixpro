@@ -6,6 +6,8 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../clinic_map/data/clinic_location_datasource.dart';
 import '../../../clinic_map/presentation/clinic_map_page.dart';
 import '../../domain/entities/appointment_request.dart';
+import '../../../payments/data/payments_datasource.dart';
+import '../../../payments/presentation/booking_payment_flow.dart';
 import '../appointment_l10n.dart';
 import '../cubit/appointments_cubit.dart';
 import '../cubit/appointments_state.dart';
@@ -114,11 +116,7 @@ class _PatientRequestsPageState extends State<PatientRequestsPage>
             controller: _tab,
             children: [
               _MyRequestsTab(isDark: isDark),
-              _NewRequestTab(
-                isDark:   isDark,
-                onSubmit: (req) =>
-                    context.read<AppointmentsCubit>().sendRequest(req),
-              ),
+              _NewRequestTab(isDark: isDark),
             ],
           ),
         ),
@@ -733,8 +731,7 @@ class _EmptyState extends StatelessWidget {
 // ─── Tab 2 ────────────────────────────────────────────────────────────────────
 class _NewRequestTab extends StatefulWidget {
   final bool isDark;
-  final void Function(AppointmentRequest) onSubmit;
-  const _NewRequestTab({required this.isDark, required this.onSubmit});
+  const _NewRequestTab({required this.isDark});
 
   @override
   State<_NewRequestTab> createState() => _NewRequestTabState();
@@ -749,6 +746,32 @@ class _NewRequestTabState extends State<_NewRequestTab> {
   DateTime?  _date;
   TimeOfDay? _time;
   bool       _loading = false;
+
+  // Doctor selection (booking is now paid, so a specific doctor is required).
+  List<DoctorOption> _doctors = [];
+  DoctorOption?      _selectedDoctor;
+  bool               _loadingDoctors = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_loadDoctors);
+  }
+
+  Future<void> _loadDoctors() async {
+    try {
+      final ds = PaymentsDataSource(context.read<ApiClient>());
+      final list = await ds.getDoctors();
+      if (!mounted) return;
+      setState(() {
+        _doctors = list.where((d) => d.bookable).toList();
+        _loadingDoctors = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingDoctors = false);
+    }
+  }
 
   static const _types = [
     ("general",      Icons.health_and_safety_outlined),
@@ -778,8 +801,11 @@ class _NewRequestTabState extends State<_NewRequestTab> {
     ));
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedDoctor == null) {
+      _showErr(AppLocalizations.of(context).selectDoctorRequired); return;
+    }
     if (_date == null) { _showErr(AppLocalizations.of(context).pleaseSelectDate); return; }
     if (_time == null) { _showErr(AppLocalizations.of(context).pleaseSelectTime); return; }
 
@@ -790,31 +816,41 @@ class _NewRequestTabState extends State<_NewRequestTab> {
       _time!.hour, _time!.minute,
     );
 
-    widget.onSubmit(AppointmentRequest(
-      id:              0,
-      patientId:       0,
-      patientName:     "",
-      doctorName:      "",
-      requestedById:   0,
-      requestedByName: "",
-      title:           _titleCtrl.text.trim(),
-      type:            _type,
-      preferredDate:   dt.toUtc().toIso8601String(),
-      reason:          _reasonCtrl.text.trim(),
-      symptoms:        _symptomsCtrl.text.trim(),
-      status:          "pending",
-      doctorNote:      "",
-    ));
+    final ds = PaymentsDataSource(context.read<ApiClient>());
+    try {
+      // 1) Create the payment-gated request + ShamCash bill.
+      final payment = await ds.book(
+        doctorId:         _selectedDoctor!.id,
+        title:            _titleCtrl.text.trim(),
+        type:             _type,
+        preferredDateIso: dt.toUtc().toIso8601String(),
+        reason:           _reasonCtrl.text.trim(),
+        symptoms:         _symptomsCtrl.text.trim(),
+      );
+      if (!mounted) return;
 
-    _titleCtrl.clear();
-    _reasonCtrl.clear();
-    _symptomsCtrl.clear();
-    setState(() {
-      _date    = null;
-      _time    = null;
-      _type    = "general";
-      _loading = false;
-    });
+      // 2) Open ShamCash checkout and wait for the result.
+      final paid = await runBookingPaymentFlow(context, ds, payment);
+      if (!mounted) return;
+
+      if (paid) {
+        _titleCtrl.clear();
+        _reasonCtrl.clear();
+        _symptomsCtrl.clear();
+        setState(() {
+          _date = null;
+          _time = null;
+          _type = "general";
+          _selectedDoctor = null;
+        });
+        // Refresh the patient's requests list.
+        context.read<AppointmentsCubit>().fetchRequests();
+      }
+    } catch (e) {
+      if (mounted) _showErr(e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -832,6 +868,13 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                 key: _formKey,
                 child: Column(
                   children: [
+                    _Section(
+                      isDark: widget.isDark,
+                      title:  AppLocalizations.of(ctx).selectDoctor,
+                      icon:   Icons.medical_services_outlined,
+                      child:  _doctorSelector(ctx),
+                    ),
+                    const SizedBox(height: 14),
                     _Section(
                       isDark: widget.isDark,
                       title:  AppLocalizations.of(ctx).requestDetails,
@@ -890,9 +933,9 @@ class _NewRequestTabState extends State<_NewRequestTab> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.send_rounded, size: 18),
+                                  const Icon(Icons.payments_rounded, size: 18),
                                   const SizedBox(width: 8),
-                                  Text(AppLocalizations.of(ctx).sendRequest,
+                                  Text(AppLocalizations.of(ctx).bookAndPay,
                                       style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w700)),
@@ -907,6 +950,80 @@ class _NewRequestTabState extends State<_NewRequestTab> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _doctorSelector(BuildContext ctx) {
+    final l10n = AppLocalizations.of(ctx);
+    if (_loadingDoctors) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Row(children: [
+          SizedBox(
+              width: 18, height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2)),
+          SizedBox(width: 12),
+          Text("..."),
+        ]),
+      );
+    }
+    if (_doctors.isEmpty) {
+      return Text(l10n.noBookableDoctors,
+          style: const TextStyle(color: AppColors.error, fontSize: 13));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<DoctorOption>(
+          initialValue: _selectedDoctor,
+          isExpanded: true,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.person_outline,
+                size: 18, color: AppColors.primary),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          ),
+          hint: Text(l10n.selectDoctor),
+          items: _doctors
+              .map((d) => DropdownMenuItem<DoctorOption>(
+                    value: d,
+                    child: Text(
+                      d.clinicName.isNotEmpty
+                          ? "${d.fullName} — ${d.clinicName}"
+                          : d.fullName,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ))
+              .toList(),
+          onChanged: (d) => setState(() => _selectedDoctor = d),
+        ),
+        if (_selectedDoctor?.bookingFee != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.payments_outlined,
+                    size: 18, color: AppColors.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "${l10n.bookingFeeLabel}: ${_selectedDoctor!.bookingFee} SYP",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 

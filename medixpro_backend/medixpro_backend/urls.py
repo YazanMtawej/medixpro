@@ -20,6 +20,7 @@ from django.conf.urls.static import static
 from users.views import PatientAccountManagementView
 from users.views import VerifyDoctorKeyView
 from users.views import ClinicLocationView
+from users.views import DoctorListView
 
 router = DefaultRouter()
 router.register(r'patients', PatientViewSet, basename='patients')
@@ -39,6 +40,10 @@ urlpatterns = [
     path('api/v1/profile/', ProfileView.as_view()),
     # 📍 CLINIC LOCATION
     path('api/v1/clinic-location/', ClinicLocationView.as_view()),
+    # 🩺 DOCTORS (patient picks who to book with)
+    path('api/v1/doctors/', DoctorListView.as_view()),
+    # 💳 PAYMENTS (ShamCash booking fees, refunds, payouts)
+    path('api/v1/', include('payments.urls')),
     # 📊 DASHBOARD
     path('api/v1/dashboard/stats/', DashboardStatsView.as_view()),
     path('api/v1/dashboard/today-appointments/', TodayAppointmentsView.as_view()),

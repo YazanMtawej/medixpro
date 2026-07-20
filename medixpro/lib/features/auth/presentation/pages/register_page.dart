@@ -29,6 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _fullNameCtrl = TextEditingController();
   final _ageCtrl      = TextEditingController();
   final _phoneCtrl    = TextEditingController();
+  final _receiptCtrl  = TextEditingController();
   String _gender      = "male";
   bool   _obscure     = true;
 
@@ -42,6 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _fullNameCtrl.dispose();
     _ageCtrl.dispose();
     _phoneCtrl.dispose();
+    _receiptCtrl.dispose();
     super.dispose();
   }
 
@@ -57,6 +59,7 @@ class _RegisterPageState extends State<RegisterPage> {
       age:             _isPatient ? _ageCtrl.text.trim()      : null,
       phone:           _isPatient ? _phoneCtrl.text.trim()    : null,
       gender:          _isPatient ? _gender                   : null,
+      receiptAmount:   _isPatient ? null : _receiptCtrl.text.trim(),
     );
   }
 
@@ -184,6 +187,47 @@ class _RegisterPageState extends State<RegisterPage> {
                           return null;
                         },
                       ),
+
+                      // ─── Doctor Consultation Fee ───────────────────────
+                      if (!_isPatient) ...[
+                        const SizedBox(height: 28),
+                        _label(l10n.consultationFeeSection),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _receiptCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[\d\.]')),
+                          ],
+                          decoration: _decor(
+                              l10n.consultationFee,
+                              Icons.payments_outlined,
+                              isDark),
+                          validator: (v) {
+                            if (_isPatient) return null;
+                            if (v == null || v.trim().isEmpty) {
+                              return l10n.consultationFeeRequired;
+                            }
+                            final val = double.tryParse(v.trim());
+                            if (val == null || val <= 0) {
+                              return l10n.enterValidFee;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          l10n.consultationFeeHint,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary,
+                          ),
+                        ),
+                      ],
 
                       // ─── Patient Profile Fields ────────────────────────
                       if (_isPatient) ...[

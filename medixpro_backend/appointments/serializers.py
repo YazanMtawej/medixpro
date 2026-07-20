@@ -32,6 +32,10 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
     doctor_latitude    = serializers.SerializerMethodField()
     doctor_longitude   = serializers.SerializerMethodField()
 
+    # 💳 Booking-fee payment status
+    payment_status = serializers.SerializerMethodField()
+    payment_amount = serializers.SerializerMethodField()
+
     class Meta:
         model  = AppointmentRequest
         fields = [
@@ -43,7 +47,8 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
             "doctor_latitude", "doctor_longitude",
             "title", "type",
             "preferred_date", "reason", "symptoms",
-            "status", "suggested_date", "doctor_note",
+            "status", "awaiting_payment", "suggested_date", "doctor_note",
+            "payment_status", "payment_amount",
             "appointment", "created_at", "updated_at",
         ]
         read_only_fields = [
@@ -54,9 +59,18 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
             "doctor", "doctor_name",
             "doctor_clinic_name", "doctor_address",
             "doctor_latitude", "doctor_longitude",
-            "status", "suggested_date", "doctor_note",
+            "status", "awaiting_payment", "suggested_date", "doctor_note",
+            "payment_status", "payment_amount",
             "appointment", "created_at", "updated_at",
         ]
+
+    def get_payment_status(self, obj):
+        payment = getattr(obj, "payment", None)
+        return payment.status if payment else None
+
+    def get_payment_amount(self, obj):
+        payment = getattr(obj, "payment", None)
+        return str(payment.amount) if payment else None
 
     def get_doctor_name(self, obj):
         if not obj.doctor:
