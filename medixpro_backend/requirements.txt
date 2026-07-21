@@ -7,3 +7,9 @@ celery
 redis
 cryptography>=42
 requests>=2.31
+
+# ─── Production / Render ───────────────────────────────────────────────
+gunicorn
+whitenoise
+dj-database-url
+psycopg[binary]

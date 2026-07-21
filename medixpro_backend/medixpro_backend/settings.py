@@ -10,6 +10,24 @@ DEBUG            = os.environ.get("DEBUG", "True") == "True"
 ALLOWED_HOSTS    = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 DOCTOR_SECRET_KEY = os.environ.get("DOCTOR_SECRET_KEY", "MEDIX-DOCTOR-2026")
 
+# Render injects the service's public hostname here — trust it automatically.
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+CSRF_TRUSTED_ORIGINS = []
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
+# ─── Production hardening (only when DEBUG is off) ─────────────────────────────
+if not DEBUG:
+    # Render terminates TLS at its proxy and forwards this header.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -34,6 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -45,13 +64,16 @@ MIDDLEWARE = [
 ROOT_URLCONF    = "medixpro_backend.urls"
 AUTH_USER_MODEL = "users.User"
 
+import dj_database_url
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME":   BASE_DIR / "db.sqlite3",
-        # ✅ WAL mode يحسن الأداء على SQLite
-        "OPTIONS": {"timeout": 20},
-    }
+    # On Render (and any host that sets DATABASE_URL) this uses Postgres.
+    # Locally, with no DATABASE_URL set, it falls back to SQLite.
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 TEMPLATES = [
     {
@@ -146,6 +168,22 @@ STATIC_ROOT        = BASE_DIR / "staticfiles"
 MEDIA_URL          = "/media/"
 MEDIA_ROOT         = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# WhiteNoise serves compressed, hashed static files straight from the web process.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# ─── Celery ───────────────────────────────────────────────────────────────────
+# On the free tier there is no Redis broker / worker, so tasks run inline
+# (synchronously) inside the web process. Set CELERY_TASK_ALWAYS_EAGER=False and
+# provide CELERY_BROKER_URL once you add a real worker + Redis.
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "")
+CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "True") == "True"
+CELERY_TASK_EAGER_PROPAGATES = True
 
 # ─── Sham Cash E-Payment ──────────────────────────────────────────────────────
 # The AES secretKey authorises the whole agent account — keep it server-side only.
